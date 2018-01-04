@@ -27,4 +27,4 @@ See the [cloud/](cloud/) directory.
 
 # Set up the MLab platform nodes
 
-See the [cloud/](cloud/) directory.
+See the [node/](node/) directory.
