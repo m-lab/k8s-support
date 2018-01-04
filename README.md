@@ -23,8 +23,8 @@ Each machine that wants to be controlled by k8s (each Node) needs:
 
 # Allocate, set up, and start the MLab k8s servers
 
-## Allocate
+See the [cloud/](cloud/) directory.
 
-## Set up
+# Set up the MLab platform nodes
 
-## Start
+See the [cloud/](cloud/) directory.
