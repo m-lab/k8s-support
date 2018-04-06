@@ -80,8 +80,10 @@ gcloud compute ssh $GCE_NAME <<-EOF
 EOF
 
 # Find the instance's external IP
-EXTERNAL_IP=$(gcloud compute instances list --filter "name=${GCE_NAME}" \
-                --format flattened | grep natIP | awk '{print $2}')
+
+
+EXTERNAL_IP=$(gcloud compute instances describe ${GCE_NAME} \
+  --format="value(networkInterfaces[0].accessConfigs[0].natIP)")
 
 # Become root and start everything
 gcloud compute ssh $GCE_NAME <<-EOF
@@ -95,9 +97,9 @@ EOF
 # Allow the user who installed k8s on the master to call kubectl.  As we
 # productionize this process, this code should be deleted.
 # For the next steps, we no longer want to be root.
-gcloud compute ssh $GCE_NAME <<-EOF
+gcloud compute ssh $GCE_NAME <<-\EOF
   set -x
-  mkdir -p \$HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf \$HOME/.kube/config
-  sudo chown \$(id -u):\$(id -g) \$HOME/.kube/config
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
 EOF
