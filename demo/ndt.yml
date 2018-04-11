@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ndt-cloud-demo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: ndt-cloud
+  template:
+    metadata:
+      labels:
+        run: ndt-cloud
+    spec:
+      hostNetwork: true
+      containers:
+        - name: ndt-cloud
+          image: pboothe/ndt-cloud:6122c37b15d80b6f84aebd47760fa39e4c570862
+          command:
+          - /web100srv
+          args:
+          - --log_dir=/tmp
+          - --multiple
+          - --max_clients=40
+          - --disable_extended_tests
+          - -dddd
