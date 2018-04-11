@@ -32,7 +32,7 @@ fi
 
 # Create the new GCE instance.
 gcloud compute instances create $GCE_NAME \
-  --image "ubuntu-1604-xenial-v20180323" \
+  --image "ubuntu-1710-artful-v20180405" \
   --image-project "ubuntu-os-cloud" \
   --boot-disk-size "10" \
   --boot-disk-type "pd-standard" \
@@ -58,26 +58,27 @@ done
 
 # Become root and install everything.
 #
-# Kubeadm-installer has some jank, and seems to leave the shell in a bad state,
-# or possibly there is a race condition.  For whatever reason, all problems go
-# away if you disconnect and reconnect after running that command.
-gcloud compute ssh $GCE_NAME <<-EOF
+# Eventually we want this to work on Container Linux as the master. However, it
+# is too hard to hack on for a place in which to build an alpha system.  The
+# below commands work on Ubuntu.
+#
+# Commands derived from the "Ubuntu" instructions at
+#   https://kubernetes.io/docs/setup/independent/install-kubeadm/
+gcloud compute ssh $GCE_NAME <<-\EOFF
   sudo -s
-  apt-get update -y
-  apt-get install -y apt-transport-https
-  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-  echo deb http://apt.kubernetes.io/ kubernetes-xenial main | tee /etc/apt/sources.list.d/kubernetes.list
-  apt-get update -y
+  set -euxo pipefail
+  apt-get update
   apt-get install -y docker.io
+
+  apt-get update && apt-get install -y apt-transport-https curl
+  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+  echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
+  apt-get update
+  apt-get install -y kubelet kubeadm kubectl
+
   systemctl daemon-reload
-  systemctl enable docker
-  systemctl restart docker
-  docker run -i \
-    -v /etc:/rootfs/etc \
-    -v /opt:/rootfs/opt \
-    -v /usr/bin:/rootfs/usr/bin \
-    xakra/kubeadm-installer:0.4.7 ubuntu install || true
-EOF
+  systemctl restart kubelet
+EOFF
 
 # Find the instance's external IP
 
@@ -88,10 +89,10 @@ EXTERNAL_IP=$(gcloud compute instances describe ${GCE_NAME} \
 # Become root and start everything
 gcloud compute ssh $GCE_NAME <<-EOF
   sudo -s
-  systemctl daemon-reload
-  systemctl enable docker kubelet
-  systemctl restart docker kubelet
-  kubeadm init --apiserver-advertise-address ${EXTERNAL_IP}
+  set -euxo pipefail
+  kubeadm init \
+    --apiserver-advertise-address ${EXTERNAL_IP} \
+    --pod-network-cidr=192.168.0.0/16
 EOF
 
 # Allow the user who installed k8s on the master to call kubectl.  As we
@@ -102,4 +103,12 @@ gcloud compute ssh $GCE_NAME <<-\EOF
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+EOF
+
+# Now that kubernetes is started up, run Calico
+gcloud compute ssh $GCE_NAME <<-EOF
+  sudo -s
+  set -euxo pipefail
+  kubectl apply -f \
+    https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
 EOF
