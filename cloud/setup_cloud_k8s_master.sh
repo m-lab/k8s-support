@@ -17,7 +17,7 @@ ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
 GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
 
 # Add gcloud to PATH.
-# Tell the linter not to worry about that file.
+# Next line is a pragma directive telling the linter to skip path.bash.inc
 # shellcheck source=/dev/null
 source "${HOME}/google-cloud-sdk/path.bash.inc"
 
