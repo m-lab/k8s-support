@@ -25,7 +25,7 @@ RELEASE="$(curl -sSL https://dl.k8s.io/release/stable.txt)"
 
 mkdir -p /opt/bin
 cd /opt/bin
-curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/"${RELEASE}"/bin/linux/amd64/{kubeadm,kubelet,kubectl}
 chmod +x {kubeadm,kubelet,kubectl}
 
 curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
@@ -35,4 +35,4 @@ curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/bu
 systemctl enable kubelet && systemctl start kubelet
 
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
-kubeadm join 35.193.149.246:6443 --token fcat0x.5nmyjcufu2cf0w28 --discovery-token-ca-cert-hash sha256:bab0f75a3fbe6856fbc9c92f03aceeac826ee4c3f16f4d5748a9e846796bfbfd
+kubeadm join 35.193.149.246:6443 --token u5hhx3.b585uds0ulcclw4h --discovery-token-ca-cert-hash sha256:bab0f75a3fbe6856fbc9c92f03aceeac826ee4c3f16f4d5748a9e846796bfbfd
