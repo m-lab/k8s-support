@@ -13,8 +13,10 @@
 set -euxo pipefail
 
 PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-sandbox}
+REGION=${GOOGLE_CLOUD_REGION:-us-central1}
 ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
 GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
+IP_NAME=${K8S_GCE_MASTER_IP:-k8s-platform-master-ip}
 
 # Add gcloud to PATH.
 # Next line is a pragma directive telling the linter to skip path.bash.inc
@@ -32,6 +34,8 @@ if [[ -n "${EXISTING_INSTANCE}" ]]; then
   gcloud compute instances delete "${GCE_NAME}" --quiet
 fi
 
+EXTERNAL_IP=$(gcloud compute addresses describe "${IP_NAME}" --region="${REGION}" --format="value(address)")
+
 # Create the new GCE instance.
 gcloud compute instances create "${GCE_NAME}" \
   --image "ubuntu-1710-artful-v20180405" \
@@ -40,7 +44,8 @@ gcloud compute instances create "${GCE_NAME}" \
   --boot-disk-type "pd-standard" \
   --boot-disk-device-name "${GCE_NAME}"  \
   --tags "dmz" \
-  --machine-type "n1-standard-2"
+  --machine-type "n1-standard-2" \
+  --address "${EXTERNAL_IP}"
 
 #  Give the instance time to appear.  Make sure it appears twice - there have
 #  been multiple instances of it connecting just once and then failing again for
@@ -66,7 +71,7 @@ done
 #
 # Commands derived from the "Ubuntu" instructions at
 #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
-gcloud compute ssh "${GCE_NAME}" <<-\EOFF
+gcloud compute ssh "${GCE_NAME}" <<-\EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -80,13 +85,7 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOFF
 
   systemctl daemon-reload
   systemctl restart kubelet
-EOFF
-
-# Find the instance's external IP
-
-
-EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
-  --format="value(networkInterfaces[0].accessConfigs[0].natIP)")
+EOF
 
 # Become root and start everything
 gcloud compute ssh "${GCE_NAME}" <<-EOF
@@ -113,4 +112,17 @@ gcloud compute ssh "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubectl apply -f \
     https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+EOF
+
+# FIXME
+# Now that everything is started up, run the cert server. This cert server is
+# bad, and we should replace it with a better system ASAP. It replaces a system
+# where passwords were checked into source control and also posted publicly.
+gcloud compute scp cert_server.py "${GCE_NAME}:"
+gcloud compute ssh "${GCE_NAME}" <<-EOF
+  sudo -s
+  set -euxo pipefail
+  apt-get install -y python-httplib2
+  python cert_server.py > certlog.log 2>&1 &
+  disown
 EOF
