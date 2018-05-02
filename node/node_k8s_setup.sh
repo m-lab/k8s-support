@@ -10,6 +10,7 @@ set -euxo pipefail
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
+MASTER_IP=35.193.35.242
 
 # Commands from:
 #   https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
@@ -34,5 +35,6 @@ curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/bu
 
 systemctl enable kubelet && systemctl start kubelet
 
+TOKEN=$(curl "http://${MASTER_IP}:8000" | grep token | awk '{print $2}' | sed -e 's/"//g')
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
-kubeadm join 35.193.149.246:6443 --token u5hhx3.b585uds0ulcclw4h --discovery-token-ca-cert-hash sha256:bab0f75a3fbe6856fbc9c92f03aceeac826ee4c3f16f4d5748a9e846796bfbfd
+kubeadm join "${MASTER_IP}:6443" --token "${TOKEN}" --discovery-token-ca-cert-hash sha256:0870b8dd26d0501fd29b70d5ce55e57b80f1131e5f736a29cfff13a7a69eb860
