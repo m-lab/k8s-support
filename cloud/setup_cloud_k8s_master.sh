@@ -93,7 +93,8 @@ gcloud compute ssh "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
-    --pod-network-cidr=192.168.0.0/16
+    --pod-network-cidr 192.168.0.0/16 \
+    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net
 EOF
 
 # Allow the user who installed k8s on the master to call kubectl.  As we
