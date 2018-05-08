@@ -12,28 +12,22 @@ set -euxo pipefail
 # It should be a simple wget from the master node to make that happen.
 MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
 
-# Commands from:
-#   https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
+# TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
+# things into etc should be done as part of cloud-config.yml or ignition or just
+# something besides this script.
+# Install things in /etc
+# Startup configs for the kubelet
+RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
+mkdir -p /etc/systemd/system
+curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
+mkdir -p /etc/systemd/system/kubelet.service.d
+curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
-
-CNI_VERSION="v0.6.0"
-mkdir -p /opt/cni/bin
-curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
-
-RELEASE="$(curl -sSL https://dl.k8s.io/release/stable.txt)"
-
-mkdir -p /opt/bin
-cd /opt/bin
-curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/"${RELEASE}"/bin/linux/amd64/{kubeadm,kubelet,kubectl}
-chmod +x {kubeadm,kubelet,kubectl}
-
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
-mkdir -p /etc/systemd/system/kubelet.service.d
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-
-systemctl enable kubelet && systemctl start kubelet
+systemctl enable kubelet
+systemctl start kubelet
 
 TOKEN=$(curl "http://${MASTER_NODE}:8000" | grep token | awk '{print $2}' | sed -e 's/"//g')
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
