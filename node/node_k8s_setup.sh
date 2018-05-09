@@ -19,9 +19,9 @@ MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
 # Startup configs for the kubelet
 RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
 mkdir -p /etc/systemd/system
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
+curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 mkdir -p /etc/systemd/system/kubelet.service.d
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 systemctl daemon-reload
 systemctl enable docker

@@ -2,6 +2,10 @@
 
 set -euxo pipefail
 
+# TODO(https://github.com/m-lab/k8s-support/issues/31) This script should be run
+# by Travis to push to sandbox/staging/production in the ways that we have come
+# to expect.
+
 PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-staging}
 
 gsutil -h "Cache-Control: private, max-age=0, no-transform" \
