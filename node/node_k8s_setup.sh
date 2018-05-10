@@ -8,8 +8,18 @@ set -euxo pipefail
 # places (one place to serve as a cache for Docker images, the other two to
 # serve as repositories for core system data and experiment data, respectively)
 
+# Save the arguments
+# IPV4="$1"  # Currently unused.
+HOSTNAME="$2"
+
+# Turn the hostname into its component parts.
+MACHINE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $1 }')
+SITE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $2 }')
+METRO="${SITE/[0-9]*/}"
+
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
+# TODO: This name should probably be parameterized.
 MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
@@ -20,8 +30,14 @@ MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
 RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
 mkdir -p /etc/systemd/system
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
+
+# Add node tags to the kubelet so that node metadata is there right at the very
+# beginning.
+NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=platform"
 mkdir -p /etc/systemd/system/kubelet.service.d
-curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
+  | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS |g" \
+  > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 systemctl daemon-reload
 systemctl enable docker
