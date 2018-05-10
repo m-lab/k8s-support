@@ -19,7 +19,10 @@ METRO="${SITE/[0-9]*/}"
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-# TODO: This name should probably be parameterized.
+#
+# TODO: This name should probably be parameterized.  When we do that work, we
+# will likely want to make sure that the kernel argument epoxy.project is passed
+# in on the command line.
 MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
