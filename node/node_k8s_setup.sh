@@ -35,11 +35,13 @@ mkdir -p /etc/systemd/system
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
 # Add node tags to the kubelet so that node metadata is there right at the very
-# beginning.
+# beginning, and make sure that the kubelet has the right directory for the cni
+# plugins.
 NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=platform"
 mkdir -p /etc/systemd/system/kubelet.service.d
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
   | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS |g" \
+  | sed -e 's|--cni-bin-dir=[^ "]*|--cni-bin-dir=/usr/cni/bin|' \
   > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 systemctl daemon-reload
