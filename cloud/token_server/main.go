@@ -17,8 +17,6 @@
 // machines booting with epoxy to allocate a k8s token, necessary for joining
 // the cluster.
 //
-// The
-//
 // To deploy the token_server, the ePoxy server must have an extension
 // registered that maps an operation name to this server, e.g.:
 //     "allocate_k8s_token" -> "http://localhost:8800/allocate_k8s_token"
