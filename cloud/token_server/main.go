@@ -108,7 +108,8 @@ func allocateTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if time.Now().UTC().Sub(ext.V1.LastBoot) > 15*time.Minute {
-		// According to ePoxy the machine booted over 15 minutes ago, which is longer than we're willing to support.
+		// According to ePoxy the machine booted over 15 minutes ago,
+		// which is longer than we're willing to support.
 		w.WriteHeader(http.StatusRequestTimeout)
 		// Write no response.
 		return
