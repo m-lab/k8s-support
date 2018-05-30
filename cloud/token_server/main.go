@@ -137,7 +137,7 @@ func main() {
 	localGenerator = &k8sTokenGenerator{fKubeadmCommand}
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.HandleFunc("/allocate_k8s_token",
+	http.HandleFunc("/v1/allocate_k8s_token",
 		promhttp.InstrumentHandlerDuration(
 			requestDuration, http.HandlerFunc(allocateTokenHandler)))
 	log.Fatal(http.ListenAndServe(":8800", nil))
