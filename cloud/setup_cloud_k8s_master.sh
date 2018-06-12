@@ -15,8 +15,8 @@ set -euxo pipefail
 PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-sandbox}
 REGION=${GOOGLE_CLOUD_REGION:-us-central1}
 ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
-GCE_NAME=${K8S_GCE_MASTER:-soltesz-test-delete-after-2018-07}
-IP_NAME=${K8S_GCE_MASTER_IP:-soltesz-test-delete-after-2018-07-ip}
+GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
+IP_NAME=${K8S_GCE_MASTER_IP:-k8s-platform-master-ip}
 
 # Add gcloud to PATH.
 # Next line is a pragma directive telling the linter to skip path.bash.inc
