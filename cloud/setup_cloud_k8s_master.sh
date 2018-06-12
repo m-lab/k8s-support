@@ -15,8 +15,8 @@ set -euxo pipefail
 PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-sandbox}
 REGION=${GOOGLE_CLOUD_REGION:-us-central1}
 ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
-GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
-IP_NAME=${K8S_GCE_MASTER_IP:-k8s-platform-master-ip}
+GCE_NAME=${K8S_GCE_MASTER:-soltesz-test-delete-after-2018-07}
+IP_NAME=${K8S_GCE_MASTER_IP:-soltesz-test-delete-after-2018-07-ip}
 
 # Add gcloud to PATH.
 # Next line is a pragma directive telling the linter to skip path.bash.inc
@@ -83,6 +83,19 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
   apt-get install -y kubelet kubeadm kubectl
+
+  # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
+  #
+  #   1) the host root (/) is mounted read-only in the container as /ro
+  #   2) the host etc (/etc) is mounte read-only as the container's /etc
+  #
+  # The first gives access the kubeadm command.
+  # The second gives kubeadm read access to /etc/kubernetes/admin.conf.
+  docker run --detach --publish 8800:8800 \
+      --volume /etc:/etc:ro \
+	  --volume /:/ro:ro \
+      --restart always \
+	  measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
 
   systemctl daemon-reload
   systemctl restart kubelet
