@@ -43,6 +43,7 @@ gcloud compute instances create "${GCE_NAME}" \
   --boot-disk-size "10" \
   --boot-disk-type "pd-standard" \
   --boot-disk-device-name "${GCE_NAME}"  \
+  --network "epoxy-extension-private-network" \
   --tags "dmz" \
   --network "epoxy-extension-private-network" \
   --machine-type "n1-standard-2" \
