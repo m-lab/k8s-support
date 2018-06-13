@@ -29,7 +29,7 @@ source "${HOME}/google-cloud-sdk/path.bash.inc"
 gcloud config set project "${PROJECT}"
 gcloud config set compute/zone "${ZONE}"
 
-EXISTING_INSTANCE=$(gcloud compute instances list --filter "name=${GCE_NAME}")
+EXISTING_INSTANCE=$(gcloud compute instances list --filter "name=${GCE_NAME}" || true)
 if [[ -n "${EXISTING_INSTANCE}" ]]; then
   gcloud compute instances delete "${GCE_NAME}" --quiet
 fi
@@ -44,6 +44,7 @@ gcloud compute instances create "${GCE_NAME}" \
   --boot-disk-type "pd-standard" \
   --boot-disk-device-name "${GCE_NAME}"  \
   --tags "dmz" \
+  --network "epoxy-extension-private-network" \
   --machine-type "n1-standard-2" \
   --address "${EXTERNAL_IP}"
 
@@ -93,8 +94,8 @@ gcloud compute ssh "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
-    --pod-network-cidr 192.168.0.0/16 \
-    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net
+    --pod-network-cidr 10.244.0.0/16 \
+    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net,${EXTERNAL_IP}
 EOF
 
 # Allow the user who installed k8s on the master to call kubectl.  As we
@@ -107,12 +108,27 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 EOF
 
-# Now that kubernetes is started up, run Calico
+# Copy the network configs to the server.
+# CustomResourceDefinitions need to be defined outside of the file that first
+# uses them (as of 2017-6-11) so network-crd.yml is in its own file.
+gcloud compute scp network-crd.yml "${GCE_NAME}":.
+gcloud compute scp kube-network.yml "${GCE_NAME}":.
+
+# This test pod is for dev convenience.
+# TODO: delete this once index2ip works well.
+gcloud compute scp test-pod.yml "${GCE_NAME}":.
+
+# Now that kubernetes is started up, set up the network configs.
 gcloud compute ssh "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
-  kubectl apply -f \
-    https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+  pushd /opt/cni/bin
+    wget -q https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/multus
+    chmod 755 multus
+  popd
+  kubectl label node k8s-platform-master mlab/type=cloud
+  kubectl apply -f network-crd.yml
+  kubectl apply -f kube-network.yml
 EOF
 
 # FIXME
