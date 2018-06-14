@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: poc
+spec:  # specification of the pod's contents
+  containers:
+  - name: poc
+    image: "busybox"
+    command: ["top"]
+    stdin: true
+    tty: true
