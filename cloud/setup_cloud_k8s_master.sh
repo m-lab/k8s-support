@@ -45,7 +45,6 @@ gcloud compute instances create "${GCE_NAME}" \
   --boot-disk-device-name "${GCE_NAME}"  \
   --network "epoxy-extension-private-network" \
   --tags "dmz" \
-  --network "epoxy-extension-private-network" \
   --machine-type "n1-standard-2" \
   --address "${EXTERNAL_IP}"
 
@@ -90,6 +89,8 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
 EOF
 
 # Become root and start everything
+# TODO: fix the pod-network-cidr to be something other than a range which could
+# potentially be intruded upon by GCP.
 gcloud compute ssh "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
@@ -110,26 +111,21 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
 EOF
 
 # Copy the network configs to the server.
-# CustomResourceDefinitions need to be defined outside of the file that first
-# uses them (as of 2017-6-11) so network-crd.yml is in its own file.
-gcloud compute scp network-crd.yml "${GCE_NAME}":.
-gcloud compute scp kube-network.yml "${GCE_NAME}":.
+gcloud compute scp --recurse k8s "${GCE_NAME}":.
 
 # This test pod is for dev convenience.
 # TODO: delete this once index2ip works well.
 gcloud compute scp test-pod.yml "${GCE_NAME}":.
 
 # Now that kubernetes is started up, set up the network configs.
+# The CustomResourceDefinition needs to be defined before any resources which
+# use that definition, so we apply that config first.
 gcloud compute ssh "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
-  pushd /opt/cni/bin
-    wget -q https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/multus
-    chmod 755 multus
-  popd
   kubectl label node k8s-platform-master mlab/type=cloud
-  kubectl apply -f network-crd.yml
-  kubectl apply -f kube-network.yml
+  kubectl apply -f k8s/network-crd.yml
+  kubectl apply -f k8s
 EOF
 
 # FIXME
