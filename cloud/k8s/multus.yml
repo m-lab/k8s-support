@@ -1,0 +1,34 @@
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: flannel-conf
+plugin: flannel
+args: '[ {
+           "name": "flannel",
+           "type": "flannel",
+           "delegate": {
+             "hairpinMode": true,
+             "isDefaultGateway": false
+           },
+           "masterplugin": true
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-conf
+# index_to_ip is a terrible terrible shell script. That is bad, and it should
+# be replaced.  Follow along at http://github.com/m-lab/index2ip to watch its
+# replacement come into being.
+#
+# TODO: Change index_to_ip to index2ip once index2ip exists and works.
+plugin: index_to_ip
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index_to_ip"
+           }
+         } ]'

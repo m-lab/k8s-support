@@ -29,7 +29,7 @@ source "${HOME}/google-cloud-sdk/path.bash.inc"
 gcloud config set project "${PROJECT}"
 gcloud config set compute/zone "${ZONE}"
 
-EXISTING_INSTANCE=$(gcloud compute instances list --filter "name=${GCE_NAME}")
+EXISTING_INSTANCE=$(gcloud compute instances list --filter "name=${GCE_NAME}" || true)
 if [[ -n "${EXISTING_INSTANCE}" ]]; then
   gcloud compute instances delete "${GCE_NAME}" --quiet
 fi
@@ -102,13 +102,15 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
 EOF
 
 # Become root and start everything
+# TODO: fix the pod-network-cidr to be something other than a range which could
+# potentially be intruded upon by GCP.
 gcloud compute ssh "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
-    --pod-network-cidr 192.168.0.0/16 \
-    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net
+    --pod-network-cidr 10.244.0.0/16 \
+    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net,${EXTERNAL_IP}
 EOF
 
 # Allow the user who installed k8s on the master to call kubectl.  As we
@@ -121,12 +123,22 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 EOF
 
-# Now that kubernetes is started up, run Calico
+# Copy the network configs to the server.
+gcloud compute scp --recurse k8s "${GCE_NAME}":.
+
+# This test pod is for dev convenience.
+# TODO: delete this once index2ip works well.
+gcloud compute scp test-pod.yml "${GCE_NAME}":.
+
+# Now that kubernetes is started up, set up the network configs.
+# The CustomResourceDefinition needs to be defined before any resources which
+# use that definition, so we apply that config first.
 gcloud compute ssh "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
-  kubectl apply -f \
-    https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+  kubectl label node k8s-platform-master mlab/type=cloud
+  kubectl apply -f k8s/network-crd.yml
+  kubectl apply -f k8s
 EOF
 
 # FIXME
