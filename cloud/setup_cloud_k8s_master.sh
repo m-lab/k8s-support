@@ -87,7 +87,7 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
   # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
   #
   #   1) the host root (/) is mounted read-only in the container as /ro
-  #   2) the host etc (/etc) is mounte read-only as the container's /etc
+  #   2) the host etc (/etc) is mounted read-only as the container's /etc
   #
   # The first gives access the kubeadm command.
   # The second gives kubeadm read access to /etc/kubernetes/admin.conf.
