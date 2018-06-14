@@ -37,6 +37,7 @@ import (
 
 var (
 	fKubeadmCommand string
+	fPort           string
 
 	// requestDuration provides a histogram of processing times. The buckets should
 	// use periods that are intuitive for people.
@@ -64,6 +65,8 @@ var (
 func init() {
 	flag.StringVar(&fKubeadmCommand, "command", "/usr/bin/kubeadm",
 		"Absolute path to the kubeadm command used to create tokens")
+	flag.StringVar(&fPort, "port", "8800",
+		"Accept connection on this port.")
 	prometheus.MustRegister(requestDuration)
 }
 
@@ -140,5 +143,5 @@ func main() {
 	http.HandleFunc("/v1/allocate_k8s_token",
 		promhttp.InstrumentHandlerDuration(
 			requestDuration, http.HandlerFunc(allocateTokenHandler)))
-	log.Fatal(http.ListenAndServe(":8800", nil))
+	log.Fatal(http.ListenAndServe(":"+fPort, nil))
 }
