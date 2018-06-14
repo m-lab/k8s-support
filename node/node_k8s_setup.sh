@@ -4,7 +4,7 @@ exec 2> /tmp/k8s_setup.log 1>&2
 set -euxo pipefail
 
 # This script is intended to be called by epoxy as the action for the last stage
-# in the boot process.  The actual expoxy config that calls this file can be
+# in the boot process.  The actual epoxy config that calls this file can be
 # found at:
 #   https://github.com/m-lab/epoxy-images/blob/dev/actions/stage3_coreos/stage3post.json
 

@@ -21,6 +21,8 @@ metadata:
 # index_to_ip is a terrible terrible shell script. That is bad, and it should
 # be replaced.  Follow along at http://github.com/m-lab/index2ip to watch its
 # replacement come into being.
+#
+# TODO: Change index_to_ip to index2ip once index2ip exists and works.
 plugin: index_to_ip
 args: '[ {
            "name": "ipvlan",

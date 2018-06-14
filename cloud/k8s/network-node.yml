@@ -1,5 +1,13 @@
 ---
-# Next is platform nodes (check out the nodeSelector).
+# The daemonset for networking on platform nodes.
+#
+# As can be seen in the nodeSelector, a platform node is any node with the
+# label mlab/type=platform.  If a node tries to join without an mlab/type, its
+# network will likely not work.
+#
+# Platform nodes have their cluster-internal networking done by Flannel and
+# their external networking run done by ipvlan with a custom IPAM plugin.  The
+# ability to have multus network interfaces in a pod is provided by multus.
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:

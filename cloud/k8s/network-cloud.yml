@@ -1,8 +1,10 @@
 ---
-# Two daemonsets to set up the network. One for the platform nodes, and one for
-# the cloud nodes. If a node has a value for mlab/type that is not platform or
-# cloud or has no mlab/type annotation, then you are going to have a bad time.
-# First is cloud nodes (check out the nodeSelector).
+# The daemonset for networking on cloud nodes.
+#
+# As can be seen in the nodeSelector, a cloud node is any node with the label
+# mlab/type=cloud.  If a node tries to join without an mlab/type, its network
+# will likely not work.  Pods running on cloud nodes only get an internal IP
+# address.
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:

@@ -9,7 +9,7 @@
 #   done
 #
 # Then, whenever one of the files in /opt/shimcni/bin is invoked, a new
-# directory will apear in /tmp containing all the parameters required to invoke
+# directory will appear in /tmp containing all the parameters required to invoke
 # that plugin again (the cmdline, env, stdin) as well as all the output that the
 # plugin produced (stdout, stderr, and the exit code).
 #
