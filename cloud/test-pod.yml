@@ -1,11 +1,30 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: poc
-spec:  # specification of the pod's contents
+  name: poc-no-special-ip
+spec:
   containers:
-  - name: poc
+  - name: poc-no-special-ip
     image: "busybox"
     command: ["top"]
     stdin: true
     tty: true
+---
+# The index4 in the pod's name gets it the fourth IP on the machine.  This is a
+# bad way of passing network information around, and we should fix it by
+# figuring out why multus can not currently connect to etcd and then fixing
+# that connection. That will allow multus to use richer pod annotations rather
+# than munging the pod name.
+# TODO: Fix multus+etcd and then use annotations instead of "-index4"
+apiVersion: v1
+kind: Pod
+metadata:
+  name: poc-index4
+spec:
+  containers:
+  - name: poc-index4
+    image: "busybox"
+    command: ["top"]
+    stdin: true
+    tty: true
+

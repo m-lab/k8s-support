@@ -40,16 +40,17 @@ RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
 mkdir -p /etc/systemd/system
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
+# TODO: Once all CNI plugins are built into the image, stop copying things into
+# /opt/cni/bin and make shim.sh call the read-only binaries in /usr/cni/bin.
+
 # Install all cni plugins into /opt/cni/bin
 mkdir -p /opt/cni/bin
 pushd /opt/cni/bin
   cp /usr/cni/bin/* .
-  # Install multus into /opt/cni/bin
-  # TODO: Build multus into the epoxy image
-  wget -q https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/multus
-  chmod +x multus
   # Install index_to_ip into /opt/cni/bin
   # TODO: Build index_to_ip into the epoxy image
+  # TODO: Use index2ip built in go rather than the horrible index_to_ip shell
+  # script.
   wget https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/index_to_ip
   chmod +x index_to_ip
 popd
@@ -87,6 +88,9 @@ systemctl start kubelet
 
 TOKEN=$(curl "http://${MASTER_NODE}:8000" | grep token | awk '{print $2}' | sed -e 's/"//g')
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
+# TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
+# that we can hard-code the CA hash below without having to change it all the
+# time.
 kubeadm join "${MASTER_NODE}:6443" \
   --token "${TOKEN}" \
   --discovery-token-ca-cert-hash sha256:f9ee71f7c93a6f562a7bf18ea61670f208c1b7506ea2a225a5a8948a6ff49b39
