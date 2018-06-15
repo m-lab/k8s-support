@@ -10,3 +10,8 @@ PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-sandbox}
 
 gsutil -h "Cache-Control: private, max-age=0, no-transform" \
   cp node_k8s_setup.sh "gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh"
+
+gsutil -h "Cache-Control: private, max-age=0, no-transform" \
+  cp shim.sh "gs://k8s-platform-${PROJECT}/bin/shim.sh"
+gsutil -h "Cache-Control: private, max-age=0, no-transform" \
+  cp index_to_ip "gs://k8s-platform-${PROJECT}/bin/index_to_ip"
