@@ -84,6 +84,19 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
   apt-get update
   apt-get install -y kubelet kubeadm kubectl
 
+  # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
+  #
+  #   1) the host root (/) is mounted read-only in the container as /ro
+  #   2) the host etc (/etc) is mounted read-only as the container's /etc
+  #
+  # The first gives access the kubeadm command.
+  # The second gives kubeadm read access to /etc/kubernetes/admin.conf.
+  docker run --detach --publish 8800:8800 \
+      --volume /etc:/etc:ro \
+	  --volume /:/ro:ro \
+      --restart always \
+	  measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
+
   systemctl daemon-reload
   systemctl restart kubelet
 EOF
