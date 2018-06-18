@@ -15,9 +15,10 @@ set -euxo pipefail
 # experiment data, respectively)
 
 # Save the arguments
-# IPV4="$1"  # Currently unused.
-HOSTNAME="$2"
-# K8S_TOKEN_URL="$3"  # Currently unused
+GCP_PROJECT="$1"
+# IPV4="$2"  # Currently unused.
+HOSTNAME="$3"
+# K8S_TOKEN_URL="$4"  # Currently unused
 
 # Turn the hostname into its component parts.
 MACHINE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $1 }')
@@ -26,10 +27,7 @@ METRO="${SITE/[0-9]*/}"
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-#
-# TODO: This name should be parameterized.  To do that, make sure that the
-# kernel argument epoxy.project is passed in on the command line.
-MASTER_NODE=k8s-platform-master.mlab-sandbox.measurementlab.net
+MASTER_NODE=k8s-platform-master."${GCP_PROJECT}".measurementlab.net
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
 # things into etc should be done as part of cloud-config.yml or ignition or just
@@ -51,14 +49,14 @@ pushd /opt/cni/bin
   # TODO: Build index_to_ip into the epoxy image
   # TODO: Use index2ip built in go rather than the horrible index_to_ip shell
   # script.
-  wget https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/index_to_ip
+  wget https://storage.googleapis.com/k8s-platform-"${GCP_PROJECT}"/bin/index_to_ip
   chmod +x index_to_ip
 popd
 
 # Make all the shims so that network plugins can be debugged
 mkdir -p /opt/shimcni/bin
 pushd /opt/shimcni/bin
-  wget https://storage.googleapis.com/k8s-platform-mlab-sandbox/bin/shim.sh
+  wget https://storage.googleapis.com/k8s-platform-"${GCP_PROJECT}"/bin/shim.sh
   chmod +x shim.sh
   for i in /opt/cni/bin/*; do
     ln -s /opt/shimcni/bin/shim.sh /opt/shimcni/bin/$(basename "$i")
