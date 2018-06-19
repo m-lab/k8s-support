@@ -100,22 +100,7 @@ data:
           "type": "ipvlan",
           "master": "eth0",
           "ipam": {
-            "type": "host-local",
-            "ranges": [
-              [
-              {
-                "subnet": "4.14.159.112/26",
-                "rangeStart": "4.14.159.119",
-                "rangeEnd": "4.14.159.124",
-                "gateway": "4.14.159.65"
-              }
-              ]
-            ],
-            "routes": [
-              { "dst": "0.0.0.0/0" }
-            ],
-            "dataDir": "/tmp/host-local-state",
-            "resolvConf": "/etc/resolv.conf"
+            "type": "index2ip",
           }
         }
       ]

@@ -41,16 +41,10 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 # TODO: Once all CNI plugins are built into the image, stop copying things into
 # /opt/cni/bin and make shim.sh call the read-only binaries in /usr/cni/bin.
 
-# Install all cni plugins into /opt/cni/bin
+# Install all cni plugins into /opt/cni/bin so they can be edited
 mkdir -p /opt/cni/bin
 pushd /opt/cni/bin
   cp /usr/cni/bin/* .
-  # Install index_to_ip into /opt/cni/bin
-  # TODO: Build index_to_ip into the epoxy image
-  # TODO: Use index2ip built in go rather than the horrible index_to_ip shell
-  # script.
-  wget "https://storage.googleapis.com/k8s-platform-${GCP_PROJECT}/bin/index_to_ip"
-  chmod +x index_to_ip
 popd
 
 # Make all the shims so that network plugins can be debugged
