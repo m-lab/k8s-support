@@ -5,6 +5,8 @@
 # (infrequently) by a human as we add more monitoring services to the platform
 # k8s cluster and start needing more and higher capacity compute nodes running
 # in cloud.
+#
+# TODO: Make the node be a CoreOS node instead of Ubuntu
 
 set -euxo pipefail
 
@@ -62,6 +64,12 @@ gcloud compute ssh --project="${PROJECT}" "${NODE_NAME}" <<-\EOF
 EOF
 
 # Ssh to k8s-platform-master and create a new token for login.
+
+# TODO: This approach feels weird and brittle or unsafe or just architecturally
+# wrong.  It works, but we would prefer some strategy where the node registers
+# itself instead of requiring that the user running this script also have root
+# on k8s-platform-master.  We should figure out how that should work and do that
+# instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh --project="${PROJECT}" k8s-platform-master <<-EOF
   sudo -s
   set -euxo pipefail
