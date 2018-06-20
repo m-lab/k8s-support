@@ -13,5 +13,3 @@ gsutil -h "Cache-Control: private, max-age=0, no-transform" \
 
 gsutil -h "Cache-Control: private, max-age=0, no-transform" \
   cp shim.sh "gs://k8s-platform-${PROJECT}/bin/shim.sh"
-gsutil -h "Cache-Control: private, max-age=0, no-transform" \
-  cp index_to_ip "gs://k8s-platform-${PROJECT}/bin/index_to_ip"
