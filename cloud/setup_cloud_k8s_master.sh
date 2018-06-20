@@ -18,10 +18,13 @@ ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
 GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
 IP_NAME=${K8S_GCE_MASTER_IP:-k8s-platform-master-ip}
 
-# Add gcloud to PATH.
-# Next line is a pragma directive telling the linter to skip path.bash.inc
-# shellcheck source=/dev/null
-source "${HOME}/google-cloud-sdk/path.bash.inc"
+# Ensure gcloud is in the PATH.
+if ! which gcloud; then
+  # Source a bash include file to put gcloud on the path.
+  # Tell the linter to skip path.bash.inc
+  # shellcheck source=/dev/null
+  source "${HOME}/google-cloud-sdk/path.bash.inc"
+fi
 
 # Set the project and zone for all future gcloud commands.  This alters the
 # surrounding environment, which is okay in Travis and more questionable in a
