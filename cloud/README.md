@@ -12,7 +12,7 @@ To set up a cloud master in staging, run
 GOOGLE_CLOUD_PROJECT=mlab-staging ./setup_cloud_k8s_master.sh
 ```
 
-To set up a cloud master in staging, run
+To set up a cloud master in production, run
 ```bash
 GOOGLE_CLOUD_PROJECT=mlab-oti ./setup_cloud_k8s_master.sh
 ```
