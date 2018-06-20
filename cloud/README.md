@@ -1,22 +1,42 @@
 All setup and startup scripts for cloud and cloud networking.
 
+The scripts need to be run from this directory.
+
+To set up a cloud master in sandbox, run
+```bash
+./setup_cloud_k8s_master.sh mlab-sandbox
+```
+
+To set up a cloud master in staging, run
+```bash
+./setup_cloud_k8s_master.sh mlab-staging
+```
+
+To set up a cloud master in production, run
+```bash
+./setup_cloud_k8s_master.sh mlab-oti
+```
+
 # Master node setup
 
 We use `kubeadm` to set everything up.  It's alpha, but it works pretty well.
-The `setup_cloud_k8s_master.sh` script, when run with no arguments, sets up
-`k8s-platform-master` in the `mlab-sandbox` project.
 
 # Network
 
-Every Node in a k8s system is allocated its own /24. We have 500+ nodes already,
-and through platform expansion that number could at least quadruple. So we need
-a subnet that supports more than 2000 /24 address blocks. Doing the math (`32 -
-log_2(256 ips per node * 2000 nodes on the platform) = 12`) it looks like we
-need a `/12` block.  The `10.0.0.0/8` block is used by Google cloud, so we
-either need to fight their configs or use one of the others.  `192.168.0.0/16`
-is too small, so that leaves the little-known `172.16.0.0/12` block for the
-M-Lab platform.
+Our network is non-standard, because kubernetes does not expect to expose
+services running on pods directly to the outside world.  So, for the pods that
+run services we want to expose (the ones running on platform nodes), we actually
+give them two IP addresses using [multus](https://github.com/intel/multus-cni)
+to specify two interfaces instead of just one.  One internal one, handed out
+with [flannel](https://github.com/coreos/flannel) in the standard way flannel
+does things, and the other handed out by a combination of the [ipvlan CNI
+plugin](https://github.com/containernetworking/plugins/tree/master/plugins/main/ipvlan)
+and our own [index2ip CNI IPAM plugin](https://github.com/m-lab/index2ip).
 
-We will use Calico to set things up. It uses standard pieces, and has a flexible
-config language that allows us to provide rich options and/or specified external
-IPs to some pods.
+# Kubernetes configs
+
+All the kubernetes configs for the master are stored under [k8s/]. They specify
+that all nodes with the label `mlab/type=cloud` run flannel in the standard way,
+and all nodes with the label `mlab/type=platform` run
+multus+flannel+ipvlan+index2ip in our custom way. If a node has no value for the
+`mlab/type` label, the network will likely not work at all.

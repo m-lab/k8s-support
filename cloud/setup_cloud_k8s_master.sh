@@ -12,33 +12,44 @@
 
 set -euxo pipefail
 
-PROJECT=${GOOGLE_CLOUD_PROJECT:-mlab-sandbox}
+USAGE="$0 <cloud project>"
+PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 REGION=${GOOGLE_CLOUD_REGION:-us-central1}
 ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
 GCE_NAME=${K8S_GCE_MASTER:-k8s-platform-master}
 IP_NAME=${K8S_GCE_MASTER_IP:-k8s-platform-master-ip}
 
-# Add gcloud to PATH.
-# Next line is a pragma directive telling the linter to skip path.bash.inc
-# shellcheck source=/dev/null
-source "${HOME}/google-cloud-sdk/path.bash.inc"
-
-# Set the project and zone for all future gcloud commands.  This alters the
-# surrounding environment, which is okay in Travis and more questionable in a
-# shell context.
-gcloud config set project "${PROJECT}"
-gcloud config set compute/zone "${ZONE}"
-
-EXISTING_INSTANCE=$(gcloud compute instances list --filter "name=${GCE_NAME}" || true)
-if [[ -n "${EXISTING_INSTANCE}" ]]; then
-  gcloud compute instances delete "${GCE_NAME}" --quiet
+# Put gcloud in the PATH when on Travis.
+if [[ ${TRAVIS:-false} == true ]]; then
+  # Source a bash include file to put gcloud on the path.
+  # Tell the linter to skip path.bash.inc
+  # shellcheck source=/dev/null
+  source "${HOME}/google-cloud-sdk/path.bash.inc"
 fi
 
-EXTERNAL_IP=$(gcloud compute addresses describe "${IP_NAME}" --region="${REGION}" --format="value(address)")
+# Error out if gcloud is unavailable.
+if ! which gcloud; then
+  echo "The google-cloud-sdk must be installed and gcloud in your path."
+  exit 1
+fi
+
+# Arrays of arguments are slightly cumbersome but using them ensures that if a
+# space ever appears in an arg, then later usage of these values should not
+# break in strange ways.
+GCP_ARGS=("--project=${PROJECT}")
+GCE_ARGS=("${GCP_ARGS[@]}" "--zone=${ZONE}")
+
+EXISTING_INSTANCE=$(gcloud compute instances list "${GCP_ARGS[@]}" --filter "name=${GCE_NAME}" || true)
+if [[ -n "${EXISTING_INSTANCE}" ]]; then
+  gcloud compute instances delete "${GCE_ARGS[@]}" "${GCE_NAME}" --quiet
+fi
+
+EXTERNAL_IP=$(gcloud compute "${GCP_ARGS[@]}" addresses describe "${IP_NAME}" --region="${REGION}" --format="value(address)")
 
 # Create the new GCE instance.
 gcloud compute instances create "${GCE_NAME}" \
-  --image "ubuntu-1710-artful-v20180405" \
+  "${GCE_ARGS[@]}" \
+  --image "ubuntu-1710-artful-v20180612" \
   --image-project "ubuntu-os-cloud" \
   --boot-disk-size "10" \
   --boot-disk-type "pd-standard" \
@@ -51,9 +62,9 @@ gcloud compute instances create "${GCE_NAME}" \
 #  Give the instance time to appear.  Make sure it appears twice - there have
 #  been multiple instances of it connecting just once and then failing again for
 #  a bit.
-until gcloud compute ssh "${GCE_NAME}" --command true && \
+until gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" --command true && \
       sleep 10 && \
-      gcloud compute ssh "${GCE_NAME}" --command true; do
+      gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" --command true; do
   echo Waiting for "${GCE_NAME}" to boot up
   # Refresh keys in case they changed mid-boot. They change as part of the
   # GCE bootup process, and it is possible to ssh at the precise moment a
@@ -61,7 +72,7 @@ until gcloud compute ssh "${GCE_NAME}" --command true && \
   # all future communications register as a MITM attack.
   #
   # Same root cause as the need to ssh twice in the loop condition above.
-  gcloud compute config-ssh
+  gcloud compute config-ssh "${GCP_ARGS[@]}"
 done
 
 # Become root and install everything.
@@ -72,7 +83,7 @@ done
 #
 # Commands derived from the "Ubuntu" instructions at
 #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
-gcloud compute ssh "${GCE_NAME}" <<-\EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -104,7 +115,7 @@ EOF
 # Become root and start everything
 # TODO: fix the pod-network-cidr to be something other than a range which could
 # potentially be intruded upon by GCP.
-gcloud compute ssh "${GCE_NAME}" <<-EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   kubeadm init \
@@ -116,7 +127,7 @@ EOF
 # Allow the user who installed k8s on the master to call kubectl.  As we
 # productionize this process, this code should be deleted.
 # For the next steps, we no longer want to be root.
-gcloud compute ssh "${GCE_NAME}" <<-\EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
   set -x
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -124,16 +135,16 @@ gcloud compute ssh "${GCE_NAME}" <<-\EOF
 EOF
 
 # Copy the network configs to the server.
-gcloud compute scp --recurse k8s "${GCE_NAME}":.
+gcloud compute scp "${GCE_ARGS[@]}" --recurse k8s "${GCE_NAME}":.
 
 # This test pod is for dev convenience.
 # TODO: delete this once index2ip works well.
-gcloud compute scp test-pod.yml "${GCE_NAME}":.
+gcloud compute scp "${GCE_ARGS[@]}" test-pod.yml "${GCE_NAME}":.
 
 # Now that kubernetes is started up, set up the network configs.
 # The CustomResourceDefinition needs to be defined before any resources which
 # use that definition, so we apply that config first.
-gcloud compute ssh "${GCE_NAME}" <<-EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   kubectl label node k8s-platform-master mlab/type=cloud
@@ -145,8 +156,8 @@ EOF
 # Now that everything is started up, run the cert server. This cert server is
 # bad, and we should replace it with a better system ASAP. It replaces a system
 # where passwords were checked into source control and also posted publicly.
-gcloud compute scp cert_server.py "${GCE_NAME}:"
-gcloud compute ssh "${GCE_NAME}" <<-EOF
+gcloud compute scp "${GCE_ARGS[@]}" cert_server.py "${GCE_NAME}:"
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   apt-get install -y python-httplib2
