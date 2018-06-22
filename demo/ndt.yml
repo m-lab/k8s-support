@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: ndt-cloud-index1
+  name: ndt-cloud-index2
   namespace: default
 spec:
   selector:
