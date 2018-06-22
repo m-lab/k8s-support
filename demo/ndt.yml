@@ -1,10 +1,9 @@
 apiVersion: extensions/v1beta1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: ndt-cloud-demo
+  name: ndt-cloud-index1
   namespace: default
 spec:
-  replicas: 1
   selector:
     matchLabels:
       run: ndt-cloud
@@ -12,16 +11,22 @@ spec:
     metadata:
       labels:
         run: ndt-cloud
+      annotations:
+        prometheus.io/scrape: 'true'
     spec:
-      hostNetwork: true
+      nodeSelector:
+        mlab/type: 'platform'
       containers:
         - name: ndt-cloud
-          image: pboothe/ndt-cloud:6122c37b15d80b6f84aebd47760fa39e4c570862
-          command:
-          - /web100srv
-          args:
-          - --log_dir=/tmp
-          - --multiple
-          - --max_clients=40
-          - --disable_extended_tests
-          - -dddd
+          image: measurementlab/ndt-cloud:v0.1
+          ports:
+          - containerPort: 3010
+          - containerPort: 9090
+          volumeMounts:
+          - name: ndt-certificates
+            mountPath: /certs
+            readOnly: true
+      volumes:
+      - name: ndt-certificates
+        secret:
+          secretName: ndt-certificates
