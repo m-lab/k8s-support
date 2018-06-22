@@ -100,7 +100,7 @@ data:
           "type": "ipvlan",
           "master": "eth0",
           "ipam": {
-            "type": "index2ip",
+            "type": "index2ip"
           }
         }
       ]
