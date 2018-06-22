@@ -151,16 +151,3 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   kubectl apply -f k8s/network-crd.yml
   kubectl apply -f k8s
 EOF
-
-# FIXME
-# Now that everything is started up, run the cert server. This cert server is
-# bad, and we should replace it with a better system ASAP. It replaces a system
-# where passwords were checked into source control and also posted publicly.
-gcloud compute scp "${GCE_ARGS[@]}" cert_server.py "${GCE_NAME}:"
-gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
-  sudo -s
-  set -euxo pipefail
-  apt-get install -y python-httplib2
-  python cert_server.py > certlog.log 2>&1 &
-  disown
-EOF
