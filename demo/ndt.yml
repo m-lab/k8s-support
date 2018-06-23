@@ -14,6 +14,22 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
     spec:
+
+      # The default grace period after k8s sends SIGTERM is 30s. We extend the
+      # grace period to give time for the following shutdown sequence. After the
+      # grace period, kubernetes sends SIGKILL.
+      #
+      # NDT pod shutdown sequence:
+      #
+      #  * k8s sends SIGTERM to NDT server
+      #  * NDT server enables lame duck status
+      #  * monitoring reads lame duck status (60s max)
+      #  * mlab-ns updates server status (60s max)
+      #  * all currently running tests complete. (30s max)
+      #
+      # TODO: enable before receiving production traffic.
+      # terminationGracePeriodSeconds: 150
+
       nodeSelector:
         mlab/type: 'platform'
       containers:
