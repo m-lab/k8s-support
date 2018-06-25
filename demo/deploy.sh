@@ -8,8 +8,8 @@ set -uxe
 gcloud compute ssh k8s-platform-master \
     --command "sudo cat /etc/kubernetes/admin.conf" > admin.conf
 
-# Report the current deployments.
-kubectl --kubeconfig ./admin.conf get deployments
+# Report the current daemonsets.
+kubectl --kubeconfig ./admin.conf get daemonsets
 
 # TODO: use file names as parameters to the ndt-cloud container.
 # Create the ndt certificates secret.
@@ -24,5 +24,5 @@ kubectl --kubeconfig ./admin.conf create secret generic ndt-certificates \
 # Create the ndt-cloud daemonset.
 kubectl --kubeconfig ./admin.conf apply -f ndt.yml
 
-# Report the new deployments.
-kubectl --kubeconfig ./admin.conf get deployments
+# Report the new daemonsets.
+kubectl --kubeconfig ./admin.conf get daemonsets
