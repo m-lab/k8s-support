@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: poc-no-special-ip
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: noip
+  template:
+    metadata:
+      labels:
+        run: noip
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: poc-no-special-ip
+          image: busybox
+          command: ["top"]
+          stdin: true
+          tty: true

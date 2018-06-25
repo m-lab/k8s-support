@@ -15,10 +15,10 @@ set -euxo pipefail
 # experiment data, respectively)
 
 # Save the arguments
-GCP_PROJECT="$1"
+GCP_PROJECT=${1:?GCP Project is missing.}
 # IPV4="$2"  # Currently unused.
-HOSTNAME="$3"
-# K8S_TOKEN_URL="$4"  # Currently unused
+HOSTNAME=${3:?Node hostname is missing.}
+K8S_TOKEN_URL=${4:?k8s token URL is missing. Node cannot join k8s cluster.}
 
 # Turn the hostname into its component parts.
 MACHINE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $1 }')
@@ -78,7 +78,8 @@ systemctl start docker
 systemctl enable kubelet
 systemctl start kubelet
 
-TOKEN=$(curl "http://${MASTER_NODE}:8000" | grep token | awk '{print $2}' | sed -e 's/"//g')
+# Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr.
+TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" ${K8S_TOKEN_URL} )
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 # TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
 # that we can hard-code the CA hash below without having to change it all the
