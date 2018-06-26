@@ -39,6 +39,7 @@ gcloud compute instances create "${NODE_NAME}" \
   --image "ubuntu-1710-artful-v20180612" \
   --image-project "ubuntu-os-cloud" \
   --project="${PROJECT}" \
+  --network "epoxy-extension-private-network" \
   "$@"
 
 sleep 120  # Wait for the node to appear
@@ -46,7 +47,14 @@ gcloud compute config-ssh --project="${PROJECT}"
 
 # Ssh to the new node, install all the k8s binaries and make sure the node will
 # be tagged as mlab/type:cloud when it joins.
-gcloud compute ssh --project="${PROJECT}" "${NODE_NAME}" <<-\EOF
+#
+# TODO: Figure out how to make the node ip be part of its registration. Possibly
+# something like:
+#   sed -e 's#KUBELET_NETWORK_ARGS=#KUBELET_NETWORK_ARGS=--node-ip=${EXTERNAL_IP} #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# but including that exact line in the commands below causes the entire
+# 'Addresses' section of the node config in k8s to not exist, which seems
+# incorrect.
+gcloud compute ssh --project="${PROJECT}" "${NODE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -57,14 +65,14 @@ gcloud compute ssh --project="${PROJECT}" "${NODE_NAME}" <<-\EOF
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
   apt-get install -y kubelet kubeadm kubectl
-  sed -e 's#KUBELET_KUBECONFIG_ARGS=#KUBELET_KUBECONFIG_ARGS=--node-labels="mlab/type=cloud" #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  sed -e 's#KUBELET_KUBECONFIG_ARGS=#KUBELET_KUBECONFIG_ARGS=--node-labels=mlab/type=cloud #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
   systemctl daemon-reload
   systemctl enable docker.service
   systemctl restart kubelet
 EOF
 
 # Ssh to k8s-platform-master and create a new token for login.
-
+#
 # TODO: This approach feels weird and brittle or unsafe or just architecturally
 # wrong.  It works, but we would prefer some strategy where the node registers
 # itself instead of requiring that the user running this script also have root
@@ -82,4 +90,16 @@ gcloud compute ssh --project="${PROJECT}" "${NODE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   sudo ${JOIN_COMMAND}
+EOF
+
+# This command takes long enough that the race condition with node registration
+# has resolved by the time this command returns.  If you move this assignment to
+# earlier in the file, make sure to insert a sleep here so prevent the next
+# lines from happening too soon after the initial registration.
+EXTERNAL_IP=$(gcloud compute instances list --format 'value(networkInterfaces[].accessConfigs[0].natIP)' --filter="name~'${NODE_NAME}'")
+
+# Ssh to the master and fix the network annotation for the node.
+gcloud compute ssh --project="${PROJECT}" k8s-platform-master <<-EOF
+  set -euxo pipefail
+  kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
 EOF
