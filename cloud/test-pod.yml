@@ -20,6 +20,10 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: poc-index4
+  annotations:
+    networks: '[
+          { "name": "flannel-conf" },
+          { "name": "index2ip-conf" } ]'
 spec:
   containers:
   - name: poc-index4

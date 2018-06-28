@@ -1,3 +1,31 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: network-reader
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+- apiGroups:
+  - kubernetes.com
+  resources:
+  - networks
+  verbs:
+  - get
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: allow-nodes-to-read-networks
+subjects:
+- kind: Group
+  name: "system:nodes"
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: network-reader
+  apiGroup: rbac.authorization.k8s.io
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -52,6 +80,14 @@ metadata:
     tier: node
     app: flannel
 data:
+  # This file is for Flannel
+  net-conf.json: |
+    {
+      "Network": "192.168.0.0/16",
+      "Backend": {
+        "Type": "vxlan"
+      }
+    }
   # This is the CNI config needed for the cloud machines.
   cloud-cni-conf.json: |
     {
@@ -73,20 +109,15 @@ data:
       ]
     }
   # This is the CNI config needed for the platform nodes.
-  # This file should not contain any index_to_ip stuff. It is the backup config
+  # This file should not contain any index2ip stuff. It is the backup config
   # for when multus isn't working or a pod is not tagged with any network
-  # stuff.  Multus is supposed to preferentially get its config data out of
-  # etcd, but it can't connect to etcd from non-Master nodes for reasons
-  # unknown (likely related to it having a RFC1918 address for its
-  # "ExternalIP").
-  # Currently has no index_to_ip stuff in it to aid debugging.
-  # TODO: Fix the ability of multus to connect to etcd so we can delete the
-  # ipvlan stuff.
+  # stuff.
   platform-node-cni-conf.json: |
     {
-     "name": "multus-network",
-     "type": "multus",
-     "delegates": [
+      "name": "multus-network",
+      "type": "multus",
+      "kubeconfig": "/etc/kubernetes/kubelet.conf",
+      "delegates": [
         {
           "type": "flannel",
           "delegate": {
@@ -94,35 +125,6 @@ data:
             "isDefaultGateway": false
           },
           "masterplugin": true
-        },
-        {
-          "name": "ipvlan",
-          "type": "ipvlan",
-          "master": "eth0",
-          "ipam": {
-            "type": "index2ip"
-          }
         }
       ]
-    }
-# This is what we think the config should be.
-#    {
-#      "name": "multus-network",
-#      "type": "multus",
-#      "delegates": [
-#        {
-#          "type": "flannel",
-#          "delegate": {
-#            "hairpinMode": true,
-#            "isDefaultGateway": false
-#          },
-#          "masterplugin": true
-#        }      ]
-#    }
-  net-conf.json: |
-    {
-      "Network": "192.168.0.0/16",
-      "Backend": {
-        "Type": "vxlan"
-      }
     }
