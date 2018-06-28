@@ -86,4 +86,4 @@ export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 # time.
 kubeadm join "${MASTER_NODE}:6443" \
   --token "${TOKEN}" \
-  --discovery-token-ca-cert-hash sha256:67efd6c22d3724a9fbb8b0c42c012e57d86e31c6ebbb2bb58e8268958a507c23
+  --discovery-token-ca-cert-hash sha256:e27523fa62de865baaf6a61f13d8c2cfb00553bfad552c1fcd558a180437d41a

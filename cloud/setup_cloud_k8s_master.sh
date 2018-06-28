@@ -120,7 +120,7 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
-    --pod-network-cidr 10.244.0.0/16 \
+    --pod-network-cidr 192.168.0.0/16 \
     --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net,${EXTERNAL_IP}
 EOF
 
@@ -147,6 +147,7 @@ gcloud compute scp "${GCE_ARGS[@]}" test-pod.yml "${GCE_NAME}":.
 gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
+  kubectl annotate node k8s-platform-master flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   kubectl label node k8s-platform-master mlab/type=cloud
   kubectl apply -f k8s/network-crd.yml
   kubectl apply -f k8s
