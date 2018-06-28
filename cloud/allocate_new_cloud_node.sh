@@ -34,6 +34,12 @@ NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
 set -e
 
 # Allocate a new VM with the right name.
+#
+# WARNING: As-is this setup potentially reduces the security guarantees of
+# ePoxy.
+# TODO: Stop putting nodes on epoxy-extension-private-network. We must redesign
+# our GCP network setup to separate the "cluster network" from the "epoxy
+# network".
 NODE_NAME="${K8S_NODE_PREFIX}-${NEW_NODE_NUM}"
 gcloud compute instances create "${NODE_NAME}" \
   --image "ubuntu-1710-artful-v20180612" \
