@@ -27,7 +27,6 @@ set +e  # The next command exits with nonzero, even when it works properly.
 NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
     <(gcloud compute instances list \
         --project="${PROJECT}" \
-        --zones="${ZONE}" \
         --filter="name~'${K8S_NODE_PREFIX}-\d+'" \
         --format='value(name)' \
       | sed -e 's/.*-//' \
@@ -106,7 +105,7 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list --format 'value(networkInterfaces[].accessConfigs[0].natIP)' --project="${PROJECT}" --zones="${ZONE}" --filter="name~'${NODE_NAME}'")
+EXTERNAL_IP=$(gcloud compute instances list --format 'value(networkInterfaces[].accessConfigs[0].natIP)' --project="${PROJECT}" --filter="name~'${NODE_NAME}'")
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" k8s-platform-master <<-EOF
