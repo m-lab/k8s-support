@@ -1,19 +1,25 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: only-node-exporter
+  name: node-exporter
   namespace: default
 spec:
   selector:
     matchLabels:
-      run: only-node-exporter
+      run: node-exporter
   template:
     metadata:
       labels:
-        run: only-node-exporter
+        run: node-exporter
       annotations:
         prometheus.io/scrape: 'true'
     spec:
       containers:
-        - name: only-node-exporter
-          image: prom/node-exporter
+      - name: node-exporter
+        image: prom/node-exporter
+        ports:
+        - containerPort: 9100
+          hostPort: 9100
+          name: scrape
+      hostNetwork: true
+      hostPID: true
