@@ -149,6 +149,6 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubectl annotate node k8s-platform-master flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   kubectl label node k8s-platform-master mlab/type=cloud
-  kubectl apply -f network/network-crd.yml
+  kubectl apply -f network/crd.yml
   kubectl apply -f network
 EOF
