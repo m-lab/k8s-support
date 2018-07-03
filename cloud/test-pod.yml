@@ -3,6 +3,8 @@ kind: Pod
 metadata:
   name: poc-no-special-ip
 spec:
+  nodeSelector:
+    mlab/type: 'platform'
   containers:
   - name: poc-no-special-ip
     image: "busybox"
@@ -25,6 +27,8 @@ metadata:
           { "name": "flannel-conf" },
           { "name": "index2ip-conf" } ]'
 spec:
+  nodeSelector:
+    mlab/type: 'platform'
   containers:
   - name: poc-index4
     image: "busybox"

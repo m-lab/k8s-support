@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: only-node-exporter
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: only-node-exporter
+  template:
+    metadata:
+      labels:
+        run: only-node-exporter
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: only-node-exporter
+          image: prom/node-exporter
