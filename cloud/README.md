@@ -35,7 +35,7 @@ and our own [index2ip CNI IPAM plugin](https://github.com/m-lab/index2ip).
 
 # Kubernetes configs
 
-All the kubernetes configs for the master are stored under [k8s/]. They specify
+All the kubernetes configs for the master are stored under [../network/](../network/). They specify
 that all nodes with the label `mlab/type=cloud` run flannel in the standard way,
 and all nodes with the label `mlab/type=platform` run
 multus+flannel+ipvlan+index2ip in our custom way. If a node has no value for the
