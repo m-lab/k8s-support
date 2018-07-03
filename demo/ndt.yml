@@ -13,6 +13,9 @@ spec:
         run: ndt-cloud
       annotations:
         prometheus.io/scrape: 'true'
+        networks: '[
+          { "name": "flannel-conf" },
+          { "name": "index2ip-conf" } ]'
     spec:
 
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
