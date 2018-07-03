@@ -1,3 +1,21 @@
+This repo contains all of the scripts and configs required to set up the
+world-spanning M-Lab kubernetes (k8s) cluster.  The organization is as follows:
+- [cloud/](cloud/) contains all the scripts necessary to set up and configure
+  the cloud master node(s) as well as new nodes in Google cloud for monitoring
+  services and the like.
+- [network/](network/) contains files required for setting up the cluster
+  network. These configs should be first applied very early on in the cluster
+  setup process.
+- [node/](node/) contains files to set up platform nodes and have them join the
+  cluster.
+- [services/](services/) contains files required for internal services on the
+  platform (the node exporter, monitoring, etc).  These services should be
+  deployed after the master is set up and before any experiments are deployed.
+
+Once all of the above systems are working well:
+- [experiments/](experiments/) contains config files for each experiment
+  deployed on the platform.
+
 # Kubernetes (k8s) architecture
 
 In order to run, k8s needs:
@@ -19,12 +37,3 @@ Each machine that wants to be controlled by k8s (each Node) needs:
    container
 6. To install CNI and any relevant plugins to allocate IPs to containers
    appropriately
-
-
-# Allocate, set up, and start the MLab k8s servers
-
-See the [cloud/](cloud/) directory.
-
-# Set up the MLab platform nodes
-
-See the [node/](node/) directory.
