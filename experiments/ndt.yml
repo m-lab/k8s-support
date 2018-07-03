@@ -36,15 +36,15 @@ spec:
       nodeSelector:
         mlab/type: 'platform'
       containers:
-        - name: ndt-cloud
-          image: measurementlab/ndt-cloud:v0.1
-          ports:
-          - containerPort: 3010
-          - containerPort: 9090
-          volumeMounts:
-          - name: ndt-certificates
-            mountPath: /certs
-            readOnly: true
+      - name: ndt-cloud
+        image: measurementlab/ndt-cloud:v0.1
+        ports:
+        - containerPort: 3010
+        - containerPort: 9090
+        volumeMounts:
+        - name: ndt-certificates
+          mountPath: /certs
+          readOnly: true
       volumes:
       - name: ndt-certificates
         secret:
