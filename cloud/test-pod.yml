@@ -35,4 +35,3 @@ spec:
     command: ["top"]
     stdin: true
     tty: true
-
