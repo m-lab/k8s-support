@@ -135,7 +135,7 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
 EOF
 
 # Copy the network configs to the server.
-gcloud compute scp "${GCE_ARGS[@]}" --recurse k8s "${GCE_NAME}":.
+gcloud compute scp "${GCE_ARGS[@]}" --recurse ../network "${GCE_NAME}":network
 
 # This test pod is for dev convenience.
 # TODO: delete this once index2ip works well.
@@ -149,6 +149,6 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   set -euxo pipefail
   kubectl annotate node k8s-platform-master flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   kubectl label node k8s-platform-master mlab/type=cloud
-  kubectl apply -f k8s/network-crd.yml
-  kubectl apply -f k8s
+  kubectl apply -f network/network-crd.yml
+  kubectl apply -f network
 EOF
