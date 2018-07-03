@@ -19,8 +19,7 @@
 OUTPUT=$(mktemp -d --tmpdir=/tmp "$(date -Iseconds).$(basename $0).XXXXXXX")
 echo "$0" "$@" > "${OUTPUT}/cmdline"
 env > "${OUTPUT}/env"
-cat - \
-  | tee "${OUTPUT}/input" \
+tee "${OUTPUT}/input" \
   | (/opt/cni/bin/$(basename "$0") "$@" 2> "${OUTPUT}/stderr";
      echo $? > "${OUTPUT}/exitcode") \
   | tee "${OUTPUT}/output"
