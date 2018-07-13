@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: node-exporter
+  template:
+    metadata:
+      labels:
+        run: node-exporter
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter
+        args:
+        - --path.procfs=/host/proc
+        - --path.sysfs=/host/sys
+        - --collector.textfile.directory=/host/textfile
+        ports:
+        - containerPort: 9100
+          hostPort: 9100
+          name: scrape
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        - name: textfile
+          mountPath: /host/textfile
+          readOnly: true
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: textfile
+        hostPath:
+          path: /var/spool/node_exporter
+      hostNetwork: true
+      hostPID: true

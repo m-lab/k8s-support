@@ -83,7 +83,7 @@ done
 #
 # Commands derived from the "Ubuntu" instructions at
 #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
-gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -108,11 +108,11 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
       --restart always \
 	  measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
 
-  # Sets the kublet's cloud provider config to gce and points to a suitable config file.
-  sed -ie '|KUBELET_KUBECONFIG_ARGS=| s|"$| --cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"|' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-
   # Create a suitable cloud-config file for the cloud provider.
   echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
+
+  # Sets the kublet's cloud provider config to gce and points to a suitable config file.
+  sed -ie '/KUBELET_KUBECONFIG_ARGS=/ s|"$| --cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"|' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
   systemctl daemon-reload
   systemctl restart kubelet
@@ -127,8 +127,7 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
     --pod-network-cidr 192.168.0.0/16 \
-    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net,${EXTERNAL_IP} \
-    --cloud-provider gce
+    --apiserver-cert-extra-sans k8s-platform-master.${PROJECT}.measurementlab.net,${EXTERNAL_IP}
 EOF
 
 # Allow the user who installed k8s on the master to call kubectl.  As we
@@ -142,7 +141,7 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
 EOF
 
 # Copy the network configs to the server.
-gcloud compute scp "${GCE_ARGS[@]}" --recurse ../network "${GCE_NAME}":network
+gcloud compute scp "${GCE_ARGS[@]}" --recurse network "${GCE_NAME}":network
 
 # This test pod is for dev convenience.
 # TODO: delete this once index2ip works well.

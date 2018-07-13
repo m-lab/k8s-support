@@ -1,0 +1,67 @@
+# my global config
+global:
+  scrape_interval:     60s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 60s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+
+- job_name: 'prometheus'
+  static_configs:
+  - targets: ['localhost:9090']
+
+- job_name: 'kubernetes-pods'
+  kubernetes_sd_configs:
+  - role: pod
+
+  scheme: http
+  params:
+    collect[]: ['textfile', 'meminfo', 'loadavg', 'filesystem', 'diskstats']
+
+  relabel_configs:
+  # Check for the prometheus.io/scrape=true annotation.
+  - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+    action: keep
+    regex: true
+
+  # For inventory, record whether a pod is ready. This helps distinguish
+  # between: missing from inventory, not ready and failing, ready but
+  # failing, ready and working.
+  - source_labels: [__meta_kubernetes_pod_ready]
+    action: replace
+    target_label: ready
+
+  # Only keep containers that have a declared container port.
+  - source_labels: [__meta_kubernetes_pod_container_name]
+    action: replace
+    target_label: container
+
+  # Add the pod name
+  - source_labels: [__meta_kubernetes_pod_name]
+    action: replace
+    target_label: pod
+
+  # Add the node name.
+  - source_labels: [__meta_kubernetes_pod_node_name]
+    action: replace
+    target_label: node
+
+  # Don't scrape port 3010 on ndt-cloud pods
+  - source_labels: [__meta_kubernetes_pod_container_port_number]
+    action: drop
+    regex: 3010
+
