@@ -43,7 +43,10 @@ spec:
         hostPath:
           path: /sys
       - name: textfile
-        hostPath:
-          path: /var/spool/node_exporter
+        configMap:
+          name: demo-nodeexporter
+      #- name: textfile
+      #  hostPath:
+      #    path: /var/spool/node_exporter
       hostNetwork: true
       hostPID: true
