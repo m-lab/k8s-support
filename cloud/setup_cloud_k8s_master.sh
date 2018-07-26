@@ -112,12 +112,35 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
   systemctl restart kubelet
 EOF
 
+# Setup GCSFUSE to mount saved kubernetes/pki keys & certs.
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
+  sudo -s
+  set -euxo pipefail
+
+  export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
+  echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
+    | tee /etc/apt/sources.list.d/gcsfuse.list
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | apt-key add -
+
+  # Install the gcsfuse package.
+  apt-get update
+  apt-get install gcsfuse
+EOF
+
 # Become root and start everything
 # TODO: fix the pod-network-cidr to be something other than a range which could
 # potentially be intruded upon by GCP.
 gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
+
+  mkdir -p /etc/kubernetes/pki
+  cat <<FSTAB >> /etc/fstab
+k8s-platform-master-${PROJECT} /etc/kubernetes/pki gcsfuse ro,user,allow_other,implicit_dirs
+FSTAB
+  mount /etc/kubernetes/pki
+
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
     --pod-network-cidr 192.168.0.0/16 \
@@ -132,6 +155,11 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+  # Allow root to run kubectl also.
+  sudo mkdir -p /root/.kube
+  sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+  sudo chown $(id -u):$(id -g) /root/.kube/config
 EOF
 
 # Copy the network configs to the server.
