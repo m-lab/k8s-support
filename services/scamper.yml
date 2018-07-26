@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: scamper
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: scamper
+  template:
+    metadata:
+      labels:
+        run: scamper
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      containers:
+      - name: scamper
+        image: measurementlab/scamper
+      hostNetwork: true
+      hostPID: true
