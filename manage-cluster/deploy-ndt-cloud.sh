@@ -22,7 +22,8 @@ kubectl --kubeconfig ./admin.conf create secret generic ndt-certificates \
     --dry-run -o json | kubectl --kubeconfig ./admin.conf apply -f -
 
 # Create the ndt-cloud daemonset.
-kubectl --kubeconfig ./admin.conf apply -f ndt.yml
+kubectl --kubeconfig ./admin.conf apply \
+    -f ../k8s/mlab-platform/daemonsets/ndt-cloud.yml
 
 # Report the new daemonsets.
 kubectl --kubeconfig ./admin.conf get daemonsets
