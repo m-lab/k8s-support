@@ -1,0 +1,97 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: ndt-cloud-index2
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      run: ndt-cloud
+  template:
+    metadata:
+      labels:
+        run: ndt-cloud
+      annotations:
+        prometheus.io/scrape: 'true'
+        networks: '[
+          { "name": "flannel-conf" },
+          { "name": "index2ip-conf" } ]'
+    spec:
+
+      # The default grace period after k8s sends SIGTERM is 30s. We extend the
+      # grace period to give time for the following shutdown sequence. After the
+      # grace period, kubernetes sends SIGKILL.
+      #
+      # NDT pod shutdown sequence:
+      #
+      #  * k8s sends SIGTERM to NDT server
+      #  * NDT server enables lame duck status
+      #  * monitoring reads lame duck status (60s max)
+      #  * mlab-ns updates server status (60s max)
+      #  * all currently running tests complete. (30s max)
+      #
+      # TODO: enable before receiving production traffic.
+      # terminationGracePeriodSeconds: 150
+
+      nodeSelector:
+        mlab/type: 'platform'
+      containers:
+      - name: ndt-cloud
+        image: measurementlab/ndt-cloud:v0.2
+        ports:
+        - containerPort: 3010
+        - containerPort: 9090
+        volumeMounts:
+        - name: ndt-certificates
+          mountPath: /certs
+          readOnly: true
+      - name: busybox
+        image: busybox
+        command: ["top"]
+        volumeMounts:
+        - name: pusher-credentials
+          mountPath: /etc/credentials
+          readOnly: true
+      - name: fast-sidestream
+        image: measurementlab/tcp-info:latest
+        volumeMounts:
+        - name: fast-sidestream-data
+          mountPath: /home
+      - name: pusher
+        image: measurementlab/pusher:v1
+        env:
+        - name: DIRECTORY
+          value: /var/spool/fast-sidestream
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/credentials/pusher.json
+        - name: BUCKET
+          value: dropbox-mlab-sandbox
+        - name: EXPERIMENT
+          value: fast-sidestream
+        - name: ARCHIVE_SIZE_THRESHOLD
+          value: 1MB
+        # TODO: specify the node & site names using kubernetes magic.
+        volumeMounts:
+        - name: fast-sidestream-data
+          mountPath: /var/spool/fast-sidestream
+        - name: pusher-credentials
+          mountPath: /etc/credentials
+          readOnly: true
+
+      initContainers:
+      # TODO: this is a hack. Remove the hack by fixing the content of resolv.conf
+      - name: fix-resolv-conf
+        image: busybox
+        command: ['sh', '-c', 'echo "nameserver 8.8.8.8" > /etc/resolv.conf']
+
+      volumes:
+      - name: fast-sidestream-data
+        hostPath:
+          path: /cache/core/fast-sidestream
+          type: DirectoryOrCreate
+      - name: pusher-credentials
+        secret:
+          secretName: pusher-credentials
+      - name: ndt-certificates
+        secret:
+          secretName: ndt-certificates
