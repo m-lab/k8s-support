@@ -20,8 +20,6 @@ spec:
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
       volumes:
       - name: scamper-data
         hostPath:
