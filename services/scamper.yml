@@ -3,6 +3,16 @@ kind: DaemonSet
 metadata:
   name: scamper
   namespace: default
+volumeMounts:
+  name: scamper-data
+  mountPath: /var/spool/scamper/
+  name: varlibdockercontainers
+  mountPath: /var/lib/docker/containers
+volumes:
+  name: scamper-data
+  hostPath:
+    path: /cache/core/scamper
+    type: DirectoryOrCreate
 spec:
   selector:
     matchLabels:
