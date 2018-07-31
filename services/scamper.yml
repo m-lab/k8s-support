@@ -3,16 +3,6 @@ kind: DaemonSet
 metadata:
   name: scamper
   namespace: default
-volumeMounts:
-  name: scamper-data
-  mountPath: /var/spool/scamper/
-  name: varlibdockercontainers
-  mountPath: /var/lib/docker/containers
-volumes:
-  name: scamper-data
-  hostPath:
-    path: /cache/core/scamper
-    type: DirectoryOrCreate
 spec:
   selector:
     matchLabels:
@@ -27,5 +17,17 @@ spec:
       containers:
       - name: scamper
         image: measurementlab/scamper
+        args: ["python", "/scamper.py", "--logpath", "/var/spool/scamper"]
+        volumeMounts:
+        - name: scamper-data
+          mountPath: /var/spool/scamper/
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+      volumes:
+      - name: scamper-data
+        hostPath:
+          path: /cache/core/scamper
+          type: DirectoryOrCreate
+
       hostNetwork: true
       hostPID: true
