@@ -17,7 +17,8 @@ spec:
       containers:
       - name: scamper
         image: measurementlab/scamper
-        args: ["python", "/scamper.py", "--logpath", "/var/spool/scamper"]
+        args:
+        - --logpath=/var/spool/scamper
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
