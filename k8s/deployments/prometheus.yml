@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-server
+  labels:
+    run: prometheus-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: prometheus-server
+  template:
+    metadata:
+      labels:
+        run: prometheus-server
+      annotations:
+        # Tell prometheus service discovery to scrape the pod containers.
+        prometheus.io/scrape: 'true'
+    spec:
+      serviceAccountName: prometheus
+      nodeSelector:
+        mlab/type: cloud
+        prometheus-node: 'true'
+      containers:
+      - name: prometheus-server
+        image: prom/prometheus:v2.3.1
+        args: ["--config.file=/etc/prometheus/prometheus-config.yml",
+               "--web.enable-lifecycle"]
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config
+          mountPath: /etc/prometheus/
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config

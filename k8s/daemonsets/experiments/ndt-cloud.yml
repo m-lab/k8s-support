@@ -37,7 +37,7 @@ spec:
         mlab/type: 'platform'
       containers:
       - name: ndt-cloud
-        image: measurementlab/ndt-cloud:v0.1
+        image: measurementlab/ndt-cloud:v0.2
         ports:
         - containerPort: 3010
         - containerPort: 9090

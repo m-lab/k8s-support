@@ -83,7 +83,7 @@ done
 #
 # Commands derived from the "Ubuntu" instructions at
 #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
-gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -108,8 +108,30 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
       --restart always \
 	  measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
 
+  # Create a suitable cloud-config file for the cloud provider.
+  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
+
+  # Sets the kublet's cloud provider config to gce and points to a suitable config file.
+  sed -ie '/KUBELET_KUBECONFIG_ARGS=/ s|"$| --cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"|' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
   systemctl daemon-reload
   systemctl restart kubelet
+EOF
+
+# Setup GCSFUSE to mount saved kubernetes/pki keys & certs.
+gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
+  sudo -s
+  set -euxo pipefail
+
+  export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
+  echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
+    | tee /etc/apt/sources.list.d/gcsfuse.list
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | apt-key add -
+
+  # Install the gcsfuse package.
+  apt-get update
+  apt-get install gcsfuse
 EOF
 
 # Become root and start everything
@@ -118,6 +140,13 @@ EOF
 gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-EOF
   sudo -s
   set -euxo pipefail
+
+  mkdir -p /etc/kubernetes/pki
+  cat <<FSTAB >> /etc/fstab
+k8s-platform-master-${PROJECT} /etc/kubernetes/pki gcsfuse ro,user,allow_other,implicit_dirs
+FSTAB
+  mount /etc/kubernetes/pki
+
   kubeadm init \
     --apiserver-advertise-address ${EXTERNAL_IP} \
     --pod-network-cidr 192.168.0.0/16 \
@@ -132,10 +161,15 @@ gcloud compute ssh "${GCE_ARGS[@]}" "${GCE_NAME}" <<-\EOF
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+  # Allow root to run kubectl also.
+  sudo mkdir -p /root/.kube
+  sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+  sudo chown $(id -u):$(id -g) /root/.kube/config
 EOF
 
 # Copy the network configs to the server.
-gcloud compute scp "${GCE_ARGS[@]}" --recurse ../network "${GCE_NAME}":network
+gcloud compute scp "${GCE_ARGS[@]}" --recurse network "${GCE_NAME}":network
 
 # This test pod is for dev convenience.
 # TODO: delete this once index2ip works well.

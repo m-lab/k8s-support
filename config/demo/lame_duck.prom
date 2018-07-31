@@ -1,0 +1,6 @@
+# HELP lame_duck_node Whether node is in lame-duck mode. 1 is yes, 0 is no.
+# TYPE lame_duck_node gauge
+lame_duck_node{lameduck="true"} 1
+# HELP lame_duck_experiment Whether an experiment is in lame-duck mode. 1 is yes, 0 is no.
+# TYPE lame_duck_experiment gauge
+lame_duck_experiment{experiment="ndt.iupui", lameduck="true"} 1
