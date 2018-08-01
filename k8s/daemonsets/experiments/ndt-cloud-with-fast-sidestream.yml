@@ -37,7 +37,7 @@ spec:
         mlab/type: 'platform'
       containers:
       - name: ndt-cloud
-        image: measurementlab/ndt-cloud:v0.2
+        image: measurementlab/ndt-cloud:v0.3
         ports:
         - containerPort: 3010
         - containerPort: 9090
@@ -58,18 +58,21 @@ spec:
         - name: fast-sidestream-data
           mountPath: /home
       - name: pusher
-        image: measurementlab/pusher:v1
+        image: measurementlab/pusher:v1.0
         env:
         - name: DIRECTORY
           value: /var/spool/fast-sidestream
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
         - name: BUCKET
-          value: dropbox-mlab-sandbox
+          valueFrom:
+            configMapKeyRef:
+              name: pusher-dropbox
+              key: bucket
         - name: EXPERIMENT
           value: fast-sidestream
         - name: ARCHIVE_SIZE_THRESHOLD
-          value: 1MB
+          value: 10MB
         # TODO: specify the node & site names using kubernetes magic.
         volumeMounts:
         - name: fast-sidestream-data
