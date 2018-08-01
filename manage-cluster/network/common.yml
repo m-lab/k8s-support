@@ -112,6 +112,8 @@ data:
   # This file should not contain any index2ip stuff. It is the backup config
   # for when multus isn't working or a pod is not tagged with any network
   # stuff.
+  # TODO: remove index2ip after resolving
+  # https://github.com/m-lab/k8s-support/issues/69
   platform-node-cni-conf.json: |
     {
       "name": "multus-network",
@@ -125,6 +127,14 @@ data:
             "isDefaultGateway": false
           },
           "masterplugin": true
+        },
+        {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip"
+           }
         }
       ]
     }
