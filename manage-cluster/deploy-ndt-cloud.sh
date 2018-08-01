@@ -4,8 +4,10 @@
 
 set -uxe
 
+PROJECT=${1:-mlab-sandbox}
+
 # TODO: replace with an allocation of per-user credentials.
-gcloud compute ssh k8s-platform-master \
+gcloud --project ${PROJECT} compute ssh k8s-platform-master \
     --command "sudo cat /etc/kubernetes/admin.conf" > admin.conf
 
 # Report the current daemonsets.
@@ -21,9 +23,23 @@ kubectl --kubeconfig ./admin.conf create secret generic ndt-certificates \
     "--from-file=certs" \
     --dry-run -o json | kubectl --kubeconfig ./admin.conf apply -f -
 
+if [[ ! -f pusher/pusher-${PROJECT}.json ]] ; then
+    echo "ERROR: missing service account credentials for pusher-$PROJECT.json"
+	exit 1
+fi
+kubectl --kubeconfig ./admin.conf create secret generic pusher-credentials \
+    --from-file=pusher.json=pusher/pusher-${PROJECT}.json \
+    --dry-run -o json | kubectl --kubeconfig ./admin.conf apply -f -
+
+
+# Create the per-project destination BUCKET name for pusher.
+kubectl --kubeconfig ./admin.conf create configmap pusher-dropbox \
+    --from-literal=bucket=dropbox-${PROJECT} \
+    --dry-run -o json | kubectl --kubeconfig ./admin.conf apply -f -
+
 # Create the ndt-cloud daemonset.
 kubectl --kubeconfig ./admin.conf apply \
-    -f ../k8s/mlab-platform/daemonsets/ndt-cloud.yml
+    -f ../k8s/daemonsets/experiments/ndt-cloud-with-fast-sidestream.yml
 
 # Report the new daemonsets.
 kubectl --kubeconfig ./admin.conf get daemonsets
