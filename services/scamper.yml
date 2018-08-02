@@ -21,7 +21,7 @@ spec:
         - name: scamper-data
           mountPath: /var/spool/scamper/
       - name: pusher
-        image: measurementlab/pusher:latest
+        image: measurementlab/pusher:v1.0
         env:
         - name: DIRECTORY
           value: /var/spool/scamper
@@ -34,6 +34,9 @@ spec:
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper
+        - name: credentials
+          mountPath: /etc/credentials
+          readOnly: true
       volumes:
       - name: scamper-data
         hostPath:
