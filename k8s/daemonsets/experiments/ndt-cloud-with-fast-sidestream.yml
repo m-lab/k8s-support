@@ -54,11 +54,14 @@ spec:
           readOnly: true
       - name: fast-sidestream
         image: measurementlab/tcp-info:latest
+        args:
+         - /usr/local/bin/tcp-info
+         - -prom=9797
         volumeMounts:
         - name: fast-sidestream-data
           mountPath: /home
       - name: pusher
-        image: measurementlab/pusher:v1.0
+        image: measurementlab/pusher:v1.1
         env:
         - name: DIRECTORY
           value: /var/spool/fast-sidestream
@@ -73,6 +76,11 @@ spec:
           value: fast-sidestream
         - name: ARCHIVE_SIZE_THRESHOLD
           value: 10MB
+        - name: MLAB_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
         # TODO: specify the node & site names using kubernetes magic.
         volumeMounts:
         - name: fast-sidestream-data
