@@ -75,7 +75,7 @@ spec:
         - name: EXPERIMENT
           value: fast-sidestream
         - name: ARCHIVE_SIZE_THRESHOLD
-          value: 10MB
+          value: 1MB
         - name: MLAB_NODE_NAME
           valueFrom:
             fieldRef:
