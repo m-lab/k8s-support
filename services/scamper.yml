@@ -20,6 +20,20 @@ spec:
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
+      - name: pusher
+        image: measurementlab/pusher:latest
+        env:
+        - name: DIRECTORY
+          value: /var/spool/scamper
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/credentials/pusher.json
+        - name: BUCKET
+          value: dropbox-mlab-sandbox
+        - name: EXPERIMENT
+          value: scamper
+        volumeMounts:
+        - name: scamper-data
+          mountPath: /var/spool/scamper
       volumes:
       - name: scamper-data
         hostPath:
