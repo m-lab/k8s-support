@@ -20,6 +20,9 @@ spec:
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
+        - name: credentials
+          mountPath: /etc/credentials
+          readOnly: true
       - name: pusher
         image: measurementlab/pusher:v1.0
         env:
