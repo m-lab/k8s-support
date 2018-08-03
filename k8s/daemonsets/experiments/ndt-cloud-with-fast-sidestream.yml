@@ -53,7 +53,7 @@ spec:
           mountPath: /etc/credentials
           readOnly: true
       - name: fast-sidestream
-        image: measurementlab/tcp-info:latest
+        image: measurementlab/tcp-info:prod-v0.0.1a
         args:
          - /usr/local/bin/tcp-info
          - -prom=9797
