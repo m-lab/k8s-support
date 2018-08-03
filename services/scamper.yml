@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: scamper
-        image: measurementlab/scamper:v1.0
+        image: measurementlab/scamper:v1.1
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
