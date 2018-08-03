@@ -24,7 +24,7 @@ spec:
           mountPath: /etc/credentials
           readOnly: true
       - name: pusher
-        image: measurementlab/pusher:v1.0
+        image: measurementlab/pusher:v1.1
         env:
         - name: DIRECTORY
           value: /var/spool/scamper
@@ -34,6 +34,10 @@ spec:
           value: dropbox-mlab-sandbox
         - name: EXPERIMENT
           value: scamper
+        - name: MLAB_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper
