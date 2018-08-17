@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: scamper
-        image: measurementlab/scamper:v1.83
+        image: measurementlab/scamper:v2.0
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
@@ -57,4 +57,3 @@ spec:
           secretName: pusher-credentials
 
       hostNetwork: true
-      hostPID: true
