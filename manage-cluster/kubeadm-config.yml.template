@@ -1,0 +1,24 @@
+apiVersion: kubeadm.k8s.io/v1alpha2
+kind: MasterConfiguration
+kubernetesVersion: v1.11.1
+apiServerCertSANs:
+- "k8s-platform-lb.{{PROJECT}}.measurementlab.net"
+api:
+    controlPlaneEndpoint: "k8s-platform-lb.{{PROJECT}}.measurementlab.net:6443"
+etcd:
+  local:
+    extraArgs:
+      listen-client-urls: "https://127.0.0.1:2379,https://{{EXTERNAL_IP}}:2379"
+      advertise-client-urls: "https://{{EXTERNAL_IP}}:2379"
+      listen-peer-urls: "https://{{EXTERNAL_IP}}:2380"
+      initial-advertise-peer-urls: "https://{{EXTERNAL_IP}}:2380"
+      initial-cluster: "{{MASTER_NAME}}.{{PROJECT}}.measurementlab.net=https://{{EXTERNAL_IP}}:2380"
+    serverCertSANs:
+    - {{MASTER_NAME}}.{{PROJECT}}.measurementlab.net
+    - {{EXTERNAL_IP}}
+    peerCertSANs:
+    - {{MASTER_NAME}}.{{PROJECT}}.measurementlab.net
+    - {{EXTERNAL_IP}}
+networking:
+    # This CIDR is a Calico default. Substitute or remove for your CNI provider.
+    podSubnet: "192.168.0.0/16"
