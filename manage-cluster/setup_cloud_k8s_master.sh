@@ -14,11 +14,7 @@ set -euxo pipefail
 
 USAGE="$0 <cloud project>"
 PROJECT=${1:?Please provide the cloud project: ${USAGE}}
-REGION=${GOOGLE_CLOUD_REGION:-us-central1}
-ZONE=${GOOGLE_CLOUD_ZONE:-us-central1-c}
-K8S_MASTER_COUNT=3
 GCE_BASE_NAME=k8s-platform-master
-GCE_IP_BASE_NAME=k8s-platform-master-ip
 GCE_IMAGE_FAMILY="ubuntu-1804-lts"
 GCE_IMAGE_PROJECT="ubuntu-os-cloud"
 GCE_DISK_SIZE="10"
@@ -26,6 +22,11 @@ GCE_DISK_TYPE="pd-standard"
 GCE_NETWORK="epoxy-extension-private-network"
 GCE_NET_TAGS="dmz" # Comma separate list
 GCE_TYPE="n1-standard-2"
+# NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
+# If we want more redundancy than GCP zones offer, then we'll need to figure out
+# some way to use a proxying load balancer.
+GCE_ZONES="us-central1-a us-central1-b us-central1-c"
+GCE_LB_ZONE="us-central1-c"
 
 # Put gcloud in the PATH when on Travis.
 if [[ ${TRAVIS:-false} == true ]]; then
@@ -44,102 +45,108 @@ fi
 # Arrays of arguments are slightly cumbersome but using them ensures that if a
 # space ever appears in an arg, then later usage of these values should not
 # break in strange ways.
-GCP_ARGS=("--project=${PROJECT}")
-GCE_ARGS=("${GCP_ARGS[@]}" "--zone=${ZONE}")
+GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
 # Create an IP for the load balancer and store the address.
-LB_IP_NAME="${GCE_IP_BASE_NAME}-lb"
-EXISTING_LB_IP=$(gcloud compute "${GCP_ARGS[@]}" addresses list
-    --filter "name=${LB_IP_NAME}" --filter "region:${REGION}"
-    --format "value(address)" || true)
+EXISTING_LB_IP=$(gcloud compute addresses list \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --format "value(address)" "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_LB_IP}" ]]; then
   LOAD_BALANCER_IP=$EXISTING_LB_IP
 else
-  gcloud compute "${GCP_ARGS[@]}" addresses create "${LB_IP_NAME}"
-  LOAD_BALANCER_IP=$(gcloud compute "${GCP_ARGS[@]}" addresses list
-      --filter "name=${LB_IP_NAME}" --filter "region:${REGION}"
-      --format "value(address)")
+  gcloud compute addresses create "${GCE_BASE_NAME}" \
+      --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
+  LOAD_BALANCER_IP=$(gcloud compute addresses list \
+      --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+      --format "value(address)" "${GCP_ARGS[@]}")
 fi
 
-# Set up the DNS name for the load balander IP, first deleting any record that
-# may exist with the same name.
-gcloud dns "${GCP_ARGS[@]}" record-sets transaction start \
-    --zone "${PROJECT}-measurementlab-net"
-gcloud dns "${GCP_ARGS[@]}" record-sets transaction delete \
+# Check the value of the existing IP address associated with the load balancer
+# IP's name. If it's the same as the current/existing IP, then leave DNS alone,
+# else delete the existing DNS RR and create a new one.
+EXISTING_LB_DNS_IP=$(gcloud dns record-sets list \
     --zone "${PROJECT}-measurementlab-net" \
-    --name "${GCE_BASE_NAME}-lb.${PROJECT}.measurementlab.net."
-gcloud dns "${GCP_ARGS[@]}" record-sets transaction add \
-    --zone "${PROJECT}-measurementlab-net" \
-    --name "${GCE_BASE_NAME}-lb.${PROJECT}.measurementlab.net." \
-    --type A "${LOAD_BALANCER_IP}" --ttl 300
-$ gcloud dns "${GCP_ARGS[@]}" record-sets transaction execute \
-    --zone "${PROJECT}-measurementlab-net"
+    --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+    --format "value(rrdatas[0])" "${GCP_ARGS[@]}")
+
+if [[ "${EXISTING_LB_DNS_IP}" != "${EXISTING_LB_IP}" ]]; then
+  gcloud dns record-sets transaction start \
+      --zone "${PROJECT}-measurementlab-net" "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction remove \
+      --zone "${PROJECT}-measurementlab-net" \
+      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --type A --ttl 300 "${EXISTING_LB_DNS_IP}" "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction add \
+      --zone "${PROJECT}-measurementlab-net" \
+      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --type A --ttl 300 "${LOAD_BALANCER_IP}" "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction execute \
+      --zone "${PROJECT}-measurementlab-net" "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing forwarding rule. We do this before working with the
+# target pool because any existing target pool cannot be deleted when an
+# existing fowarding rule is using it.
+EXISTING_FWD=$(gcloud compute forwarding-rules list \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --format "value(creationTimestamp)" "${GCP_ARGS[@]}")
+if [[ -n "${EXISTING_FWD}" ]]; then
+  gcloud compute forwarding-rules delete "${GCE_BASE_NAME}" \
+      --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
+fi
 
 # Create a target pool for the load balancer. If one already exists, then delete
 # it and recreate it, since we don't know which GCE instances were attached to
-# it before.
-TP_NAME="${GCE_BASE_NAME}-tp"
-EXISTING_TP=$(gcloud compute "${GCP_ARGS[@]}" target-pools list
-    --filter "name=${TP_NAME}" --filter "region:${REGION}" || true)
+# the existing one.
+EXISTING_TP=$(gcloud compute target-pools list \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --format "value(creationTimestamp)" "${GCP_ARGS[@]}" || true)
 if [[ -n "$EXISTING_TP" ]]; then
-  gcloud compute "${GCP_ARGS[@]}" target-pools delete "$TP_NAME" \
-      --region us-central1
+  gcloud compute target-pools delete "${GCE_BASE_NAME}" \
+      --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
 fi
-gcloud compute "${GCP_ARGS[@]}" target-pools create "$TP_NAME" \
-    --region us-central1
+gcloud compute target-pools create "${GCE_BASE_NAME}" \
+    --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
 
-# Add our GCE instances to the target pool.
-TP_INSTANCES=$(
-  for i in $(seq	1 $K8S_MASTER_COUNT); do
-    echo -n "${GCE_BASE_NAME}${idx},"
-  done
-)
-gcloud compute "${GCP_ARGS[@]}" target-pools add-instances "${TP_NAME}" \
-	  --instances "${TP_INSTANCES}" --instances-zone "${ZONE}" 
+# [Re]create the forwarding rule using the target pool we just create.
+gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
+    --region "${GCE_LB_ZONE%-*}" --ports 6443 --address "${GCE_BASE_NAME}" \
+    --target-pool "${GCE_BASE_NAME}" "${GCP_ARGS[@]}"
 
-# [Re]create the forwarding rules.
-FWD_NAME="${GCE_BASE_NAME}-fwd"
-EXISTING_FWD=$(gcloud compute "${GCP_ARGS[@]}" forwarding-rules describe
-    "${FWD_NAME}" --region "${REGION}")
-if [[ -n "${EXISTING_FWD}" ]]; then
-  gcloud compute "${GCP_ARGS[@]}" forwarding-rules delete "$FWD_NAME" \
-      --region "${REGION}"
-fi
-gcloud compute "${GCP_ARGS[@]}" forwarding-rules create "${FWD_NAME}" \
-    --region "${REGION}" --ports 6443 --address "${LB_IP_NAME}" \
-    --target-pool "${TP_NAME}"
+#
+# Create one GCE instance for each of $GCE_ZONES defined.
+#
+for zone in $GCE_ZONES; do
 
+  GCE_ARGS=("--zone=${zone}" "${GCP_ARGS[@]}")
 
-
-
-
-for idx in $(seq 1 $K8S_MASTER_COUNT); do
-
-	gce_name="${GCE_BASE_NAME}${idx}"
-  gce_ip_name="${GCE_IP_BASE_NAME}${idx}"
+  gce_name="${GCE_BASE_NAME}-${zone}"
 
   # If an existing GCE instance with this name exists, delete it and recreate
   # it. If this script is being run then we want to start fresh.
-  EXISTING_INSTANCE=$(gcloud compute instances list "${GCP_ARGS[@]}"
-        --filter "name=${gce_name}" || true)
+  EXISTING_INSTANCE=$(gcloud compute instances list \
+      --filter "name=${gce_name} AND zone:${zone}" \
+      --format "value(creationTimestamp)" "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_INSTANCE}" ]]; then
-    gcloud compute instances delete "${GCE_ARGS[@]}" "${gce_name}" --quiet
+    gcloud compute instances delete "${gce_name}" "${GCE_ARGS[@]}"
   fi
 
   # Create a static IP for the GCE instance, or use the one that already exists.
-  EXISTING_IP=$(gcloud compute "${GCP_ARGS[@]}" addresses list
-        --filter "name=${gce_ip_name}" --format "value(address)" || true)
+  EXISTING_IP=$(gcloud compute addresses list \
+      --filter "name=${gce_name} AND region:${zone%-*}" \
+      --format "value(address)" "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_IP}" ]]; then
-    EXTERNAL_IP=$EXISTING_IP
+    EXTERNAL_IP="${EXISTING_IP}"
   else
-		gcloud compute "${GCE_ARGS[@]}" addresses create "${gce_ip_name}"
-    EXTERNAL_IP=$(gcloud compute "${GCP_ARGS[@]}" addresses list
-          --filter "name=${gce_ip_name}" --format "value(address)")
+    gcloud compute addresses create "${gce_name}" --region "${zone%-*}" \
+        "${GCP_ARGS[@]}"
+    EXTERNAL_IP=$(gcloud compute addresses list \
+        --filter "name=${gce_name} AND region:${zone%-*}" \
+        --format "value(address)" "${GCP_ARGS[@]}")
   fi
 
   # [Re]create the new GCE instance.
   gcloud compute instances create "${gce_name}" \
-    "${GCE_ARGS[@]}" \
     --image-family "${GCE_IMAGE_FAMILY}" \
     --image-project "${GCE_IMAGE_PROJECT}" \
     --boot-disk-size "${GCE_DISK_SIZE}" \
@@ -148,14 +155,15 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     --network "${GCE_NETWORK}" \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
-    --address "${EXTERNAL_IP}"
+    --address "${EXTERNAL_IP}" \
+    "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
   #  been multiple instances of it connecting just once and then failing again for
   #  a bit.
-  until gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" --command true && \
+  until gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}" && \
         sleep 10 && \
-        gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" --command true; do
+        gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}"; do
     echo Waiting for "${gce_name}" to boot up.
     # Refresh keys in case they changed mid-boot. They change as part of the
     # GCE bootup process, and it is possible to ssh at the precise moment a
@@ -165,6 +173,15 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     # Same root cause as the need to ssh twice in the loop condition above.
     gcloud compute config-ssh "${GCP_ARGS[@]}"
   done
+
+  # Get the instances internal IP address.
+  INTERNAL_IP=$(gcloud compute instances list \
+      --filter "name=${gce_name} AND zone:${zone}" \
+      --format "value(networkInterfaces[0].networkIP)" "${GCP_ARGS[@]}")
+
+  # Add the instance to our target pool.
+  gcloud compute target-pools add-instances "${GCE_BASE_NAME}" \
+      --instances "${gce_name}" --instances-zone "${zone}" "${GCP_ARGS[@]}"
 
   # Become root and install everything.
   #
@@ -209,7 +226,7 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
 
     systemctl daemon-reload
     systemctl restart kubelet
-  EOF
+EOF
 
   # Setup GCSFUSE to mount saved kubernetes/pki keys & certs.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-\EOF
@@ -225,7 +242,10 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     # Install the gcsfuse package.
     apt-get update
     apt-get install gcsfuse
-  EOF
+EOF
+
+  # Copy the kubeadm config template to the server.
+  gcloud compute scp kubeadm-config.yml.template "${gce_name}": "${GCE_ARGS[@]}"
 
   # Become root and start everything
   # TODO: fix the pod-network-cidr to be something other than a range which could
@@ -239,14 +259,15 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     mount /etc/kubernetes/pki
 
     # Create the kubeadm config from the template
-    sed -e 's|{{PROJECT}}|'${PROJECT}'|g \
-        -e 's|{{EXTERNAL_IP}}|'${EXTERNAL_IP}'|g \
-        -e 's|{{MASTER_NAME}}|'${gce_name}'|g \
+    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+        -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
+        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
+        -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
 
     kubeadm init --config ./kubeadm-config.yml
-  EOF
+EOF
 
   # Allow the user who installed k8s on the master to call kubectl.  As we
   # productionize this process, this code should be deleted.
@@ -261,7 +282,7 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u):$(id -g) /root/.kube/config
-  EOF
+EOF
 
   # Copy the network configs to the server.
   gcloud compute scp "${GCE_ARGS[@]}" --recurse network "${gce_name}":network
@@ -280,6 +301,6 @@ for idx in $(seq 1 $K8S_MASTER_COUNT); do
     kubectl label node ${gce_name} mlab/type=cloud
     kubectl apply -f network/crd.yml
     kubectl apply -f network
-  EOF
+EOF
 
 done
