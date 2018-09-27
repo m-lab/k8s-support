@@ -8,17 +8,19 @@ api:
 etcd:
   local:
     extraArgs:
+      name: {{MASTER_NAME}}
       listen-client-urls: "https://127.0.0.1:2379,https://{{INTERNAL_IP}}:2379"
       advertise-client-urls: "https://{{EXTERNAL_IP}}:2379"
       listen-peer-urls: "https://{{INTERNAL_IP}}:2380"
       initial-advertise-peer-urls: "https://{{EXTERNAL_IP}}:2380"
-      initial-cluster: "{{MASTER_NAME}}.{{PROJECT}}.measurementlab.net=https://{{INTERNAL_IP}}:2380"
+      initial-cluster: "{{ETCD_INITIAL_CLUSTER}}"
+      initial-cluster-state: "{{ETCD_CLUSTER_STATE}}"
     serverCertSANs:
-    - {{MASTER_NAME}}.{{PROJECT}}.measurementlab.net
-    - {{EXTERNAL_IP}}
+    - {{MASTER_NAME}}.c.{{PROJECT}}.internal
+    - {{INTERNAL_IP}}
     peerCertSANs:
-    - {{MASTER_NAME}}.{{PROJECT}}.measurementlab.net
-    - {{EXTERNAL_IP}}
+    - {{MASTER_NAME}}.c.{{PROJECT}}.internal
+    - {{INTERNAL_IP}}
 networking:
     # This CIDR is a Calico default. Substitute or remove for your CNI provider.
     podSubnet: "192.168.0.0/16"
