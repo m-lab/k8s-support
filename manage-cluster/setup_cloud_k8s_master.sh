@@ -27,6 +27,7 @@ GCE_TYPE="n1-standard-2"
 # some way to use a proxying load balancer.
 GCE_ZONES="us-central1-a us-central1-b us-central1-c"
 GCE_LB_ZONE="us-central1-c"
+K8S_CERTS_KEYS="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
 
 # Delete any  temporary files from a previous run.
 rm -f transaction.yaml
@@ -344,9 +345,9 @@ EOF
   # The etcd config 'initial-cluster:' is additive as we continue to add new
   # instances to the cluster.
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    ETCD_INITIAL_CLUSTER="${gce_name}=https://${EXTERNAL_IP}:2380"
+    ETCD_INITIAL_CLUSTER="${gce_name}=https://${INTERNAL_IP}:2380"
   else
-    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${gce_name}=https://${EXTERNAL_IP}:2380"
+    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${gce_name}=https://${INTERNAL_IP}:2380"
   fi
 
   # Mount the PKI directory with keys and certs.
@@ -372,7 +373,6 @@ EOF
 
       # Create the kubeadm config from the template
       sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-          -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
           -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
           -e 's|{{MASTER_NAME}}|${gce_name}|g' \
           -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
@@ -394,7 +394,10 @@ EOF
 EOF
   else
     gcloud compute scp ./admin.conf "${gce_name}": "${GCE_ARGS[@]}"
-    gcloud compute scp --recurse pki "${gce_name}":pki/ "${GCE_ARGS[@]}"
+    gcloud compute ssh "${gce_name}" --command "mkdir -p pki/etcd" "${GCE_ARGS[@]}"
+    for f in ${K8S_CERTS_KEYS}; do
+        gcloud compute scp pki/$f "${gce_name}":pki/$f "${GCE_ARGS[@]}"
+    done
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
       sudo -s
       set -euxo pipefail
@@ -403,11 +406,11 @@ EOF
       # to something more secure.
       chmod 600 ./admin.conf
       mv ./admin.conf /etc/kubernetes/
-
+ 
       # chmod all keys to 600.
-      for f in $(find ./pki); do
-        if [[ ${f} == *.key ]]; then
-          chmod 600 ${f}
+      for f in \$(find ./pki); do
+        if [[ \${f} == *.key ]]; then
+          chmod 600 \${f}
         fi
       done
       mv ./pki /etc/kubernetes
@@ -417,7 +420,6 @@ EOF
 
       # Create the kubeadm config from the template
       sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-          -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
           -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
           -e 's|{{MASTER_NAME}}|${gce_name}|g' \
           -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
