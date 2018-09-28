@@ -27,12 +27,12 @@ GCE_TYPE="n1-standard-2"
 # some way to use a proxying load balancer.
 GCE_ZONES="us-central1-a us-central1-b us-central1-c"
 GCE_LB_ZONE="us-central1-c"
-K8S_CERTS_KEYS="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
+K8S_VERSION="1.11.1"
+K8S_CA_FILES="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
+K8S_PKI_DIR="/tmp/kubernetes-pki"
 
-# Delete any  temporary files from a previous run.
-rm -f transaction.yaml
-rm -rf pki
-rm -f admin.conf
+# Delete any temporary files and dirs from a previous run.
+rm -rf setup_k8s.sh transaction.yaml
 
 # Put gcloud in the PATH when on Travis.
 if [[ ${TRAVIS:-false} == true ]]; then
@@ -45,6 +45,12 @@ fi
 # Error out if gcloud is unavailable.
 if ! which gcloud; then
   echo "The google-cloud-sdk must be installed and gcloud in your path."
+  exit 1
+fi
+
+# Error out if gsutil is unavailable.
+if ! which gsutil; then
+  echo "The google-cloud-sdk must be installed and gsutil in your path."
   exit 1
 fi
 
@@ -134,7 +140,6 @@ gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
 #
 # Create one GCE instance for each of $GCE_ZONES defined.
 #
-
 ETCD_CLUSTER_STATE="new"
 ETCD_INITIAL_CLUSTER=""
 FIRST_INSTANCE_NAME=""
@@ -214,6 +219,7 @@ for zone in $GCE_ZONES; do
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
+    --scopes "storage-full" \
     "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
@@ -259,7 +265,7 @@ for zone in $GCE_ZONES; do
   # is too hard to hack on for a place in which to build an alpha system.  The
   # below commands work on Ubuntu.
   #
-  # Commands derived from the "Ubuntu" instructions at
+  # Some of the following is derived from the "Ubuntu" instructions at
   #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
     sudo -s
@@ -272,7 +278,7 @@ for zone in $GCE_ZONES; do
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
     echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
     apt-get update
-    apt-get install -y kubelet kubeadm kubectl
+    apt-get install -y kubelet=${K8S_VERSION}-00 kubeadm=${K8S_VERSION}-00 kubectl=${K8S_VERSION}-00
 
     # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
     #
@@ -290,8 +296,8 @@ for zone in $GCE_ZONES; do
 
     # Our k8s api servers only run over HTTPS, but currently the TCP network
     # load balancer in GCP only supports HTTP health checks. This runs a
-    # "sidecar" container that will expose an HTTP port and will run an HTTPS
-    # request on the api-server on the localhost.
+    # container that will expose an HTTP port and will run an HTTPS request on
+    # the api-server on the localhost.
     # https://cloud.google.com/load-balancing/docs/network/: "Network Load
     # Balancing relies on legacy HTTP Health checks for determining instance
     # health. Even if your service does not use HTTP, you'll need to at least
@@ -301,15 +307,14 @@ for zone in $GCE_ZONES; do
     #
     # The official exec-healthz images (k8s.gcr.io/exechealthz:1.2) uses the
     # golang:1.10-alpine image which doesn't include openssl, so https doesn't
-    # work. The image fetched below is a custom one I built using the
-    # golang:1.10-stretch base image instead, which have openssl installed. Ugh.
-    docker run --detach --publish 8080:8080 \
-        --network host \
-        --restart always \
+    # work. The image fetched below is a custom one I (kinkade) built using the
+    # golang:1.10-stretch base image instead, which does have openssl installed.
+    # Ugh.
+    docker run --detach --publish 8080:8080 --network host --restart always \
         --name exechealthz -- \
         measurementlab/exechealthz-stretch:v1.2 \
-        -port 8080 -period 3s -latency 2s \
-        -cmd "wget -O- --no-check-certificate https://localhost:6443/healthz"
+          -port 8080 -period 3s -latency 2s \
+          -cmd "wget -O- --no-check-certificate https://localhost:6443/healthz"
 
     # Create a suitable cloud-config file for the cloud provider.
     echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
@@ -323,13 +328,15 @@ for zone in $GCE_ZONES; do
     systemctl restart kubelet
 EOF
 
-  # Setup GCSFUSE to mount saved kubernetes/pki keys & certs.
-  gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-\EOF
+  # Setup GCSFUSE, then mount the repository's GCS bucket so we can read and/or
+  # write the generated CA files to it to persist them in the event we need to
+  # recreate a k8s master.
+  gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
     sudo -s
     set -euxo pipefail
 
-    export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
-    echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
+    export GCSFUSE_REPO=gcsfuse-\$(lsb_release -c -s)
+    echo "deb http://packages.cloud.google.com/apt \$GCSFUSE_REPO main" \
       | tee /etc/apt/sources.list.d/gcsfuse.list
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
       | apt-key add -
@@ -337,6 +344,27 @@ EOF
     # Install the gcsfuse package.
     apt-get update
     apt-get install gcsfuse
+
+    # Create the directory where the project's GCS bucket will be mounted, and
+    # mount it.
+    mkdir -p ${K8S_PKI_DIR}
+    echo "k8s-platform-master-${PROJECT} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
+    mount ${K8S_PKI_DIR}
+
+    # Make sure that the necessary subdirectories exist. Separated into two
+    # steps due to limitations of gcsfuse.
+    # https://github.com/GoogleCloudPlatform/gcsfuse/blob/master/docs/semantics.md#implicit-directories
+    mkdir -p ${K8S_PKI_DIR}/pki/
+    mkdir -p ${K8S_PKI_DIR}/pki/etcd/
+
+    # If there are any files in the bucket's pki directory, copy them to
+    # /etc/kubernetes/pki, creating that directory first, if it didn't already
+    # exist.
+    mkdir -p /etc/kubernetes/pki
+    cp -a ${K8S_PKI_DIR}/pki/* /etc/kubernetes/pki
+
+    # Copy the admin KUBECONFIG file from the bucket, if it exists.
+    cp /tmp/kubernetes-pki/admin.conf /etc/kubernetes/ 2> /dev/null || true
 EOF
 
   # Copy the kubeadm config template to the server.
@@ -350,16 +378,6 @@ EOF
     ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${gce_name}=https://${INTERNAL_IP}:2380"
   fi
 
-  # Mount the PKI directory with keys and certs.
-  #gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
-  #  sudo -s
-  #  set -euxo pipefail
-  #
-  #  mkdir -p /etc/kubernetes/pki
-  #  echo "k8s-platform-master-${PROJECT} /etc/kubernetes/pki gcsfuse ro,user,allow_other,implicit_dirs" >> /etc/fstab
-  #  mount /etc/kubernetes/pki
-#EOF
-
   # Become root and start everything
   # TODO: fix the pod-network-cidr to be something other than a range which could
   # potentially be intruded upon by GCP.
@@ -367,7 +385,7 @@ EOF
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
+    gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
       sudo -s
       set -euxo pipefail
 
@@ -378,45 +396,27 @@ EOF
           -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
           -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
           -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
+          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
           ./kubeadm-config.yml.template > \
           ./kubeadm-config.yml
 
       kubeadm init --config kubeadm-config.yml
 
-      # Copy the generated KUBECONFIG and PKI files to /tmp and change
-      # permissions so they can be read by gcloud on whatever machine this
-      # script is being run and copied to the other nodes in the cluster. The
-      # copies will be deleted later.
-      cp /etc/kubernetes/admin.conf /tmp/admin.conf
-      chmod o+r /tmp/admin.conf
-      cp -a /etc/kubernetes/pki /tmp
-      chmod -R o+r /tmp/pki
+      # Copy the admin KUBECONFIG file to the GCS bucket.
+      cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}
+
+      # Since we don't know which of the CA files already existed the GCS bucket
+      # before creating this first instance (ETCD_CLUSTER_STATE=new), just copy
+      # them all back. If they already existed it will be a no-op, and if they
+      # didn't then they will now be persisted.
+      for f in ${K8S_CA_FILES}; do
+        cp /etc/kubernetes/pki/\${f} ${K8S_PKI_DIR}/pki/\${f}
+      done
 EOF
   else
-    gcloud compute scp ./admin.conf "${gce_name}": "${GCE_ARGS[@]}"
-    gcloud compute ssh "${gce_name}" --command "mkdir -p pki/etcd" "${GCE_ARGS[@]}"
-    for f in ${K8S_CERTS_KEYS}; do
-        gcloud compute scp pki/$f "${gce_name}":pki/$f "${GCE_ARGS[@]}"
-    done
-    gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
+    gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       sudo -s
       set -euxo pipefail
-
-      # Copy the KUBECONFIG file to the right location and set its permissions
-      # to something more secure.
-      chmod 600 ./admin.conf
-      mv ./admin.conf /etc/kubernetes/
- 
-      # chmod all keys to 600.
-      for f in \$(find ./pki); do
-        if [[ \${f} == *.key ]]; then
-          chmod 600 \${f}
-        fi
-      done
-      mv ./pki /etc/kubernetes
-
-      # Make sure everything is owned by root
-      chown -R root:root /etc/kubernetes
 
       # Create the kubeadm config from the template
       sed -e 's|{{PROJECT}}|${PROJECT}|g' \
@@ -425,6 +425,7 @@ EOF
           -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
           -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
           -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
+          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
           ./kubeadm-config.yml.template > \
           ./kubeadm-config.yml
 
@@ -467,15 +468,15 @@ EOF
     sudo chown $(id -u):$(id -g) /root/.kube/config
 EOF
 
-  # If this is the first iteration, copy the generated KUBECONFIG and PKI files
-  # to the machine running this script, # so that they can be copied to other
-  # instances. Then delete the temporary copies on the instance.
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    gcloud compute scp "${gce_name}":/tmp/admin.conf . "${GCE_ARGS[@]}"
-    gcloud compute scp --recurse "${gce_name}":/tmp/pki pki "${GCE_ARGS[@]}"
-    gcloud compute ssh "${gce_name}" \
-        --command "sudo rm -rf /tmp/pki & sudo rm /tmp/admin.conf" \
-        "${GCE_ARGS[@]}"
+    # Update the node setup script with the current CA certificate hash.
+    #
+    # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning 
+    ca_cert_hash=$(openssl x509 -pubkey -in pki/ca.crt | \
+        openssl rsa -pubin -outform der 2>/dev/null | 
+        openssl dgst -sha256 -hex | sed 's/^.* //')
+    sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
+    gsutil cp setup_k8s.sh gs://epoxy-mlab-sandbox/stage3_coreos/setup_k8s.sh
   fi
 
   # Copy the network configs to the server.
