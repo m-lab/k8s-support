@@ -20,11 +20,13 @@ GCE_IMAGE_PROJECT="ubuntu-os-cloud"
 GCE_DISK_SIZE="10"
 GCE_DISK_TYPE="pd-standard"
 GCE_NETWORK="epoxy-extension-private-network"
+GCE_NETWORK_SUBNET="epoxy-extension-private-network"
 GCE_NET_TAGS="dmz" # Comma separate list
 GCE_TYPE="n1-standard-2"
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
 # some way to use a proxying load balancer.
+GCE_REGION="us-central1"
 GCE_ZONES="us-central1-a us-central1-b us-central1-c"
 GCE_LB_ZONE="us-central1-c"
 K8S_VERSION="1.11.1"
@@ -59,9 +61,12 @@ fi
 # break in strange ways.
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
-# Create an IP for the load balancer and store the address.
+#
+# EXTERNAL LOAD BALANCER
+#
+# Create an IP for the external load balancer and store the address.
 EXISTING_LB_IP=$(gcloud compute addresses list \
-    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(address)" "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_LB_IP}" ]]; then
   LOAD_BALANCER_IP=$EXISTING_LB_IP
@@ -69,7 +74,7 @@ else
   gcloud compute addresses create "${GCE_BASE_NAME}" \
       --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
   LOAD_BALANCER_IP=$(gcloud compute addresses list \
-      --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+      --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
       --format "value(address)" "${GCP_ARGS[@]}")
 fi
 
@@ -100,11 +105,11 @@ fi
 # target pool because any existing target pool cannot be deleted when an
 # existing fowarding rule is using it.
 EXISTING_FWD=$(gcloud compute forwarding-rules list \
-    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(creationTimestamp)" "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_FWD}" ]]; then
   gcloud compute forwarding-rules delete "${GCE_BASE_NAME}" \
-      --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
+      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
 fi
 
 # Create a target pool for the load balancer. If one already exists, then delete
@@ -112,11 +117,11 @@ fi
 # the existing one. And delete and recreate the http-health-check prior to
 # [re]creating the new target pool.
 EXISTING_TP=$(gcloud compute target-pools list \
-    --filter "name=${GCE_BASE_NAME} AND region:${GCE_LB_ZONE%-*}" \
+    --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(creationTimestamp)" "${GCP_ARGS[@]}" || true)
 if [[ -n "$EXISTING_TP" ]]; then
   gcloud compute target-pools delete "${GCE_BASE_NAME}" \
-      --region "${GCE_LB_ZONE%-*}" "${GCP_ARGS[@]}"
+      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
 fi
 
 # [Re]create the http-health-check for the nodes in the target pool.
@@ -129,13 +134,98 @@ gcloud compute http-health-checks create "${GCE_BASE_NAME}" \
     --port 8080 --request-path "/healthz" "${GCP_ARGS[@]}"
 
 gcloud compute target-pools create "${GCE_BASE_NAME}" \
-    --region "${GCE_LB_ZONE%-*}" --http-health-check "${GCE_BASE_NAME}" \
+    --region "${GCE_REGION}" --http-health-check "${GCE_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
 # [Re]create the forwarding rule using the target pool we just create.
 gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
-    --region "${GCE_LB_ZONE%-*}" --ports 6443 --address "${GCE_BASE_NAME}" \
+    --region "${GCE_REGION}" --ports 6443 --address "${GCE_BASE_NAME}" \
     --target-pool "${GCE_BASE_NAME}" "${GCP_ARGS[@]}"
+
+#
+# INTERNAL LOAD BALANCING for the token server
+#
+token_server_port="8800"
+
+# Delete any existing forwarding rule for the internal load balancer.
+EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
+    --filter "name=token-server AND region:${GCE_REGION}" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_FWD}" ]]; then
+  gcloud compute forwarding-rules delete "token-server" \
+      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
+fi 
+
+# Delete any existing backend service for the token-server.
+EXISTING_TOKEN_BS=$(gcloud compute backend-services list \
+    --filter "name=token-server AND region:${GCE_REGION}" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_TOKEN_BS}" ]]; then
+  gcloud compute backend-services delete "token-server" \
+      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing  TCP health check for the token-server service.
+EXISTING_TOKEN_HC=$(gcloud compute health-checks list \
+    --filter "name=token-server" "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_TOKEN_HC}" ]]; then
+  gcloud compute health-checks delete "token-server" "${GCP_ARGS[@]}"
+fi
+
+# Create a static IP for the GCE instance, or use the one that already exists.
+EXISTING_INTERNAL_LB_IP=$(gcloud compute addresses list \
+    --filter "name=token-server-lb AND region:${GCE_REGION}" \
+    --format "value(address)" "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
+  INTERNAL_LB_IP="${EXISTING_INTERNAL_LB_IP}"
+else
+  gcloud compute addresses create "token-server-lb" \
+      --region "${GCE_REGION}" \
+      --subnet "${GCE_NETWORK_SUBNET}" "${GCP_ARGS[@]}"
+  INTERNAL_LB_IP=$(gcloud compute addresses list \
+      --filter "name=token-server-lb AND region:${GCE_REGION}" \
+      --format "value(address)" "${GCP_ARGS[@]}")
+fi
+
+# [Re]create the TCP health check for the token-server backend service.
+gcloud compute health-checks create tcp "token-server" \
+    --port "${token_server_port}" "${GCP_ARGS[@]}"
+
+# [Re]create the backend service.
+gcloud compute backend-services create "token-server" \
+    --load-balancing-scheme internal \
+    --region "${GCE_REGION}" \
+    --health-checks "token-server" \
+    --protocol tcp \
+    "${GCP_ARGS[@]}"
+
+# [Re]create the forwarding rule for the token-server.
+#
+# NOTE: the internal IP address associated with this forwarding rule will have
+# an internal DNS of the form:
+# [SERVICE_LABEL].[FORWARDING_RULE_NAME].il4.[REGION].lb.[PROJECT_ID].internal
+#
+# The following name, base on current setting at the time of this writing, is
+# harded coded into m-lab/epoxy/storage/extensions.go:
+# k8s-platform-master.token-server.il4.us-central1.lb.[PROJECT_ID].internal
+#
+# Therefore, if you change global variables in this file that may alter the
+# auto-generated internal load balancer DNS name, then you will need to also
+# modify extensions.go in the epoxy repository, else nodes will fail to boot
+# because they won't be able to contact the token-server.
+#
+# TODO (kinkade): fix the above issue with a hard-coded URL in epoxy.
+gcloud beta compute forwarding-rules create "token-server" \
+    --load-balancing-scheme internal \
+    --address "${INTERNAL_LB_IP}" \
+    --ports "${token_server_port}" \
+    --network "${GCE_NETWORK}" \
+    --subnet "${GCE_NETWORK_SUBNET}" \
+    --region "${GCE_REGION}" \
+    --backend-service "token-server" \
+    --service-label "${GCE_BASE_NAME}" \
+    "${GCP_ARGS[@]}"
+
 
 #
 # Create one GCE instance for each of $GCE_ZONES defined.
@@ -216,6 +306,7 @@ for zone in $GCE_ZONES; do
     --boot-disk-type "${GCE_DISK_TYPE}" \
     --boot-disk-device-name "${gce_name}"  \
     --network "${GCE_NETWORK}" \
+    --subnet "${GCE_NETWORK_SUBNET}" \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
@@ -250,6 +341,31 @@ for zone in $GCE_ZONES; do
     gcloud compute target-pools add-instances "${GCE_BASE_NAME}" \
         --instances "${gce_name}" --instances-zone "${zone}" "${GCP_ARGS[@]}"
   fi
+
+  # [Re]create an instance group for our internal load balancer, add this GCE
+  # instance to the group, then attach the instance group to our backend
+  # service.
+  ig_name="${GCE_BASE_NAME}-${zone}" 
+  EXISTING_TOKEN_IG=$(gcloud compute instance-groups list \
+      --filter "name=${ig_name} AND zone:${zone}" \
+      "${GCP_ARGS[@]}" || true)
+  if [[ -n "${EXISTING_TOKEN_IG}" ]]; then
+    gcloud compute instance-groups unmanaged delete "${ig_name}" --zone "${zone}" \
+        "${GCP_ARGS[@]}"
+  fi
+  gcloud compute instance-groups unmanaged create "${ig_name}" --zone "${zone}" \
+      "${GCP_ARGS[@]}"
+
+  gcloud compute instance-groups unmanaged add-instances "${ig_name}" \
+    --instances "${gce_name}" \
+    --zone "${zone}"
+
+  # Add instance group to our backend service.
+  gcloud compute backend-services add-backend "token-server" \
+      --instance-group "${ig_name}" \
+      --instance-group-zone "${zone}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 
   # We need to record the name and IP of the first instance we instantiate
   # because its name and IP will be needed when joining later instances to the
