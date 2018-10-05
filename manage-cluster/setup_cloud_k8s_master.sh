@@ -183,7 +183,8 @@ if [[ -n "${EXISTING_EXTERNAL_FW}" ]]; then
 fi
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
     --network "${GCE_BASE_NAME}" \
-    --allow "tcp:22,tcp:6443" \
+    --action "allow" \
+    --rules "tcp:22,tcp:6443" \
     --source-ranges "0.0.0.0/0" \
     "${GCP_ARGS[@]}"
 
@@ -305,8 +306,9 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
-    --network "${GCE_BASE_NAME}"
-    --allow "tcp,udp" \
+    --network "${GCE_BASE_NAME}" \
+    --action "allow" \
+    --rules "all" \
     --source-ranges "${INTERNAL_SUBNET}" \
     "${GCP_ARGS[@]}"
 
@@ -671,9 +673,10 @@ EOF
     # Update the node setup script with the current CA certificate hash.
     #
     # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning 
-    ca_cert_hash=$(openssl x509 -pubkey -in pki/ca.crt | \
-        openssl rsa -pubin -outform der 2>/dev/null | 
-        openssl dgst -sha256 -hex | sed 's/^.* //')
+    ca_cert_hash=$(gcloud compute ssh k8s-platform-master-us-east1-b \
+        --command "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | \
+                   openssl rsa -pubin -outform der 2>/dev/null | \
+                   openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     gsutil cp setup_k8s.sh gs://epoxy-mlab-sandbox/stage3_coreos/setup_k8s.sh
   fi
