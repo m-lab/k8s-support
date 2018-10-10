@@ -18,14 +18,14 @@ PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 GCE_BASE_NAME="k8s-platform-master"
 GCE_IMAGE_FAMILY="ubuntu-1804-lts"
 GCE_IMAGE_PROJECT="ubuntu-os-cloud"
-GCE_DISK_SIZE="10"
+GCE_DISK_SIZE="100"
 GCE_DISK_TYPE="pd-standard"
 GCE_NETWORK="k8s-platform-master"
 GCE_SUBNET="${GCE_NETWORK}"
 GCE_NET_TAGS="k8s-platform-master" # Comma separate list
-GCE_TYPE="n1-standard-2"
+GCE_TYPE="n1-standard-4"
 
-K8S_VERSION="1.11.1"
+K8S_VERSION="1.12.0"
 K8S_CA_FILES="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
 K8S_PKI_DIR="/tmp/kubernetes-pki"
 
@@ -33,7 +33,7 @@ TOKEN_SERVER_BASE_NAME="token-server"
 TOKEN_SERVER_PORT="8800"
 
 # Whether this script should exit after deleting all existing GCP resources
-# assoicated with creating this k8s cluster. This could be useful, for example,
+# associated with creating this k8s cluster. This could be useful, for example,
 # if you want to change various object names, but don't want to have to
 # manually hunt down all the old objects all over the GCP console. For
 # example, many objects names are based on the variable $GCE_BASE_NAME. If you
@@ -71,7 +71,7 @@ esac
 EXTERNAL_LB_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
 
 # Delete any temporary files and dirs from a previous run.
-rm -rf setup_k8s.sh transaction.yaml
+rm -f setup_k8s.sh transaction.yaml
 
 # Put gcloud in the PATH when on Travis.
 if [[ ${TRAVIS:-false} == true ]]; then
@@ -499,6 +499,12 @@ for zone in $GCE_ZONES; do
   fi
 
   # Create the GCE instance.
+  #
+  # TODO (kinkade): In its current form, the service account associated with
+  # this GCE instance needs full access to a single GCS storage bucket for the
+  # purposes of moving around CA cert files, etc. Currently the instance is
+  # granted the "storage-full" scope, which is far more permissive than we
+  # ultimately want.
   gcloud compute instances create "${gce_name}" \
     --image-family "${GCE_IMAGE_FAMILY}" \
     --image-project "${GCE_IMAGE_PROJECT}" \
@@ -603,22 +609,8 @@ for zone in $GCE_ZONES; do
         --name token-server \
         measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
 
-    # Our k8s api servers only run over HTTPS, but currently the TCP network
-    # load balancer in GCP only supports HTTP health checks. This runs a
-    # container that will expose an HTTP port and will run an HTTPS request on
-    # the api-server on the localhost.
-    # https://cloud.google.com/load-balancing/docs/network/: "Network Load
-    # Balancing relies on legacy HTTP Health checks for determining instance
-    # health. Even if your service does not use HTTP, you'll need to at least
-    # run a basic web server on each instance that the health check system can
-    # query."
-    # https://github.com/kubernetes/kubernetes/issues/43784#issuecomment-415090237
-    #
-    # The official exec-healthz images (k8s.gcr.io/exechealthz:1.2) uses the
-    # golang:1.10-alpine image which doesn't include openssl, so https doesn't
-    # work. The image fetched below is a custom one I (kinkade) built using the
-    # golang:1.10-stretch base image instead, which does have openssl installed.
-    # Ugh.
+    # See the README in this directory for information on this container and why
+    # we use it.
     docker run --detach --publish 8080:8080 --network host --restart always \
         --name exechealthz -- \
         measurementlab/exechealthz-stretch:v1.2 \
@@ -673,7 +665,7 @@ EOF
     cp -a ${K8S_PKI_DIR}/pki/* /etc/kubernetes/pki
 
     # Copy the admin KUBECONFIG file from the bucket, if it exists.
-    cp /tmp/kubernetes-pki/admin.conf /etc/kubernetes/ 2> /dev/null || true
+    cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
 EOF
 
   # Copy the kubeadm config template to the server.
@@ -687,27 +679,27 @@ EOF
     ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${gce_name}=https://${INTERNAL_IP}:2380"
   fi
 
-  # Become root and start everything
-  # TODO: fix the pod-network-cidr to be something other than a range which could
-  # potentially be intruded upon by GCP.
-  #
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
+
+  # Evaluate the kubeadm config template
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    # Create the kubeadm config from the template
+    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+        -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
+        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
+        -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
+        -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
+        -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
+        -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
+        ./kubeadm-config.yml.template > \
+        ./kubeadm-config.yml
+EOF
+
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
+    gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       sudo -s
       set -euxo pipefail
-
-      # Create the kubeadm config from the template
-      sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-          -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
-          -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-          -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
-          -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
-          -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
-          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
-          ./kubeadm-config.yml.template > \
-          ./kubeadm-config.yml
 
       kubeadm init --config kubeadm-config.yml
 
@@ -726,17 +718,6 @@ EOF
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       sudo -s
       set -euxo pipefail
-
-      # Create the kubeadm config from the template
-      sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-          -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
-          -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-          -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
-          -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
-          -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
-          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
-          ./kubeadm-config.yml.template > \
-          ./kubeadm-config.yml
 
       # Bootstrap the kubelet
       kubeadm alpha phase certs all --config kubeadm-config.yml
@@ -781,13 +762,12 @@ EOF
     # Update the node setup script with the current CA certificate hash.
     #
     # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning
-    ca_cert_hash=$(gcloud compute ssh k8s-platform-master-us-east1-b \
+    ca_cert_hash=$(gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" \
         --command "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | \
                    openssl rsa -pubin -outform der 2>/dev/null | \
-                   openssl dgst -sha256 -hex | sed 's/^.* //'" \
-        "${GCE_ARGS[@]}")
+                   openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://epoxy-mlab-sandbox/stage3_coreos/setup_k8s.sh
+    gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
   fi
 
   # Copy the network configs to the server.
