@@ -86,7 +86,7 @@ data:
   # This file is for Flannel
   net-conf.json: |
     {
-      "Network": "192.168.0.0/16",
+      "Network": "{{K8S_CLUSTER_CIDR}}",
       "Backend": {
         "Type": "vxlan"
       }
