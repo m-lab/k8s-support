@@ -627,6 +627,15 @@ for zone in $GCE_ZONES; do
         s|"$| --cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"|' \
         /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
+    # We have run up against "no space left on device" errors, when clearly
+    # there is plenty of free disk space. It seems this could likely be related
+    # to this:
+    # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
+    # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
+    # it from the default of 8192.
+    echo fs.inotify.max_user_watches=32768 >> /etc/sysctl.conf
+    sysctl -p
+
     systemctl daemon-reload
     systemctl restart kubelet
 EOF
@@ -773,6 +782,10 @@ EOF
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
   fi
+
+  # Evaluate the common.yml.template network config template file.
+  sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
+      ./network/common.yml.template > ./network/common.yml
 
   # Copy the network configs to the server.
   gcloud compute scp --recurse network "${gce_name}":network "${GCE_ARGS[@]}"
