@@ -630,6 +630,15 @@ for zone in $GCE_ZONES; do
     echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.conf
     sysctl -p
 
+    # We have run up against "no space left on device" errors, when clearly
+    # there is plenty of free disk space. It seems this could likely be related
+    # to this:
+    # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
+    # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
+    # it from the default of 8192.
+    echo fs.inotify.max_user_watches=32768 >> /etc/sysctl.conf
+    sysctl -p
+
     systemctl daemon-reload
     systemctl restart kubelet
 EOF
