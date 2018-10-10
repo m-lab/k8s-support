@@ -28,6 +28,8 @@ GCE_TYPE="n1-standard-4"
 K8S_VERSION="1.12.0"
 K8S_CA_FILES="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
 K8S_PKI_DIR="/tmp/kubernetes-pki"
+K8S_CLUSTER_CIDR="10.244.0.0/16"
+K8S_SERVICE_CIDR="10.96.0.0/12"
 
 TOKEN_SERVER_BASE_NAME="token-server"
 TOKEN_SERVER_PORT="8800"
@@ -682,7 +684,7 @@ EOF
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
 
-  # Evaluate the kubeadm config template
+  # Evaluate the kubeadm config template with a beastly sed statement.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
@@ -692,6 +694,8 @@ EOF
         -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
         -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
+        -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
+        -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
 EOF
