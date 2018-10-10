@@ -1,26 +1,86 @@
-apiVersion: kubeadm.k8s.io/v1alpha2
-kind: MasterConfiguration
-kubernetesVersion: v{{K8S_VERSION}}
+apiVersion: kubeadm.k8s.io/v1alpha3
+kind: InitConfiguration
+apiEndpoint:
+  advertiseAddress: {{INTERNAL_IP}}
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  name: {{MASTER_NAME}}
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+---
+apiVersion: kubeadm.k8s.io/v1alpha3
+kind: ClusterConfiguration
+kubernetesVersion: v{{K8s_VERSION}}
 apiServerCertSANs:
-- "{{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net"
-api:
-    controlPlaneEndpoint: "{{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443"
+- {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+auditPolicy:
+  logDir: /var/log/kubernetes/audit
+  logMaxAge: 2
+  path: ""
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 etcd:
   local:
+    dataDir: /var/lib/etcd
     extraArgs:
+      advertise-client-urls: https://{{INTERNAL_IP}}:2379
+      initial-advertise-peer-urls: https://{{INTERNAL_IP}}:2380
+      initial-cluster: {{ETCD_INITIAL_CLUSTER}}
+      initial-cluster-state: {{ETCD_CLUSTER_STATE}}
+      listen-client-urls: https://127.0.0.1:2379,https://{{INTERNAL_IP}}:2379
+      listen-peer-urls: https://{{INTERNAL_IP}}:2380
       name: {{MASTER_NAME}}
-      listen-client-urls: "https://127.0.0.1:2379,https://{{INTERNAL_IP}}:2379"
-      advertise-client-urls: "https://{{INTERNAL_IP}}:2379"
-      listen-peer-urls: "https://{{INTERNAL_IP}}:2380"
-      initial-advertise-peer-urls: "https://{{INTERNAL_IP}}:2380"
-      initial-cluster: "{{ETCD_INITIAL_CLUSTER}}"
-      initial-cluster-state: "{{ETCD_CLUSTER_STATE}}"
-    serverCertSANs:
-    - {{MASTER_NAME}}.c.{{PROJECT}}.internal
-    - {{INTERNAL_IP}}
+    image: ""
     peerCertSANs:
     - {{MASTER_NAME}}.c.{{PROJECT}}.internal
     - {{INTERNAL_IP}}
+    serverCertSANs:
+    - {{MASTER_NAME}}.c.{{PROJECT}}.internal
+    - {{INTERNAL_IP}}
+imageRepository: k8s.gcr.io
 networking:
-    # This CIDR is a Calico default. Substitute or remove for your CNI provider.
-    podSubnet: "192.168.0.0/16"
+  dnsDomain: cluster.local
+  podSubnet: {{K8S_CLUSTER_CIDR}}
+  serviceSubnet: {{K8S_SERVICE_CIDR}}
+unifiedControlPlaneImage: ""
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+bindAddress: 0.0.0.0
+clientConnection:
+  acceptContentTypes: ""
+  burst: 10
+  contentType: application/vnd.kubernetes.protobuf
+  kubeconfig: /var/lib/kube-proxy/kubeconfig.conf
+  qps: 5
+clusterCIDR: {{K8S_CLUSTER_CIDR}}
+configSyncPeriod: 15m0s
+conntrack:
+  max: null
+  maxPerCore: 32768
+  min: 131072
+  tcpCloseWaitTimeout: 1h0m0s
+  tcpEstablishedTimeout: 24h0m0s
+enableProfiling: false
+healthzBindAddress: 0.0.0.0:10256
+hostnameOverride: ""
+iptables:
+  masqueradeAll: false
+  masqueradeBit: 14
+  minSyncPeriod: 0s
+  syncPeriod: 30s
+ipvs:
+  excludeCIDRs: null
+  minSyncPeriod: 0s
+  scheduler: ""
+  syncPeriod: 30s
+metricsBindAddress: 127.0.0.1:10249
+mode: ""
+nodePortAddresses: null
+oomScoreAdj: -999
+portRange: ""
+resourceContainer: /kube-proxy
+udpIdleTimeout: 250ms
