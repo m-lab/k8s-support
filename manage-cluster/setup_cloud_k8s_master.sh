@@ -623,7 +623,7 @@ for zone in $GCE_ZONES; do
     echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
 
     # Sets the kublet's cloud provider config to gce and points to a suitable config file.
-    sed -ie '/KUBELET_KUBECONFIG_ARGS=/ \
+    sed -i '/KUBELET_KUBECONFIG_ARGS=/ \
         s|"$| --cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"|' \
         /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
@@ -633,7 +633,7 @@ for zone in $GCE_ZONES; do
     # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
     # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
     # it from the default of 8192.
-    echo fs.inotify.max_user_watches=32768 >> /etc/sysctl.conf
+    echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.conf
     sysctl -p
 
     systemctl daemon-reload
