@@ -1,7 +1,7 @@
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: InitConfiguration
 apiEndpoint:
-  advertiseAddress: {{INTERNAL_IP}}
+  advertiseAddress: {{EXTERNAL_IP}}
   bindPort: 6443
 nodeRegistration:
   criSocket: /var/run/dockershim.sock

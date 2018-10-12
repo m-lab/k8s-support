@@ -698,6 +698,7 @@ EOF
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
+        -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
         -e 's|{{MASTER_NAME}}|${gce_name}|g' \
         -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
         -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
