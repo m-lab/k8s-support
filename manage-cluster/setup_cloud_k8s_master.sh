@@ -296,13 +296,14 @@ gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
     --target-pool "${GCE_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
-# Create a firewall rule allowing external access to TCP ports:
-#   22: SSH
-#   6443: k8s API server
+# Create a firewall rule allowing external access to ports:
+#   TCP 22: SSH
+#   TCP 6443: k8s API server
+#   UDP 8272: VXLAN (flannel)
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
     --network "${GCE_BASE_NAME}" \
     --action "allow" \
-    --rules "tcp:22,tcp:6443" \
+    --rules "tcp:22,tcp:6443;udp:8472" \
     --source-ranges "0.0.0.0/0" \
     "${GCP_ARGS[@]}"
 
