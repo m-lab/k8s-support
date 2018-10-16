@@ -301,7 +301,7 @@ gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
 #   TCP 6443: k8s API server
 #   UDP 8272: VXLAN (flannel)
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
-    --network "${GCE_BASE_NAME}" \
+    --network "${GCE_NETWORK}" \
     --action "allow" \
     --rules "tcp:22,tcp:6443;udp:8472" \
     --source-ranges "0.0.0.0/0" \
@@ -417,7 +417,7 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
-    --network "${GCE_BASE_NAME}" \
+    --network "${GCE_NETWORK}" \
     --action "allow" \
     --rules "all" \
     --source-ranges "${INTERNAL_SUBNET}" \
