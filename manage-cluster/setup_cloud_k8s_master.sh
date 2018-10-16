@@ -394,13 +394,14 @@ gcloud compute forwarding-rules create "${TOKEN_SERVER_BASE_NAME}" \
     --address "${INTERNAL_LB_IP}" \
     --ports "${TOKEN_SERVER_PORT}" \
     --network "${GCE_NETWORK}" \
+    --subnet "${GCE_SUBNET}" \
     --region "${GCE_REGION}" \
     --backend-service "${TOKEN_SERVER_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
 # Create a firewall rule allowing access to anything from internal sources
 # from the subnet.
-INTERNAL_SUBNET=$(gcloud compute networks subnets describe ${GCE_BASE_NAME} \
+INTERNAL_SUBNET=$(gcloud compute networks subnets describe ${GCE_SUBNET} \
     --region ${GCE_REGION} \
     --format "value(ipCidrRange)" \
     "${GCP_ARGS[@]}" || true)
@@ -515,6 +516,7 @@ for zone in $GCE_ZONES; do
     --boot-disk-type "${GCE_DISK_TYPE}" \
     --boot-disk-device-name "${gce_name}"  \
     --network "${GCE_NETWORK}" \
+    --subnet "${GCE_SUBNET}" \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
