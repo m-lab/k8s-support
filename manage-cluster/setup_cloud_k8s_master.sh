@@ -303,7 +303,7 @@ gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
     --network "${GCE_NETWORK}" \
     --action "allow" \
-    --rules "tcp:22,tcp:6443;udp:8472" \
+    --rules "tcp:22,tcp:6443,udp:8472" \
     --source-ranges "0.0.0.0/0" \
     "${GCP_ARGS[@]}"
 
