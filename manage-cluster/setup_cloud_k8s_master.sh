@@ -806,6 +806,14 @@ EOF
     kubectl label node ${gce_name} mlab/type=cloud
     kubectl apply -f network/crd.yml
     kubectl apply -f network
+
+    # Work around a known issue with --cloud-provider=gce and CNI plugins.
+    # https://github.com/kubernetes/kubernetes/issues/44254
+    kubectl proxy --port 8888 &
+    curl http://localhost:8888/api/v1/nodes/${gce_name}/status > a.json
+    cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
+    curl -X PUT http://localhost:8888/api/v1/nodes/${gce_name}/status -H "Content-Type: application/json" -d @b.json
+    kill %1
 EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.
