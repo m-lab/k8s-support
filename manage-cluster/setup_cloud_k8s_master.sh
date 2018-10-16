@@ -175,6 +175,16 @@ if [[ -n "${EXISTING_TOKEN_HEALTH_CHECK}" ]]; then
   gcloud compute health-checks delete "${TOKEN_SERVER_BASE_NAME}" "${GCP_ARGS[@]}"
 fi
 
+EXISTING_INTERNAL_LB_IP=$(gcloud compute addresses list \
+    --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
+    --format "value(address)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
+  gcloud compute addresses delete "${TOKEN_SERVER_BASE_NAME}-lb" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
 # Delete each GCE instance, along with any instance-groups it was a member of.
 for zone in $GCE_ZONES; do
   gce_zone="${GCE_REGION}-${zone}"
@@ -311,23 +321,15 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
 # INTERNAL LOAD BALANCING for the token server.
 #
 
-# Create a static IP for the GCE instance, or use the one that already exists.
-EXISTING_INTERNAL_LB_IP=$(gcloud compute addresses list \
+# Create a static IP for the token server internal load balancer.
+gcloud compute addresses create "${TOKEN_SERVER_BASE_NAME}-lb" \
+    --region "${GCE_REGION}" \
+    --subnet "${GCE_SUBNET}" \
+    "${GCP_ARGS[@]}"
+INTERNAL_LB_IP=$(gcloud compute addresses list \
     --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
     --format "value(address)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
-  INTERNAL_LB_IP="${EXISTING_INTERNAL_LB_IP}"
-else
-  gcloud compute addresses create "${TOKEN_SERVER_BASE_NAME}-lb" \
-      --region "${GCE_REGION}" \
-      --subnet "${GCE_SUBNET}" \
-      "${GCP_ARGS[@]}"
-  INTERNAL_LB_IP=$(gcloud compute addresses list \
-      --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
-      --format "value(address)" \
-      "${GCP_ARGS[@]}")
-fi
+    "${GCP_ARGS[@]}")
 
 # Check the value of the existing IP address associated with the internal load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
