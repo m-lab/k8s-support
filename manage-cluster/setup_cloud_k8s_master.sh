@@ -21,7 +21,8 @@ GCE_IMAGE_PROJECT="ubuntu-os-cloud"
 GCE_DISK_SIZE="100"
 GCE_DISK_TYPE="pd-standard"
 GCE_NETWORK="mlab-platform-network"
-GCE_SUBNET="kubernetes"
+GCE_K8S_SUBNET="kubernetes"
+GCE_EPOXY_SUBNET="epoxy"
 GCE_NET_TAGS="k8s-platform-master" # Comma separate list
 GCE_TYPE="n1-standard-4"
 
@@ -141,6 +142,23 @@ EXISTING_EXTERNAL_FW=$(gcloud compute firewall-rules list \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_EXTERNAL_FW}" ]]; then
   gcloud compute firewall-rules delete "${GCE_BASE_NAME}-external" \
+      "${GCP_ARGS[@]}"
+fi
+
+EXISTING_INTERNAL_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-internal" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-internal" \
+      "${GCP_ARGS[@]}"
+fi
+
+EXISTING_INTERNAL_FW_EPOXY=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
+  gcloud compute firewall-rules delete \
+      "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
       "${GCP_ARGS[@]}"
 fi
 
@@ -324,7 +342,7 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
 # Create a static IP for the token server internal load balancer.
 gcloud compute addresses create "${TOKEN_SERVER_BASE_NAME}-lb" \
     --region "${GCE_REGION}" \
-    --subnet "${GCE_SUBNET}" \
+    --subnet "${GCE_K8S_SUBNET}" \
     "${GCP_ARGS[@]}"
 INTERNAL_LB_IP=$(gcloud compute addresses list \
     --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
@@ -396,34 +414,45 @@ gcloud compute forwarding-rules create "${TOKEN_SERVER_BASE_NAME}" \
     --address "${INTERNAL_LB_IP}" \
     --ports "${TOKEN_SERVER_PORT}" \
     --network "${GCE_NETWORK}" \
-    --subnet "${GCE_SUBNET}" \
+    --subnet "${GCE_K8S_SUBNET}" \
     --region "${GCE_REGION}" \
     --backend-service "${TOKEN_SERVER_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
-# Create a firewall rule allowing access to anything from internal sources
-# from the subnet.
-INTERNAL_SUBNET=$(gcloud compute networks subnets describe ${GCE_SUBNET} \
+# Determine the internal CIDR of the k8s subnet.
+INTERNAL_K8S_SUBNET=$(gcloud compute networks subnets describe ${GCE_K8S_SUBNET} \
     --region ${GCE_REGION} \
     --format "value(ipCidrRange)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -z "${INTERNAL_SUBNET}" ]]; then
-  echo "Could not determine the CIDR range for the internal subnet."
+if [[ -z "${INTERNAL_K8S_SUBNET}" ]]; then
+  echo "Could not determine the CIDR range for the internal k8s subnet."
   exit 1
 fi
-
-EXISTING_INTERNAL_FW=$(gcloud compute firewall-rules list \
-    --filter "name=${GCE_BASE_NAME}-internal" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
-  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-internal" \
-      "${GCP_ARGS[@]}"
-fi
+# Set up a firewall rule allowing access to anything in the network from
+# instances in the internal k8s-master subnet.
 gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
     --network "${GCE_NETWORK}" \
     --action "allow" \
     --rules "all" \
-    --source-ranges "${INTERNAL_SUBNET}" \
+    --source-ranges "${INTERNAL_K8S_SUBNET}" \
+    "${GCP_ARGS[@]}"
+
+# Determine the internal CIDR of the ePoxy subnet.
+INTERNAL_EPOXY_SUBNET=$(gcloud compute networks subnets describe ${GCE_EPOXY_SUBNET} \
+    --region ${GCE_REGION} \
+    --format "value(ipCidrRange)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -z "${INTERNAL_EPOXY_SUBNET}" ]]; then
+  echo "Could not determine the CIDR range for the internal ePoxy subnet."
+  exit 1
+fi
+# Set up a firewall rule allowing access to the token-server from any instance
+# running in the ePoxy subnet.
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "all" \
+    --source-ranges "${INTERNAL_EPOXY_SUBNET}" \
     "${GCP_ARGS[@]}"
 
 # Create one GCE instance for each of $GCE_ZONES defined.
@@ -518,7 +547,7 @@ for zone in $GCE_ZONES; do
     --boot-disk-type "${GCE_DISK_TYPE}" \
     --boot-disk-device-name "${gce_name}"  \
     --network "${GCE_NETWORK}" \
-    --subnet "${GCE_SUBNET}" \
+    --subnet "${GCE_K8S_SUBNET}" \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
@@ -813,7 +842,9 @@ EOF
 
     # Work around a known issue with --cloud-provider=gce and CNI plugins.
     # https://github.com/kubernetes/kubernetes/issues/44254
-    kubectl proxy --port 8888 &
+    kubectl proxy --port 8888 &> /dev/null &
+    # Give the proxy a couple seconds to start up.
+    sleep 2
     curl http://localhost:8888/api/v1/nodes/${gce_name}/status > a.json
     cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
     curl -X PUT http://localhost:8888/api/v1/nodes/${gce_name}/status -H "Content-Type: application/json" -d @b.json
