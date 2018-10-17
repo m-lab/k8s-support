@@ -16,13 +16,179 @@ args: '[ {
 apiVersion: "kubernetes.com/v1"
 kind: Network
 metadata:
- name: index2ip-conf
-plugin: index2ip
+ name: index2ip-index-1-conf
+plugin: index2ip-index-1
 args: '[ {
            "name": "ipvlan",
            "type": "ipvlan",
            "master": "eth0",
            "ipam": {
-             "type": "index2ip"
+             "type": "index2ip",
+             "index": 1
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-2-conf
+plugin: index2ip-index-2
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 2
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-3-conf
+plugin: index2ip-index-3
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 3
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-4-conf
+plugin: index2ip-index-4
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 4
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-5-conf
+plugin: index2ip-index-5
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 5
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-6-conf
+plugin: index2ip-index-6
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 6
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-7-conf
+plugin: index2ip-index-7
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 7
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-8-conf
+plugin: index2ip-index-8
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 8
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-9-conf
+plugin: index2ip-index-9
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 9
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-10-conf
+plugin: index2ip-index-10
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 10
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-11-conf
+plugin: index2ip-index-11
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 11
+           }
+         } ]'
+---
+apiVersion: "kubernetes.com/v1"
+kind: Network
+metadata:
+ name: index2ip-index-12-conf
+plugin: index2ip-index-12
+args: '[ {
+           "name": "ipvlan",
+           "type": "ipvlan",
+           "master": "eth0",
+           "ipam": {
+             "type": "index2ip",
+             "index": 12
            }
          } ]'
