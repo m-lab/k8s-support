@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: ndt-cloud-index2
+  name: ndt-cloud
   namespace: default
 spec:
   selector:
@@ -15,7 +15,7 @@ spec:
         prometheus.io/scrape: 'true'
         networks: '[
           { "name": "flannel-conf" },
-          { "name": "index2ip-conf" } ]'
+          { "name": "index2ip-index-2-conf" } ]'
     spec:
 
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
@@ -55,7 +55,7 @@ spec:
       - name: fast-sidestream
         image: measurementlab/tcp-info:prod-v0.0.1a
         args:
-         - -prom=9797
+        - -prom=9797
         volumeMounts:
         - name: fast-sidestream-data
           mountPath: /home
@@ -89,7 +89,8 @@ spec:
           readOnly: true
 
       initContainers:
-      # TODO: this is a hack. Remove the hack by fixing the content of resolv.conf
+      # TODO: this is a hack. Remove the hack by fixing the contents of
+      # resolv.conf
       - name: fix-resolv-conf
         image: busybox
         command: ['sh', '-c', 'echo "nameserver 8.8.8.8" > /etc/resolv.conf']
