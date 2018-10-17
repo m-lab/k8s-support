@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: ndt-cloud-index2
+  name: ndt-cloud
   namespace: default
 spec:
   selector:
@@ -15,7 +15,7 @@ spec:
         prometheus.io/scrape: 'true'
         networks: '[
           { "name": "flannel-conf" },
-          { "name": "index2ip-conf" } ]'
+          { "name": "index2ip-index-2-conf" } ]'
     spec:
 
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
