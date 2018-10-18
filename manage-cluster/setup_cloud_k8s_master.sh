@@ -65,7 +65,8 @@ EXISTING_FWD=$(gcloud compute forwarding-rules list \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_FWD}" ]]; then
   gcloud compute forwarding-rules delete "${GCE_BASE_NAME}" \
-      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
 # Delete any existing target pool for the external load balancer.
@@ -75,7 +76,8 @@ EXISTING_TARGET_POOL=$(gcloud compute target-pools list \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "$EXISTING_TARGET_POOL" ]]; then
   gcloud compute target-pools delete "${GCE_BASE_NAME}" \
-      --region "${GCE_REGION}" "${GCP_ARGS[@]}"
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
 # Delete any existing HTTP health checks for the external load balanced target
@@ -433,7 +435,7 @@ fi
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
     --network "${GCE_NETWORK}" \
     --action "allow" \
-    --rules "all" \
+    --rules "tcp:${TOKEN_SERVER_PORT}" \
     --source-ranges "${INTERNAL_EPOXY_SUBNET}" \
     "${GCP_ARGS[@]}"
 
