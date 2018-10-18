@@ -22,6 +22,8 @@ auditPolicy:
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
+controlManagerExtraArgs:
+  node-cidr-mask-size: 26
 etcd:
   local:
     dataDir: /var/lib/etcd
