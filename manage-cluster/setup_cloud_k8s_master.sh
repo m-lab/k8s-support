@@ -213,14 +213,21 @@ if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-# Delete the VPC network peering between the GCE_NETWORK and the default
-# network.
-EXISTING_VPC_PEERING=$(gcloud compute networks peerings list \
+# Delete the mutual VPC network peering between the GCE_NETWORK.
+EXISTING_PLATFORM_VPC_PEERING=$(gcloud compute networks peerings list \
     --filter "name=${GCE_NETWORK}-to-default" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_VPC_PEERING}" ]]; then
+if [[ -n "${EXISTING_PLATFORM_VPC_PEERING}" ]]; then
   gcloud compute networks peerings delete "${GCE_NETWORK}-to-default" \
       --network="${GCE_NETWORK}" \
+      "${GCP_ARGS[@]}"
+fi
+EXISTING_DEFAULT_VPC_PEERING=$(gcloud compute networks peerings list \
+    --filter "name=default-to-${GCE_NETWORK}" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_DEFAULT_VPC_PEERING_1}" ]]; then
+  gcloud compute networks peerings delete "default-to-${GCE_NETWORK}" \
+      --network="default" \
       "${GCP_ARGS[@]}"
 fi
 
@@ -477,8 +484,8 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}
     "${GCP_ARGS[@]}"
 
 PROMETHEUS_ZONE=$(gcloud container clusters list \
-    --filter "name=prometheus-federation" 
-    --format "value(zone)"
+    --filter "name=prometheus-federation"  \
+    --format "value(zone)" \
     "${GCP_ARGS[@]}") 
 INTERNAL_PROMETHEUS_SUBNET=$(gcloud compute networks subnets describe default \
     --region ${PROMETHEUS_ZONE%-*} \
@@ -498,6 +505,19 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-vpc-peering" \
     --source-ranges "${INTERNAL_PROMETHEUS_SUBNET}" \
     "${GCP_ARGS[@]}"
 
+# Create mutual VPC peering between the default network and GCE_NETWORK.
+gcloud compute networks peerings create "${GCE_NETWORK}-to-default" \
+    --network "${GCE_NETWORK}" \
+    --peer-network "default" \
+    --auto-create-routes \
+    --peer-project "${PROJECT}"
+gcloud compute networks peerings create "default-to-${GCE_NETWORK}" \
+    --network "default" \
+    --peer-network "${GCE_NETWORK}" \
+    --auto-create-routes \
+    --peer-project "${PROJECT}"
+
+#
 # Create one GCE instance for each of $GCE_ZONES defined.
 #
 ETCD_CLUSTER_STATE="new"
@@ -575,17 +595,6 @@ for zone in $GCE_ZONES; do
         --zone "${PROJECT}-measurementlab-net" \
         "${GCP_ARGS[@]}"
   fi
-
-  # Create a VPC peering connection between the default project network and the
-  # GCE_NETWORK. This will allow the prometheus-federation GKE cluster,
-  # which runs in the default project network, to scrape metrics from the
-  # GCE_NETWORK.
-  gcloud compute networks peerings create "${GCE_NETWORK}-to-default" \
-      --network="${GCE_NETWORK}" \
-      --peer-network=default \
-      --peer-project="${PROJECT}" \
-      --auto-create-routes \
-      "${GCP_ARGS[@]}"
 
   # Create the GCE instance.
   #
