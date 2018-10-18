@@ -665,10 +665,8 @@ for zone in $GCE_ZONES; do
     # See the README in this directory for information on this container and why
     # we use it.
     docker run --detach --publish 8080:8080 --network host --restart always \
-        --name exechealthz -- \
-        measurementlab/exechealthz-stretch:v1.2 \
-          -port 8080 -period 3s -latency 2s \
-          -cmd "wget -O- --no-check-certificate https://localhost:6443/healthz"
+        --name gcp-loadbalancer-healthz-proxy -- \
+        soltesz/gcp-loadbalancer-healthz-proxy -port :8080 -url https://localhost:6443
 
     # Create a suitable cloud-config file for the cloud provider.
     echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
