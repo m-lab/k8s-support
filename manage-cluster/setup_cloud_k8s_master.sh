@@ -167,7 +167,8 @@ fi
 
 # Delete the mutual VPC network peering between the GCE_NETWORK.
 EXISTING_PLATFORM_VPC_PEERING=$(gcloud compute networks peerings list \
-    --filter "name=${GCE_NETWORK}-to-default" \
+    --format "value(peerings.name)" \
+    --filter "${GCE_NETWORK}-to-default" \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_PLATFORM_VPC_PEERING}" ]]; then
   gcloud compute networks peerings delete "${GCE_NETWORK}-to-default" \
@@ -175,9 +176,10 @@ if [[ -n "${EXISTING_PLATFORM_VPC_PEERING}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 EXISTING_DEFAULT_VPC_PEERING=$(gcloud compute networks peerings list \
-    --filter "name=default-to-${GCE_NETWORK}" \
+    --format "value(peerings.name)" \
+    --filter "default-to-${GCE_NETWORK}" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_DEFAULT_VPC_PEERING_1}" ]]; then
+if [[ -n "${EXISTING_DEFAULT_VPC_PEERING}" ]]; then
   gcloud compute networks peerings delete "default-to-${GCE_NETWORK}" \
       --network="default" \
       "${GCP_ARGS[@]}"
