@@ -29,7 +29,7 @@ GCE_TYPE="n1-standard-4"
 K8S_VERSION="1.12.0"
 K8S_CA_FILES="ca.crt ca.key sa.key sa.pub front-proxy-ca.crt front-proxy-ca.key etcd/ca.crt etcd/ca.key"
 K8S_PKI_DIR="/tmp/kubernetes-pki"
-K8S_CLUSTER_CIDR="192.168.0.0/16"
+K8S_CLUSTER_CIDR="192.168.0.0/26"
 K8S_SERVICE_CIDR="172.25.0.0/16"
 
 TOKEN_SERVER_BASE_NAME="token-server"
