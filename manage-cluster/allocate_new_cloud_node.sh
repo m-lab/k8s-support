@@ -10,15 +10,18 @@
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <google-cloud-project> [extra args for gcloud compute instances create]"
+USAGE="USAGE: $0 <google-cloud-project>"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
-ZONE=${2:?Please specify the google cloud zone: $USAGE}
 
-# Now the entirety of $@ is arguments to pass to 'gcloud instances create'
-shift
-shift
+# Source all the global configuration variables.
+source k8s_deploy.conf
 
 K8S_NODE_PREFIX="k8s-platform-cluster-node"
+
+# Use the first k8s master from the region to contact to join this cloud node to
+# the cluster.
+GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
+K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
 
 # Get a list of all VMs in the desired project that have a name in the right
 # format (the format ends with a number) and find the lowest number that is not
@@ -44,12 +47,12 @@ set -e
 # network".
 NODE_NAME="${K8S_NODE_PREFIX}-${NEW_NODE_NUM}"
 gcloud compute instances create "${NODE_NAME}" \
-  --image "ubuntu-1710-artful-v20180612" \
-  --image-project "ubuntu-os-cloud" \
+  --image-family "${GCE_IMAGE_FAMILY}" \
+  --image-project "${GCE_IMAGE_PROJECT}" \
+  --network "${GCE_NETWORK}" \
+  --subnet "${GCE_K8S_SUBNET}" \
   --project="${PROJECT}" \
-  --zone="${ZONE}" \
-  --network "epoxy-extension-private-network" \
-  "$@"
+  --zone="${GCE_ZONE}"
 
 sleep 120  # Wait for the node to appear
 gcloud compute config-ssh --project="${PROJECT}"
@@ -63,7 +66,7 @@ gcloud compute config-ssh --project="${PROJECT}"
 # but including that exact line in the commands below causes the entire
 # 'Addresses' section of the node config in k8s to not exist, which seems
 # incorrect.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
+gcloud compute ssh --project="${PROJECT}" --zone="${GCE_ZONE}" "${NODE_NAME}" <<EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -73,7 +76,7 @@ gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
   curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
-  apt-get install -y kubelet kubeadm kubectl
+  apt-get install -y kubelet=${K8S_VERSION}-00 kubeadm=${K8S_VERSION}-00 kubectl=${K8S_VERSION}-00
   sed -e 's#KUBELET_KUBECONFIG_ARGS=#KUBELET_KUBECONFIG_ARGS=--node-labels=mlab/type=cloud #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
   systemctl daemon-reload
   systemctl enable docker.service
@@ -87,7 +90,7 @@ EOF
 # itself instead of requiring that the user running this script also have root
 # on k8s-platform-master.  We should figure out how that should work and do that
 # instead of the below.
-JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" k8s-platform-master <<-EOF
+JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh --project="${PROJECT}" --zone="${GCE_ZONE}" "${K8S_MASTER}" <<EOF
   sudo -s
   set -euxo pipefail
   kubeadm token create --ttl=5m --print-join-command --description="Token for ${NODE_NAME}"
@@ -95,7 +98,7 @@ EOF
 ))
 
 # Ssh to the new node and use the newly created token to join the cluster.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
+gcloud compute ssh --project="${PROJECT}" --zone="${GCE_ZONE}" "${NODE_NAME}" <<EOF
   sudo -s
   set -euxo pipefail
   sudo ${JOIN_COMMAND}
@@ -105,10 +108,13 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list --format 'value(networkInterfaces[].accessConfigs[0].natIP)' --project="${PROJECT}" --filter="name~'${NODE_NAME}'")
+EXTERNAL_IP=$(gcloud compute instances list \
+    --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
+    --project="${PROJECT}" \
+    --filter="name~'${NODE_NAME}'")
 
 # Ssh to the master and fix the network annotation for the node.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" k8s-platform-master <<-EOF
+gcloud compute ssh --project="${PROJECT}" --zone="${GCE_ZONE}" "${K8S_MASTER}" <<EOF
   set -euxo pipefail
   kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
 EOF
