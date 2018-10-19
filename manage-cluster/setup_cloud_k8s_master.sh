@@ -808,19 +808,29 @@ EOF
 EOF
   fi
 
-  # Allow the user who installed k8s on the master to call kubectl.  As we
-  # productionize this process, this code should be deleted.
-  # For the next steps, we no longer want to be root.
+  # Allow the user who installed k8s on the master to call kubectl and etcdctl.
+  # As we productionize this process, this code should be deleted.  For the next
+  # steps, we no longer want to be root.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-\EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
+        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
+        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
+        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
+        >> $HOME/.bashrc
 
     # Allow root to run kubectl also.
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u):$(id -g) /root/.kube/config
+    echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
+        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
+        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
+        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
+        >> /root/.bashrc
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
