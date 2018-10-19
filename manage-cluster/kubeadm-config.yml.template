@@ -18,6 +18,13 @@ kind: ClusterConfiguration
 kubernetesVersion: v{{K8S_VERSION}}
 apiServerCertSANs:
 - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+apiServerExtraArgs:
+  cloud-provider: "gce"
+  cloud-config: "/etc/kubernetes/cloud.conf"
+apiServerExtraVolumes:
+- name: cloud
+  hostPath: "/etc/kubernetes/cloud.conf"
+  mountPath: "/etc/kubernetes/cloud.conf"
 auditPolicy:
   logDir: /var/log/kubernetes/audit
   logMaxAge: 2
@@ -27,6 +34,12 @@ clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
+  cloud-provider: "gce"
+  cloud-config: "/etc/kubernetes/cloud.conf"
+controllerManagerExtraVolumes:
+- name: cloud
+  hostPath: "/etc/kubernetes/cloud.conf"
+  mountPath: "/etc/kubernetes/cloud.conf"
 etcd:
   local:
     dataDir: /var/lib/etcd
