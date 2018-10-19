@@ -9,6 +9,9 @@ nodeRegistration:
   taints:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
+  kubeletExtraArgs:
+    cloud-provider: "gce"
+    cloud-config: "/etc/kubernetes/cloud.conf"
 ---
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: ClusterConfiguration

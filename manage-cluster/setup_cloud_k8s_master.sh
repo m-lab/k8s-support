@@ -617,10 +617,6 @@ for zone in $GCE_ZONES; do
     # Create a suitable cloud-config file for the cloud provider.
     echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
 
-    # Sets the kubelet's cloud provider config to gce and points to a suitable config file.
-    echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"' > \
-        /etc/default/kubelet
-
     # We have run up against "no space left on device" errors, when clearly
     # there is plenty of free disk space. It seems this could likely be related
     # to this:
