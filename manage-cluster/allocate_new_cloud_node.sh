@@ -10,7 +10,6 @@
 
 set -euxo pipefail
 
-# [node-suffix] is optional.
 USAGE="USAGE: $0 <google-cloud-project>"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
 
