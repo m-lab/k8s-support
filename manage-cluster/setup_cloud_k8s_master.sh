@@ -19,12 +19,12 @@ PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 source k8s_deploy.conf
 
 # Create a string representing region and zone variable names for this project.
-GCE_REGION_VAR="${GCE_REGION}_${PROJECT}"
-GCE_ZONES_VAR="${GCE_REGION}_${PROJECT}"
+GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
 
 # Dereference the region and zones variables.
-GCE_REGION="${!GCE_REGION_VAR}"
-GCE_ZONES="${!GCE_ZONES_VAR}"
+GCE_REGION="${!GCE_REGION}"
+GCE_ZONES="${!GCE_ZONES}"
 
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
