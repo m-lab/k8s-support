@@ -62,7 +62,7 @@ fi
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
 #
-# DELETE ANY EXISTING OBJECTS
+# DELETE ANY EXISTING GCP OBJECTS
 #
 # This script assumes you want to start totally fresh.
 
@@ -190,6 +190,32 @@ for zone in $GCE_ZONES; do
   fi
 done
 
+EXISTING_K8S_SUBNET=$(gcloud compute networks list \
+    --network "${GCE_NETWORK}" \
+    --filter "name=${GCE_K8S_SUBNET}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
+  gcloud compute networks subnets delete "${GCE_K8S_SUBNET}" "${GCP_ARGS[@]}"
+fi
+
+EXISTING_EPOXY_SUBNET=$(gcloud compute networks list \
+    --network "${GCE_NETWORK}" \
+    --filter "name=${GCE_EPOXY_SUBNET}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_EPOXY_SUBNET}" ]]; then
+  gcloud compute networks subnets delete "${GCE_EPOXY_SUBNET}" "${GCP_ARGS[@]}"
+fi
+
+EXISTING_NETWORK=$(gcloud compute networks list \
+    --filter "name=${GCE_NETWORK}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_NETWORK}" ]]; then
+  gcloud compute networks delete "${GCE_NETWORK}" "${GCP_ARGS[@]}"
+fi
+
 # If $DELETE_ONLY is set to "yes", then exit now.
 if [[ "${DELETE_ONLY}" == "yes" ]]; then
   echo "DELETE_ONLY set to 'yes'. All GCP objects deleted. Exiting."
@@ -199,6 +225,21 @@ fi
 #
 # CREATE NEW CLUSTER
 #
+
+# Create the VPC network and subnets.
+gcloud compute networks create "${GCE_NETWORK}" \
+    --subnet-mode custom \
+    "${GCP_ARGS[@]}"
+gcloud compute networks subnets create "${GCE_K8S_SUBNET}" \
+    --network "${GCE_NETWORK}" \
+    --range "${GCE_K8S_SUBNET_RANGE}" \
+    --region "${GCE_REGION}" \
+    "${GCP_ARGS[@]}"
+gcloud compute networks subnets create "${GCE_EPOXY_SUBNET}" \
+    --network "${GCE_NETWORK}" \
+    --range "${GCE_EPOXY_SUBNET_RANGE}" \
+    --region "${GCE_REGION}" \
+    "${GCP_ARGS[@]}"
 
 # EXTERNAL LOAD BALANCER
 #
