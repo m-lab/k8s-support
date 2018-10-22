@@ -10,60 +10,66 @@
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <google-cloud-project> [extra args for gcloud compute instances create]"
+USAGE="USAGE: $0 <google-cloud-project>"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
-ZONE=${2:?Please specify the google cloud zone: $USAGE}
 
-# Now the entirety of $@ is arguments to pass to 'gcloud instances create'
-shift
-shift
+# Source all the global configuration variables.
+source k8s_deploy.conf
 
-K8S_NODE_PREFIX="k8s-platform-cluster-node"
+GCE_REGION="GCE_REGION_${PROJECT/-/_}"
+GCE_ZONES="GCE_REGION_${PROJECT/-/_}"
+
+GCE_ZONE="${!GCE_REGION}-$(echo ${!GCE_ZONES} | awk '{print $1}')"
+GCP_ARGS=("--project=${PROJECT}" "--quiet")
+GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
+
+# Use the first k8s master from the region to contact to join this cloud node to
+# the cluster.
+K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
 
 # Get a list of all VMs in the desired project that have a name in the right
-# format (the format ends with a number) and find the lowest number that is not
-# in the list (it may fill in a hole in the middle).
+# format (the format ends with a number) and find the lowest number that is
+# not in the list (it may fill in a hole in the middle).
 set +e  # The next command exits with nonzero, even when it works properly.
 NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
     <(gcloud compute instances list \
-        --project="${PROJECT}" \
         --filter="name~'${K8S_NODE_PREFIX}-\d+'" \
         --format='value(name)' \
+        "${GCP_ARGS[@]}" \
       | sed -e 's/.*-//' \
       | sort -n) \
     <(seq 10000) \
   | head -n 1)
 set -e
 
-# Allocate a new VM with the right name.
-#
-# WARNING: As-is this setup potentially reduces the security guarantees of
-# ePoxy.
-# TODO: Stop putting nodes on epoxy-extension-private-network. We must redesign
-# our GCP network setup to separate the "cluster network" from the "epoxy
-# network".
-NODE_NAME="${K8S_NODE_PREFIX}-${NEW_NODE_NUM}"
+NODE_NAME="${K8S_CLOUD_NODE_BASE_NAME}-${NEW_NODE_NUM}"
+
+# Allocate a new VM.
 gcloud compute instances create "${NODE_NAME}" \
-  --image "ubuntu-1710-artful-v20180612" \
-  --image-project "ubuntu-os-cloud" \
-  --project="${PROJECT}" \
-  --zone="${ZONE}" \
-  --network "epoxy-extension-private-network" \
-  "$@"
+  --image-family "${GCE_IMAGE_FAMILY}" \
+  --image-project "${GCE_IMAGE_PROJECT}" \
+  --network "${GCE_NETWORK}" \
+  --subnet "${GCE_K8S_SUBNET}" \
+  "${GCE_ARGS[@]}"
 
-sleep 120  # Wait for the node to appear
-gcloud compute config-ssh --project="${PROJECT}"
+# Give the instance time to appear.  Make sure it appears twice - there have
+# been multiple instances of it connecting just once and then failing again for
+# a bit.
+until gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}" && \
+      sleep 10 && \
+      gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}"; do
+  echo Waiting for "${NODE_NAME}" to boot up.
+  # Refresh keys in case they changed mid-boot. They change as part of the
+  # GCE bootup process, and it is possible to ssh at the precise moment a
+  # temporary key works, get that key put in your permanent storage, and have
+  # all future communications register as a MITM attack.
+  #
+  # Same root cause as the need to ssh twice in the loop condition above.
+  gcloud compute config-ssh "${GCP_ARGS[@]}"
+done
 
-# Ssh to the new node, install all the k8s binaries and make sure the node will
-# be tagged as mlab/type:cloud when it joins.
-#
-# TODO: Figure out how to make the node ip be part of its registration. Possibly
-# something like:
-#   sed -e 's#KUBELET_NETWORK_ARGS=#KUBELET_NETWORK_ARGS=--node-ip=${EXTERNAL_IP} #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-# but including that exact line in the commands below causes the entire
-# 'Addresses' section of the node config in k8s to not exist, which seems
-# incorrect.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
+# Ssh to the new node, install all the k8s binaries.
+gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
   set -euxo pipefail
   apt-get update
@@ -73,8 +79,14 @@ gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
   curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
-  apt-get install -y kubelet kubeadm kubectl
-  sed -e 's#KUBELET_KUBECONFIG_ARGS=#KUBELET_KUBECONFIG_ARGS=--node-labels=mlab/type=cloud #' -i /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
+
+  # Create a suitable cloud-config file for the cloud provider and set the cloud
+  # provider to "gce".
+  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
+  echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"' > \
+      /etc/default/kubelet
+
   systemctl daemon-reload
   systemctl enable docker.service
   systemctl restart kubelet
@@ -87,7 +99,7 @@ EOF
 # itself instead of requiring that the user running this script also have root
 # on k8s-platform-master.  We should figure out how that should work and do that
 # instead of the below.
-JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" k8s-platform-master <<-EOF
+JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
   set -euxo pipefail
   kubeadm token create --ttl=5m --print-join-command --description="Token for ${NODE_NAME}"
@@ -95,7 +107,7 @@ EOF
 ))
 
 # Ssh to the new node and use the newly created token to join the cluster.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" "${NODE_NAME}" <<-EOF
+gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
   set -euxo pipefail
   sudo ${JOIN_COMMAND}
@@ -105,10 +117,16 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list --format 'value(networkInterfaces[].accessConfigs[0].natIP)' --project="${PROJECT}" --filter="name~'${NODE_NAME}'")
+EXTERNAL_IP=$(gcloud compute instances list \
+    --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
+    --project="${PROJECT}" \
+    --filter="name~'${NODE_NAME}'")
 
 # Ssh to the master and fix the network annotation for the node.
-gcloud compute ssh --project="${PROJECT}" --zone="${ZONE}" k8s-platform-master <<-EOF
+gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
+  for label in ${K8S_CLOUD_NODE_LABELS}; do
+    kubectl label nodes ${NODE_NAME} \${label}
+  done
 EOF
