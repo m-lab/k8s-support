@@ -18,12 +18,20 @@ PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 # Source all of the global configuration variables.
 source k8s_deploy.conf
 
+# Create a string representing region and zone variable names for this project.
+GCE_REGION_VAR="${GCE_REGION}_${PROJECT}"
+GCE_ZONES_VAR="${GCE_REGION}_${PROJECT}"
+
+# Dereference the region and zones variables.
+GCE_REGION="${!GCE_REGION_VAR}"
+GCE_ZONES="${!GCE_ZONES_VAR}"
+
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
 # some way to use a proxying load balancer.
 #
 # The external load balancer will always be located in the first specified zone.
-EXTERNAL_LB_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
+EXTERNAL_LB_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES_VAR} | awk '{print $1}')"
 
 # Delete any temporary files and dirs from a previous run.
 rm -f setup_k8s.sh transaction.yaml
