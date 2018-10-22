@@ -20,6 +20,7 @@ spec:
       serviceAccountName: prometheus
       nodeSelector:
         mlab/type: cloud
+        prometheus-node: 'true'
       containers:
       - name: prometheus-server
         image: prom/prometheus:v2.4.2
