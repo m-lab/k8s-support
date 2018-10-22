@@ -768,12 +768,12 @@ EOF
     # Allow root to run kubectl also.
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-    sudo chown $(id -u):$(id -g) /root/.kube/config
-    echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
+    sudo chown $(id -u root):$(id -g root) /root/.kube/config
+    sudo bash -c 'echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
         "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
         "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
         "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
-        >> /root/.bashrc
+        >> /root/.bashrc'
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
