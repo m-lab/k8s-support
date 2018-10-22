@@ -584,7 +584,7 @@ for zone in $GCE_ZONES; do
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
     echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
     apt-get update
-    apt-get install -y kubelet=${K8S_VERSION}-00 kubeadm=${K8S_VERSION}-00 kubectl=${K8S_VERSION}-00 etcd-client
+    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION} etcd-client
 
     # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
     #

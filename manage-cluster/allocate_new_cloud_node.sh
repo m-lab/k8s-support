@@ -76,7 +76,7 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
-  apt-get install -y kubelet=${K8S_VERSION}-00 kubeadm=${K8S_VERSION}-00 kubectl=${K8S_VERSION}-00
+  apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
 
   # Create a suitable cloud-config file for the cloud provider and set the cloud
   # provider to "gce".
