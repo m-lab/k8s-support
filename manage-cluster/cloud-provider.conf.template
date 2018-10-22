@@ -1,0 +1,61 @@
+# Configuration derived from:
+# https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/gce/gce.go#L162
+
+[global]
+
+# TokenURL string
+;token-url=
+
+# TokenBody string
+;token-body=
+
+# ProjectID and NetworkProjectID can either be the numeric or string-based
+# unique identifier that starts with [a-z].
+project-id={{PROJECT}}
+
+# NetworkProjectID refers to the project which owns the network being used.
+network-project-id={{PROJECT}}
+
+# NetworkName string
+network-name={{GCE_NETWORK}}
+
+# SubnetworkName string
+subnetwork-name={{GCE_SUBNET}}
+
+# SecondaryRangeName is the name of the secondary range to allocate IP
+# aliases. The secondary range must be present on the subnetwork the
+# cluster is attached to.
+;secondary-range-name=
+
+# NodeTags []string
+;node-tags=
+
+# NodeInstancePrefix string
+;node-instance-prefix=
+
+# Regional bool
+;regional=
+
+# Multizone bool
+;multizone=
+
+# ApiEndpoint is the GCE compute API endpoint to use. If this is blank,
+# then the default endpoint is used.
+# ApiEndpoint string
+;api-endpoint=
+
+# ContainerApiEndpoint is the GCE container API endpoint to use. If this is blank,
+# then the default endpoint is used.
+# ContainerApiEndpoint string
+;container-api-endpoint=
+
+# LocalZone specifies the GCE zone that gce cloud client instance is
+# located in (i.e. where the controller will be running). If this is
+# blank, then the local zone will be discovered via the metadata server.
+# LocalZone string
+;local-zone=
+
+# Default to none.
+# For example: MyFeatureFlag
+# AlphaFeatures []string
+;alpha-features=

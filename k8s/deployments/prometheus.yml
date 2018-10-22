@@ -23,8 +23,8 @@ spec:
         prometheus-node: 'true'
       containers:
       - name: prometheus-server
-        image: prom/prometheus:v2.3.1
-        args: ["--config.file=/etc/prometheus/prometheus-config.yml",
+        image: prom/prometheus:v2.4.2
+        args: ["--config.file=/etc/prometheus/prometheus.yml",
                "--web.enable-lifecycle"]
         ports:
         - containerPort: 9090

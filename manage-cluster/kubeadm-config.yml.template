@@ -9,12 +9,22 @@ nodeRegistration:
   taints:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
+  kubeletExtraArgs:
+    cloud-provider: "gce"
+    cloud-config: "/etc/kubernetes/cloud-provider.conf"
 ---
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: ClusterConfiguration
 kubernetesVersion: v{{K8S_VERSION}}
 apiServerCertSANs:
 - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+apiServerExtraArgs:
+  cloud-provider: "gce"
+  cloud-config: "/etc/kubernetes/cloud-provider.conf"
+apiServerExtraVolumes:
+- name: cloud
+  hostPath: "/etc/kubernetes/cloud-provider.conf"
+  mountPath: "/etc/kubernetes/cloud-provider.conf"
 auditPolicy:
   logDir: /var/log/kubernetes/audit
   logMaxAge: 2
@@ -24,6 +34,12 @@ clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
+  cloud-provider: "gce"
+  cloud-config: "/etc/kubernetes/cloud-provider.conf"
+controllerManagerExtraVolumes:
+- name: cloud
+  hostPath: "/etc/kubernetes/cloud-provider.conf"
+  mountPath: "/etc/kubernetes/cloud-provider.conf"
 etcd:
   local:
     dataDir: /var/lib/etcd
