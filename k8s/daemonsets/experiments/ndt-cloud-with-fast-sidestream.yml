@@ -13,7 +13,7 @@ spec:
         run: ndt-cloud
       annotations:
         prometheus.io/scrape: 'true'
-        networks: '[
+        k8s.v1.cni.cncf.io/networks: '[
           { "name": "flannel-conf" },
           { "name": "index2ip-index-2-conf" } ]'
     spec:
