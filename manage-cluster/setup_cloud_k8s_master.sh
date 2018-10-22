@@ -812,6 +812,10 @@ EOF
 
     # Work around a known issue with --cloud-provider=gce and CNI plugins.
     # https://github.com/kubernetes/kubernetes/issues/44254
+    # Without the following action a node will have a node-condition of
+    # NetworkUnavailable=True, which has the result of a taint getting added to
+    # the node which may prevent some pods from getting scheduled on the node if
+    # they don't explicitly tolerate the taint.
     kubectl proxy --port 8888 &> /dev/null &
     # Give the proxy a couple seconds to start up.
     sleep 2
