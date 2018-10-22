@@ -1,9 +1,8 @@
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: flannel-conf
-plugin: flannel
 args: '{
          "cniVersion": "0.3.0",
          "type": "flannel",
@@ -14,11 +13,10 @@ args: '{
          "masterplugin": true
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-1-conf
-plugin: index2ip-index-1
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-1",
@@ -30,27 +28,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-2-conf
-plugin: index2ip-index-2
-args: '{
-         "cniVersion": "0.3.0",
-         "name": "ipvlan-index-2",
-         "type": "ipvlan",
-         "master": "eth0",
-         "ipam": {
-           "type": "index2ip",
-           "index": 2
-         }
-       }'
----
-apiVersion: "kubernetes.com/v1"
-kind: Network
-metadata:
- name: index2ip-index-3-conf
-plugin: index2ip-index-3
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-3",
@@ -62,11 +43,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-4-conf
-plugin: index2ip-index-4
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-4",
@@ -78,11 +58,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-5-conf
-plugin: index2ip-index-5
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-5",
@@ -94,11 +73,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-6-conf
-plugin: index2ip-index-6
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-6",
@@ -110,11 +88,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-7-conf
-plugin: index2ip-index-7
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-7",
@@ -126,11 +103,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-8-conf
-plugin: index2ip-index-8
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-8",
@@ -142,11 +118,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-9-conf
-plugin: index2ip-index-9
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-9",
@@ -158,11 +133,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-10-conf
-plugin: index2ip-index-10
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-10",
@@ -174,11 +148,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-11-conf
-plugin: index2ip-index-11
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-11",
@@ -190,11 +163,10 @@ args: '{
          }
        }'
 ---
-apiVersion: "kubernetes.com/v1"
-kind: Network
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
 metadata:
  name: index2ip-index-12-conf
-plugin: index2ip-index-12
 args: '{
          "cniVersion": "0.3.0",
          "name": "ipvlan-index-12",
