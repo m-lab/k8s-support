@@ -188,24 +188,37 @@ for zone in $GCE_ZONES; do
         --zone "${gce_zone}" \
         "${GCP_ARGS[@]}"
   fi
+
+  EXISTING_CLUSTER_NODES=$(gcloud compute instances list \
+      --filter "name:k8s-platform-cluster-node AND zone:${gce_zone}" \
+      --format "value(name)" || true)
+  if [[ -n "${EXISTING_CLUSTER_NODES}" ]]; then
+    for node_name in ${EXISTING_CLUSTER_NODES}; do
+      gcloud compute instances delete "${node_name}" "${GCE_ARGS[@]}"
+    done
+  fi
 done
 
-EXISTING_K8S_SUBNET=$(gcloud compute networks list \
+EXISTING_K8S_SUBNET=$(gcloud compute networks subnets list \
     --network "${GCE_NETWORK}" \
     --filter "name=${GCE_K8S_SUBNET}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
-  gcloud compute networks subnets delete "${GCE_K8S_SUBNET}" "${GCP_ARGS[@]}"
+  gcloud compute networks subnets delete "${GCE_K8S_SUBNET}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
-EXISTING_EPOXY_SUBNET=$(gcloud compute networks list \
+EXISTING_EPOXY_SUBNET=$(gcloud compute networks subnets list \
     --network "${GCE_NETWORK}" \
     --filter "name=${GCE_EPOXY_SUBNET}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_EPOXY_SUBNET}" ]]; then
-  gcloud compute networks subnets delete "${GCE_EPOXY_SUBNET}" "${GCP_ARGS[@]}"
+  gcloud compute networks subnets delete "${GCE_EPOXY_SUBNET}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
 EXISTING_NETWORK=$(gcloud compute networks list \
@@ -665,15 +678,6 @@ for zone in $GCE_ZONES; do
     # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
     # it from the default of 8192.
     echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.conf
-    sysctl -p
-
-    # We have run up against "no space left on device" errors, when clearly
-    # there is plenty of free disk space. It seems this could likely be related
-    # to this:
-    # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
-    # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
-    # it from the default of 8192.
-    echo fs.inotify.max_user_watches=32768 >> /etc/sysctl.conf
     sysctl -p
 
     systemctl daemon-reload
