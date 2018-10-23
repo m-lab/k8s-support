@@ -18,6 +18,17 @@ PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 # Source all of the global configuration variables.
 source k8s_deploy.conf
 
+# Issue a warning to the user and only continue if they agree.
+cat <<EOF
+  WARNING: this script is destructive. It will completely delete and then
+  recreate from scratch absolutely everything in the k8s platform cluster.
+  Only continue if this is what you intend. Do you want to continue [y/N]:
+EOF
+read keepgoing
+if [[ "${keepgoing}" != "y" ]]; then
+  exit 0
+fi
+
 # Create a string representing region and zone variable names for this project.
 GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
 GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
@@ -115,15 +126,6 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-EXISTING_INTERNAL_FW_EPOXY=$(gcloud compute firewall-rules list \
-    --filter "name=${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
-  gcloud compute firewall-rules delete \
-      "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-      "${GCP_ARGS[@]}"
-fi
-
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -210,25 +212,6 @@ if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-EXISTING_EPOXY_SUBNET=$(gcloud compute networks subnets list \
-    --network "${GCE_NETWORK}" \
-    --filter "name=${GCE_EPOXY_SUBNET}" \
-    --format "value(name)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_EPOXY_SUBNET}" ]]; then
-  gcloud compute networks subnets delete "${GCE_EPOXY_SUBNET}" \
-      --region "${GCE_REGION}" \
-      "${GCP_ARGS[@]}"
-fi
-
-EXISTING_NETWORK=$(gcloud compute networks list \
-    --filter "name=${GCE_NETWORK}" \
-    --format "value(name)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_NETWORK}" ]]; then
-  gcloud compute networks delete "${GCE_NETWORK}" "${GCP_ARGS[@]}"
-fi
-
 # If $DELETE_ONLY is set to "yes", then exit now.
 if [[ "${DELETE_ONLY}" == "yes" ]]; then
   echo "DELETE_ONLY set to 'yes'. All GCP objects deleted. Exiting."
@@ -239,18 +222,13 @@ fi
 # CREATE NEW CLUSTER
 #
 
-# Create the VPC network and subnets.
+# Create the VPC network, if it doesn't already exist, and subnets.
 gcloud compute networks create "${GCE_NETWORK}" \
     --subnet-mode custom \
-    "${GCP_ARGS[@]}"
+    "${GCP_ARGS[@]}" || true
 gcloud compute networks subnets create "${GCE_K8S_SUBNET}" \
     --network "${GCE_NETWORK}" \
     --range "${GCE_K8S_SUBNET_RANGE}" \
-    --region "${GCE_REGION}" \
-    "${GCP_ARGS[@]}"
-gcloud compute networks subnets create "${GCE_EPOXY_SUBNET}" \
-    --network "${GCE_NETWORK}" \
-    --range "${GCE_EPOXY_SUBNET_RANGE}" \
     --region "${GCE_REGION}" \
     "${GCP_ARGS[@]}"
 
@@ -453,24 +431,6 @@ gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
     --source-ranges "${INTERNAL_K8S_SUBNET}" \
     "${GCP_ARGS[@]}"
 
-# Determine the internal CIDR of the ePoxy subnet.
-INTERNAL_EPOXY_SUBNET=$(gcloud compute networks subnets describe ${GCE_EPOXY_SUBNET} \
-    --region ${GCE_REGION} \
-    --format "value(ipCidrRange)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -z "${INTERNAL_EPOXY_SUBNET}" ]]; then
-  echo "Could not determine the CIDR range for the internal ePoxy subnet."
-  exit 1
-fi
-# Set up a firewall rule allowing access to the token-server from any instance
-# running in the ePoxy subnet.
-gcloud compute firewall-rules create "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-    --network "${GCE_NETWORK}" \
-    --action "allow" \
-    --rules "tcp:${TOKEN_SERVER_PORT}" \
-    --source-ranges "${INTERNAL_EPOXY_SUBNET}" \
-    "${GCP_ARGS[@]}"
-
 #
 # Create one GCE instance for each of $GCE_ZONES defined.
 #
@@ -669,7 +629,7 @@ for zone in $GCE_ZONES; do
         soltesz/gcp-loadbalancer-healthz-proxy -port :8080 -url https://localhost:6443
 
     # Create a suitable cloud-config file for the cloud provider.
-    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
+    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
 
     # We have run up against "no space left on device" errors, when clearly
     # there is plenty of free disk space. It seems this could likely be related
