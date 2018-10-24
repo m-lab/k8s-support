@@ -599,14 +599,21 @@ for zone in $GCE_ZONES; do
     sudo -s
     set -euxo pipefail
     apt-get update
-    apt-get install -y docker.io
+    apt-get install -y docker.io golang-go
     systemctl enable docker.service
+
+    # Install etcdctl
+    export GOPATH=\$HOME/go
+    go get github.com/coreos/etcd/etcdctl
+    cd \$GOPATH/src/github.com/coreos/etcd/etcdctl
+    git checkout -b $ETCDCTL_VERSION
+    go install .
 
     apt-get update && apt-get install -y apt-transport-https curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
     echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
     apt-get update
-    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION} etcd-client
+    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
 
     # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
     #
@@ -761,29 +768,28 @@ EOF
 EOF
   fi
 
-  # Allow the user who installed k8s on the master to call kubectl and etcdctl.
-  # As we productionize this process, this code should be deleted.  For the next
-  # steps, we no longer want to be root.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-\EOF
+  # Allow the user who installed k8s on the master to call kubectl. And let root
+  # easily access kubectl as well as etcdctl.  As we productionize this process,
+  # this code should be deleted.  For the next steps, we no longer want to be
+  # root.
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
-    echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
-        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
-        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
-        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
-        >> $HOME/.bashrc
 
-    # Allow root to run kubectl also.
+    # Allow root to run kubectl also, and etcdctl too.
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u root):$(id -g root) /root/.kube/config
-    sudo bash -c 'echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
-        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
-        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
-        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
-        >> /root/.bashrc'
+    sudo bash -c "(cat <<-EOF2
+		export ETCDCTL_DIAL_TIMEOUT=3s
+		export ETCDCTL_CA_FILE=/etc/kubernetes/pki/etcd/ca.crt
+		export ETCDCTL_CERT_FILE=/etc/kubernetes/pki/etcd/peer.crt
+		export ETCDCTL_KEY_FILE=/etc/kubernetes/pki/etcd/peer.key
+		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+EOF2
+	) >> /root/.bashrc"
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
