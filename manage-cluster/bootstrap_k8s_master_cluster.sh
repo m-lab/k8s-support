@@ -599,15 +599,8 @@ for zone in $GCE_ZONES; do
     sudo -s
     set -euxo pipefail
     apt-get update
-    apt-get install -y docker.io golang-go
+    apt-get install -y docker.io etcd-client
     systemctl enable docker.service
-
-    # Install etcdctl
-    export GOPATH=\$HOME/go
-    go get github.com/coreos/etcd/etcdctl
-    cd \$GOPATH/src/github.com/coreos/etcd/etcdctl
-    git checkout -b $ETCDCTL_VERSION
-    go install .
 
     apt-get update && apt-get install -y apt-transport-https curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
