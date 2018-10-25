@@ -18,6 +18,17 @@ PROJECT=${1:?Please provide the cloud project: ${USAGE}}
 # Source all of the global configuration variables.
 source k8s_deploy.conf
 
+# Issue a warning to the user and only continue if they agree.
+cat <<EOF
+  WARNING: this script is destructive. It will completely delete and then
+  recreate from scratch absolutely everything in the k8s platform cluster.
+  Only continue if this is what you intend. Do you want to continue [y/N]:
+EOF
+read keepgoing
+if [[ "${keepgoing}" != "y" ]]; then
+  exit 0
+fi
+
 # Create a string representing region and zone variable names for this project.
 GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
 GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
@@ -115,15 +126,6 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-EXISTING_INTERNAL_FW_EPOXY=$(gcloud compute firewall-rules list \
-    --filter "name=${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
-  gcloud compute firewall-rules delete \
-      "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-      "${GCP_ARGS[@]}"
-fi
-
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -188,32 +190,26 @@ for zone in $GCE_ZONES; do
         --zone "${gce_zone}" \
         "${GCP_ARGS[@]}"
   fi
+
+  EXISTING_CLUSTER_NODES=$(gcloud compute instances list \
+      --filter "name:k8s-platform-cluster-node AND zone:${gce_zone}" \
+      --format "value(name)" || true)
+  if [[ -n "${EXISTING_CLUSTER_NODES}" ]]; then
+    for node_name in ${EXISTING_CLUSTER_NODES}; do
+      gcloud compute instances delete "${node_name}" "${GCE_ARGS[@]}"
+    done
+  fi
 done
 
-EXISTING_K8S_SUBNET=$(gcloud compute networks list \
+EXISTING_K8S_SUBNET=$(gcloud compute networks subnets list \
     --network "${GCE_NETWORK}" \
     --filter "name=${GCE_K8S_SUBNET}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
 if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
-  gcloud compute networks subnets delete "${GCE_K8S_SUBNET}" "${GCP_ARGS[@]}"
-fi
-
-EXISTING_EPOXY_SUBNET=$(gcloud compute networks list \
-    --network "${GCE_NETWORK}" \
-    --filter "name=${GCE_EPOXY_SUBNET}" \
-    --format "value(name)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_EPOXY_SUBNET}" ]]; then
-  gcloud compute networks subnets delete "${GCE_EPOXY_SUBNET}" "${GCP_ARGS[@]}"
-fi
-
-EXISTING_NETWORK=$(gcloud compute networks list \
-    --filter "name=${GCE_NETWORK}" \
-    --format "value(name)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_NETWORK}" ]]; then
-  gcloud compute networks delete "${GCE_NETWORK}" "${GCP_ARGS[@]}"
+  gcloud compute networks subnets delete "${GCE_K8S_SUBNET}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
 # If $DELETE_ONLY is set to "yes", then exit now.
@@ -226,18 +222,13 @@ fi
 # CREATE NEW CLUSTER
 #
 
-# Create the VPC network and subnets.
+# Create the VPC network, if it doesn't already exist, and subnets.
 gcloud compute networks create "${GCE_NETWORK}" \
     --subnet-mode custom \
-    "${GCP_ARGS[@]}"
+    "${GCP_ARGS[@]}" || true
 gcloud compute networks subnets create "${GCE_K8S_SUBNET}" \
     --network "${GCE_NETWORK}" \
     --range "${GCE_K8S_SUBNET_RANGE}" \
-    --region "${GCE_REGION}" \
-    "${GCP_ARGS[@]}"
-gcloud compute networks subnets create "${GCE_EPOXY_SUBNET}" \
-    --network "${GCE_NETWORK}" \
-    --range "${GCE_EPOXY_SUBNET_RANGE}" \
     --region "${GCE_REGION}" \
     "${GCP_ARGS[@]}"
 
@@ -440,24 +431,6 @@ gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
     --source-ranges "${INTERNAL_K8S_SUBNET}" \
     "${GCP_ARGS[@]}"
 
-# Determine the internal CIDR of the ePoxy subnet.
-INTERNAL_EPOXY_SUBNET=$(gcloud compute networks subnets describe ${GCE_EPOXY_SUBNET} \
-    --region ${GCE_REGION} \
-    --format "value(ipCidrRange)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -z "${INTERNAL_EPOXY_SUBNET}" ]]; then
-  echo "Could not determine the CIDR range for the internal ePoxy subnet."
-  exit 1
-fi
-# Set up a firewall rule allowing access to the token-server from any instance
-# running in the ePoxy subnet.
-gcloud compute firewall-rules create "${GCE_BASE_NAME}-${TOKEN_SERVER_BASE_NAME}" \
-    --network "${GCE_NETWORK}" \
-    --action "allow" \
-    --rules "tcp:${TOKEN_SERVER_PORT}" \
-    --source-ranges "${INTERNAL_EPOXY_SUBNET}" \
-    "${GCP_ARGS[@]}"
-
 #
 # Create one GCE instance for each of $GCE_ZONES defined.
 #
@@ -626,14 +599,14 @@ for zone in $GCE_ZONES; do
     sudo -s
     set -euxo pipefail
     apt-get update
-    apt-get install -y docker.io
+    apt-get install -y docker.io etcd-client
     systemctl enable docker.service
 
     apt-get update && apt-get install -y apt-transport-https curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
     echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
     apt-get update
-    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION} etcd-client
+    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
 
     # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
     #
@@ -656,7 +629,7 @@ for zone in $GCE_ZONES; do
         soltesz/gcp-loadbalancer-healthz-proxy -port :8080 -url https://localhost:6443
 
     # Create a suitable cloud-config file for the cloud provider.
-    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
+    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
 
     # We have run up against "no space left on device" errors, when clearly
     # there is plenty of free disk space. It seems this could likely be related
@@ -665,15 +638,6 @@ for zone in $GCE_ZONES; do
     # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
     # it from the default of 8192.
     echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.conf
-    sysctl -p
-
-    # We have run up against "no space left on device" errors, when clearly
-    # there is plenty of free disk space. It seems this could likely be related
-    # to this:
-    # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
-    # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
-    # it from the default of 8192.
-    echo fs.inotify.max_user_watches=32768 >> /etc/sysctl.conf
     sysctl -p
 
     systemctl daemon-reload
@@ -797,29 +761,28 @@ EOF
 EOF
   fi
 
-  # Allow the user who installed k8s on the master to call kubectl and etcdctl.
-  # As we productionize this process, this code should be deleted.  For the next
-  # steps, we no longer want to be root.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-\EOF
+  # Allow the user who installed k8s on the master to call kubectl. And let root
+  # easily access kubectl as well as etcdctl.  As we productionize this process,
+  # this code should be deleted.  For the next steps, we no longer want to be
+  # root.
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
-    echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
-        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
-        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
-        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
-        >> $HOME/.bashrc
 
-    # Allow root to run kubectl also.
+    # Allow root to run kubectl also, and etcdctl too.
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u root):$(id -g root) /root/.kube/config
-    sudo bash -c 'echo -e "ETCDCTL_DIAL_TIMEOUT=3s\n" \
-        "ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.cert\n" \
-        "ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.cert\n" \
-        "ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key" \
-        >> /root/.bashrc'
+    sudo bash -c "(cat <<-EOF2
+		export ETCDCTL_DIAL_TIMEOUT=3s
+		export ETCDCTL_CA_FILE=/etc/kubernetes/pki/etcd/ca.crt
+		export ETCDCTL_CERT_FILE=/etc/kubernetes/pki/etcd/peer.crt
+		export ETCDCTL_KEY_FILE=/etc/kubernetes/pki/etcd/peer.key
+		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+EOF2
+	) >> /root/.bashrc"
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then

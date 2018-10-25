@@ -83,8 +83,8 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   # Create a suitable cloud-config file for the cloud provider and set the cloud
   # provider to "gce".
-  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud.conf
-  echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud.conf"' > \
+  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
+  echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud-provider.conf"' > \
       /etc/default/kubelet
 
   systemctl daemon-reload
