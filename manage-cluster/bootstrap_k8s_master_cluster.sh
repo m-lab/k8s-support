@@ -21,8 +21,10 @@ source k8s_deploy.conf
 # Issue a warning to the user and only continue if they agree.
 cat <<EOF
   WARNING: this script is destructive. It will completely delete and then
-  recreate from scratch absolutely everything in the k8s platform cluster.
-  Only continue if this is what you intend. Do you want to continue [y/N]:
+  recreate from scratch absolutely everything in the k8s platform cluster,
+  including ALL ETCD DATA. The cluster in its entirety, including all etcd data,
+  will be irrevoacably lost.  Only continue if this is what you intend. Do you
+  want to continue [y/N]:
 EOF
 read keepgoing
 if [[ "${keepgoing}" != "y" ]]; then
