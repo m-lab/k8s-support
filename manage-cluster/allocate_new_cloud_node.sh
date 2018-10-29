@@ -129,4 +129,19 @@ gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   for label in ${K8S_CLOUD_NODE_LABELS}; do
     kubectl label nodes ${NODE_NAME} \${label}
   done
+
+  # Work around a known issue with --cloud-provider=gce and CNI plugins.
+  # https://github.com/kubernetes/kubernetes/issues/44254
+  # Without the following action a node will have a node-condition of
+  # NetworkUnavailable=True, which has the result of a taint getting added to
+  # the node which may prevent some pods from getting scheduled on the node if
+  # they don't explicitly tolerate the taint.
+  kubectl proxy --port 8888 &> /dev/null &
+  # Give the proxy a couple seconds to start up.
+  sleep 2
+  curl http://localhost:8888/api/v1/nodes/${NODE_NAME}/status > a.json
+  cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
+  curl -X PUT http://localhost:8888/api/v1/nodes/${NODE_NAME}/status -H "Content-Type: application/json" -d @b.json
+  kill %1
 EOF
+
