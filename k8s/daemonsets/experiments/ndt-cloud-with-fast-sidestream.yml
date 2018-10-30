@@ -42,7 +42,7 @@ spec:
         - containerPort: 3010
         - containerPort: 9090
         volumeMounts:
-        - name: ndt-certificates
+        - name: ndt-tls
           mountPath: /certs
           readOnly: true
       - name: busybox
@@ -103,6 +103,6 @@ spec:
       - name: pusher-credentials
         secret:
           secretName: pusher-credentials
-      - name: ndt-certificates
+      - name: ndt-tls
         secret:
-          secretName: ndt-certificates
+          secretName: ndt-tls
