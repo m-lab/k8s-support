@@ -28,7 +28,7 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 kubectl apply -f k8s/roles/
 
 # Apply ConfigMaps
-kubectl create configmap pusher-dropbox --from-literal "bucket=dropbox-${PROJECT}"
+kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}"
 kubectl create configmap prometheus-config --from-file config/prometheus/prometheus.yml
 
 # Apply Deployments
