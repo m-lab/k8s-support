@@ -12,7 +12,8 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 #
 # If you don't know where to find a copy of pusher.json, then you may need to go
 # into the pusher-dropbox-writer service account and generate a new JSON
-# authentication key.
+# authentication key. NOTE: the JSON file are GCP project specific, so you will
+# need to generate three new ones, one per project.
 #
 # Ask an Ops person how to find the NDT TLS certificate and private key.  Once
 # in hand, you'll need to create a directory named ndt-tls/ and drop they key in
