@@ -32,7 +32,7 @@ kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}
 kubectl create configmap prometheus-config --from-file config/prometheus/prometheus.yml
 
 # Apply Deployments
-# 
+#
 # NOTE: the Prometheus deployment will only schedule pods on nodes with both of the
 # following labels, and for now not more than a single node should have the
 # label prometheus-node=true:
