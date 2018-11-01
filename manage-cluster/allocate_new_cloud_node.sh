@@ -50,6 +50,7 @@ gcloud compute instances create "${NODE_NAME}" \
   --image-project "${GCE_IMAGE_PROJECT}" \
   --network "${GCE_NETWORK}" \
   --subnet "${GCE_K8S_SUBNET}" \
+  --scopes "${GCE_API_SCOPES}" \
   "${GCE_ARGS[@]}"
 
 # Give the instance time to appear.  Make sure it appears twice - there have

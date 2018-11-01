@@ -530,7 +530,7 @@ for zone in $GCE_ZONES; do
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
-    --scopes "storage-full" \
+    --scopes "${GCE_API_SCOPES}" \
     "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
