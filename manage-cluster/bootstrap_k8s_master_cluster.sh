@@ -128,6 +128,14 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+EXISTING_HEALTH_CHECKS_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-health-checks" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_HEALTH_CHECKS_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-health-checks" \
+      "${GCP_ARGS[@]}"
+fi
+
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -329,6 +337,16 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
     --action "allow" \
     --rules "tcp:22,tcp:6443,udp:8472" \
     --source-ranges "0.0.0.0/0" \
+    "${GCP_ARGS[@]}"
+
+# Create firewall rule allowing GCP health checks.
+# https://cloud.google.com/load-balancing/docs/health-checks#firewall_rules
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-health-checks" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "all" \
+    --source-ranges "35.191.0.0/16,130.211.0.0/22" \
+    --target-tags "k8s-platform-master" \
     "${GCP_ARGS[@]}"
 
 #
@@ -796,7 +814,7 @@ EOF
                    openssl rsa -pubin -outform der 2>/dev/null | \
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
+    gsutil cp setup_k8s.sh gs://${GCS_BUCKET_NAME}/stage3_coreos/setup_k8s.sh
   fi
 
   # Evaluate the common.yml.template network config template file.
