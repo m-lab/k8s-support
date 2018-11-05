@@ -32,8 +32,8 @@ if [[ "${keepgoing}" != "y" ]]; then
 fi
 
 # Create a string representing region and zone variable names for this project.
-GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
-GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
+GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 
 # Dereference the region and zones variables.
 GCE_REGION="${!GCE_REGION_VAR}"
