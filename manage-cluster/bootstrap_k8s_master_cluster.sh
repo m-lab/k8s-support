@@ -136,6 +136,16 @@ if [[ -n "${EXISTING_HEALTH_CHECKS_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+# Delete any existing firewall rule created for VPC peering.
+EXISTING_INTERNAL_FW_VPC_PEERING=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-vpc-peering" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_INTERNAL_FW_VPC_PEERING}" ]]; then
+  gcloud compute firewall-rules delete \
+      "${GCE_BASE_NAME}-vpc-peering" \
+      "${GCP_ARGS[@]}"
+fi
+
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -174,6 +184,24 @@ EXISTING_INTERNAL_LB_IP=$(gcloud compute addresses list \
 if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
   gcloud compute addresses delete "${TOKEN_SERVER_BASE_NAME}-lb" \
       --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
+# Delete the mutual VPC network peering between the GCE_NETWORK.
+EXISTING_PLATFORM_VPC_PEERING=$(gcloud compute networks peerings list \
+    --filter "name=${GCE_NETWORK}-to-default" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_PLATFORM_VPC_PEERING}" ]]; then
+  gcloud compute networks peerings delete "${GCE_NETWORK}-to-default" \
+      --network="${GCE_NETWORK}" \
+      "${GCP_ARGS[@]}"
+fi
+EXISTING_DEFAULT_VPC_PEERING=$(gcloud compute networks peerings list \
+    --filter "name=default-to-${GCE_NETWORK}" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_DEFAULT_VPC_PEERING}" ]]; then
+  gcloud compute networks peerings delete "default-to-${GCE_NETWORK}" \
+      --network="default" \
       "${GCP_ARGS[@]}"
 fi
 
@@ -450,6 +478,44 @@ gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
     --rules "all" \
     --source-ranges "${INTERNAL_K8S_SUBNET}" \
     "${GCP_ARGS[@]}"
+
+# Determine the subnet of the prometheus-federation cluster in the default
+# network so that we can allow it access to scrape the platfrom Prometheus
+# instance.
+PROMETHEUS_ZONE=$(gcloud container clusters list \
+    --filter "name=prometheus-federation"  \
+    --format "value(zone)" \
+    "${GCP_ARGS[@]}")
+INTERNAL_PROMETHEUS_SUBNET=$(gcloud compute networks subnets describe default \
+    --region ${PROMETHEUS_ZONE%-*} \
+    --format "value(ipCidrRange)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -z "${INTERNAL_PROMETHEUS_SUBNET}" ]]; then
+  echo "Could not determine the CIDR range for prometheus-federation cluster."
+  exit 1
+fi
+# Create the firewall rule that will allow traffic from the VPC peered network
+# (the default network). Allowing this traffic:
+#    TCP 9090: Prometheus
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-vpc-peering" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "tcp:9090" \
+    --source-ranges "${INTERNAL_PROMETHEUS_SUBNET}" \
+    "${GCP_ARGS[@]}"
+
+# Create mutual VPC peering between the default network and GCE_NETWORK.
+gcloud compute networks peerings create "${GCE_NETWORK}-to-default" \
+    --network "${GCE_NETWORK}" \
+    --peer-network "default" \
+    --auto-create-routes \
+    --peer-project "${PROJECT}"
+gcloud compute networks peerings create "default-to-${GCE_NETWORK}" \
+    --network "default" \
+    --peer-network "${GCE_NETWORK}" \
+    --auto-create-routes \
+    --peer-project "${PROJECT}"
+
 
 #
 # Create one GCE instance for each of $GCE_ZONES defined.
@@ -836,8 +902,12 @@ EOF
     set -euxo pipefail
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
     kubectl label node ${gce_name} mlab/type=cloud
-    kubectl apply -f network/crd.yml
-    kubectl apply -f network
+
+    # These k8s resources only need to be applied to the cluster once.
+    if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
+      kubectl apply -f network/crd.yml
+      kubectl apply -f network
+    fi
 
     # Work around a known issue with --cloud-provider=gce and CNI plugins.
     # https://github.com/kubernetes/kubernetes/issues/44254
