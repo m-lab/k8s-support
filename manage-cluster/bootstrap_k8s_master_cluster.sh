@@ -42,7 +42,7 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 # Set up project GCS bucket variables. NOTE: these will need to be dereferenced
 # to use them.
 GCS_BUCKET_EPOXY="GCS_BUCKET_EPOXY_${PROJECT//-/_}"
-GCS_BUCKET_K8S="GCS_BUCKET_EPOXY_${PROJECT//-/_}"
+GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
