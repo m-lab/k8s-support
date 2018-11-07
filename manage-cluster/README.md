@@ -57,7 +57,7 @@ basic flow of the script boils down to this:
    configurations.
 6. Configure k8s and etcd using `kubeadm`.
 
-# Building the exec-healthz Docker image for GCP legacy HTTP health checks
+# gcp-loadbalancer-proxy
 Our k8s api servers only run over HTTPS, but currently the TCP network load
 balancer in GCP only supports HTTP health checks. Therefore we must run a
 container that will expose an HTTP port and will run an HTTPS request on the
@@ -71,20 +71,6 @@ https://cloud.google.com/load-balancing/docs/network/:
 
 https://github.com/kubernetes/kubernetes/issues/43784#issuecomment-415090237
 
-The official exec-healthz images (k8s.gcr.io/exechealthz:1.2) uses the
-golang:1.10-alpine image which doesn't include openssl, so https doesn't
-work. Therefore we build the image using the golang:1.10-stretch base image
-instead, which does have openssl installed.
-
-To build the image and push the result to hub.docker.com:
-```
-$ git clone https://github.com/kubernetes/contrib.git
-$ cd contrib/exec-healthz/
-$ sed -i 's|golang:1.10-alpine|golang:1.10-stretch|' Makefile
-$ make container
-$ docker tag <image id> measurementlab/exechealthz-stretch:<version>
-$ docker push measurementlab/exechealthz-stretch:<version>
-```
-
-The above assumes you have a hub.docker.com account and are logged in.
-
+For this purpose a special purpose
+[gcp-loadbalancer-proxy](https://github.com/m-lab/gcp-loadbalancer-proxy) was
+created. It gets installed automatically in bootstrap\_k8s\_master\_cluster.sh.
