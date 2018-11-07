@@ -32,12 +32,17 @@ if [[ "${keepgoing}" != "y" ]]; then
 fi
 
 # Create a string representing region and zone variable names for this project.
-GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
-GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
+GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 
 # Dereference the region and zones variables.
 GCE_REGION="${!GCE_REGION_VAR}"
 GCE_ZONES="${!GCE_ZONES_VAR}"
+
+# Set up project GCS bucket variables. NOTE: these will need to be dereferenced
+# to use them.
+GCS_BUCKET_EPOXY="GCS_BUCKET_EPOXY_${PROJECT//-/_}"
+GCS_BUCKET_K8S="GCS_BUCKET_EPOXY_${PROJECT//-/_}"
 
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
@@ -750,7 +755,7 @@ EOF
     # Create the directory where the project's GCS bucket will be mounted, and
     # mount it.
     mkdir -p ${K8S_PKI_DIR}
-    echo "k8s-platform-master-${PROJECT} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
+    echo "${!GCS_BUCKET_K8S} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
     mount ${K8S_PKI_DIR}
 
     # Make sure that the necessary subdirectories exist. Separated into two
@@ -880,7 +885,7 @@ EOF
                    openssl rsa -pubin -outform der 2>/dev/null | \
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://${GCS_BUCKET_NAME}/stage3_coreos/setup_k8s.sh
+    gsutil cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
   fi
 
   # Evaluate the common.yml.template network config template file.
