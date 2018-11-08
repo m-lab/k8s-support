@@ -33,7 +33,7 @@ K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
 set +e  # The next command exits with nonzero, even when it works properly.
 NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
     <(gcloud compute instances list \
-        --filter="name~'${K8S_NODE_PREFIX}-\d+'" \
+        --filter="name~'${K8S_CLOUD_NODE_BASE_NAME}-\d+'" \
         --format='value(name)' \
         "${GCP_ARGS[@]}" \
       | sed -e 's/.*-//' \
@@ -69,6 +69,22 @@ until gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}" && \
   gcloud compute config-ssh "${GCP_ARGS[@]}"
 done
 
+# Copy the cloud-provider.conf config template file to the server.
+gcloud compute scp cloud-provider.conf.template "${NODE_NAME}": "${GCE_ARGS[@]}"
+
+# evaludate the cloud-provider.conf template.
+gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
+  sudo -s
+
+  mkdir /etc/kubernetes
+
+  sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+      -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
+      -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
+      ./cloud-provider.conf.template > \
+      /etc/kubernetes/cloud-provider.conf
+EOF
+
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
@@ -82,9 +98,7 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   apt-get update
   apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
 
-  # Create a suitable cloud-config file for the cloud provider and set the cloud
-  # provider to "gce".
-  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
+  # Set cloud provider to "gce".
   echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud-provider.conf"' > \
       /etc/default/kubelet
 
@@ -125,6 +139,8 @@ EXTERNAL_IP=$(gcloud compute instances list \
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
+  sudo -s
+
   set -euxo pipefail
   kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   for label in ${K8S_CLOUD_NODE_LABELS}; do
