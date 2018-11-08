@@ -20,7 +20,7 @@ network-project-id={{PROJECT}}
 network-name={{GCE_NETWORK}}
 
 # SubnetworkName string
-subnetwork-name={{GCE_SUBNET}}
+subnetwork-name={{GCE_K8S_SUBNET}}
 
 # SecondaryRangeName is the name of the secondary range to allocate IP
 # aliases. The secondary range must be present on the subnetwork the
@@ -37,7 +37,7 @@ subnetwork-name={{GCE_SUBNET}}
 ;regional=
 
 # Multizone bool
-;multizone=
+multizone=True
 
 # ApiEndpoint is the GCE compute API endpoint to use. If this is blank,
 # then the default endpoint is used.

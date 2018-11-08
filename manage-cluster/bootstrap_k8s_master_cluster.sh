@@ -719,9 +719,6 @@ for zone in $GCE_ZONES; do
         --name gcp-loadbalancer-proxy -- \
         measurementlab/gcp-loadbalancer-proxy:v1.0 -url https://localhost:6443
 
-    # Create a suitable cloud-config file for the cloud provider.
-    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
-
     # We have run up against "no space left on device" errors, when clearly
     # there is plenty of free disk space. It seems this could likely be related
     # to this:
@@ -774,8 +771,8 @@ EOF
     cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
 EOF
 
-  # Copy the kubeadm config template to the server.
-  gcloud compute scp kubeadm-config.yml.template "${gce_name}": "${GCE_ARGS[@]}"
+  # Copy all config template files to the server.
+  gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
 
   # The etcd config 'initial-cluster:' is additive as we continue to add new
   # instances to the cluster.
@@ -788,8 +785,11 @@ EOF
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
 
-  # Evaluate the kubeadm config template with a beastly sed statement.
+  # Evaluate the kubeadm config template with a beastly sed statement, and also
+  # evaludate the cloud-provider.conf template.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    sudo -s
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
@@ -803,6 +803,12 @@ EOF
         -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
+
+    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+        -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
+        -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
+        ./cloud-provider.conf.template > \
+        /etc/kubernetes/cloud-provider.conf
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
