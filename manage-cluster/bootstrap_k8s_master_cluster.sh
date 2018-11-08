@@ -919,20 +919,6 @@ EOF
       kubectl apply -f network/crd.yml
       kubectl apply -f network
     fi
-
-    # Work around a known issue with --cloud-provider=gce and CNI plugins.
-    # https://github.com/kubernetes/kubernetes/issues/44254
-    # Without the following action a node will have a node-condition of
-    # NetworkUnavailable=True, which has the result of a taint getting added to
-    # the node which may prevent some pods from getting scheduled on the node if
-    # they don't explicitly tolerate the taint.
-    kubectl proxy --port 8888 &> /dev/null &
-    # Give the proxy a couple seconds to start up.
-    sleep 2
-    curl http://localhost:8888/api/v1/nodes/${gce_name}/status > a.json
-    cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
-    curl -X PUT http://localhost:8888/api/v1/nodes/${gce_name}/status -H "Content-Type: application/json" -d @b.json
-    kill %1
 EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.
