@@ -551,6 +551,7 @@ for zone in $GCE_ZONES; do
     --boot-disk-device-name "${gce_name}"  \
     --network "${GCE_NETWORK}" \
     --subnet "${GCE_K8S_SUBNET}" \
+    --can-ip-forward \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
