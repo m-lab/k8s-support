@@ -75,8 +75,6 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
-systemctl enable kubelet
-systemctl start kubelet
 
 # Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr.
 TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" ${K8S_TOKEN_URL} )
@@ -87,3 +85,6 @@ export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 kubeadm join "${MASTER_NODE}:6443" \
   --token "${TOKEN}" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
+
+systemctl enable kubelet
+systemctl start kubelet
