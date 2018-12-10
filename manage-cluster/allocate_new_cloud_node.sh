@@ -16,8 +16,8 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 # Source all the global configuration variables.
 source k8s_deploy.conf
 
-GCE_REGION="GCE_REGION_${PROJECT/-/_}"
-GCE_ZONES="GCE_ZONES_${PROJECT/-/_}"
+GCE_REGION="GCE_REGION_${PROJECT//-/_}"
+GCE_ZONES="GCE_ZONES_${PROJECT//-/_}"
 
 GCE_ZONE="${!GCE_REGION}-$(echo ${!GCE_ZONES} | awk '{print $1}')"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
