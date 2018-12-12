@@ -95,3 +95,4 @@ sleep 300
 systemctl stop kubelet
 sleep 30
 systemctl start kubelet
+echo 'Success: everything we did appeared to work - good luck'
