@@ -228,9 +228,9 @@ if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-# If $DELETE_ONLY is set to "yes", then exit now.
-if [[ "${DELETE_ONLY}" == "yes" ]]; then
-  echo "DELETE_ONLY set to 'yes'. All GCP objects deleted. Exiting."
+# If $EXIT_AFTER_DELETE is set to "yes", then exit now.
+if [[ "${EXIT_AFTER_DELETE}" == "yes" ]]; then
+  echo "EXIT_AFTER_DELETE set to 'yes'. All GCP objects deleted. Exiting."
   exit 0
 fi
 
@@ -798,7 +798,7 @@ EOF
   # easily access kubectl as well as etcdctl.  As we productionize this process,
   # this code should be deleted.  For the next steps, we no longer want to be
   # root.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
