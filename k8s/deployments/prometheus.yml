@@ -25,13 +25,19 @@ spec:
       - name: prometheus-server
         image: prom/prometheus:v2.4.2
         args: ["--config.file=/etc/prometheus/prometheus.yml",
+               "--storage.tsdb.path=/prometheus",
                "--web.enable-lifecycle"]
         ports:
         - containerPort: 9090
         volumeMounts:
         - name: prometheus-config
           mountPath: /etc/prometheus/
+        - name: prometheus-storage
+          mountPath: /prometheus
       volumes:
       - name: prometheus-config
         configMap:
           name: prometheus-config
+      - name: prometheus-storage
+        persistentVolumeClaim:
+          claimName: auto-prometheus-disk0

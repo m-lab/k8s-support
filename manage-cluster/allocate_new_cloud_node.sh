@@ -33,7 +33,7 @@ K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
 set +e  # The next command exits with nonzero, even when it works properly.
 NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
     <(gcloud compute instances list \
-        --filter="name~'${K8S_NODE_PREFIX}-\d+'" \
+        --filter="name~'${K8S_CLOUD_NODE_BASE_NAME}-\d+'" \
         --format='value(name)' \
         "${GCP_ARGS[@]}" \
       | sed -e 's/.*-//' \
@@ -50,6 +50,7 @@ gcloud compute instances create "${NODE_NAME}" \
   --image-project "${GCE_IMAGE_PROJECT}" \
   --network "${GCE_NETWORK}" \
   --subnet "${GCE_K8S_SUBNET}" \
+  --scopes "${GCE_API_SCOPES}" \
   "${GCE_ARGS[@]}"
 
 # Give the instance time to appear.  Make sure it appears twice - there have
@@ -68,6 +69,22 @@ until gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}" && \
   gcloud compute config-ssh "${GCP_ARGS[@]}"
 done
 
+# Copy the cloud-provider.conf config template file to the server.
+gcloud compute scp cloud-provider.conf.template "${NODE_NAME}": "${GCE_ARGS[@]}"
+
+# evaludate the cloud-provider.conf template.
+gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
+  sudo -s
+
+  mkdir /etc/kubernetes
+
+  sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+      -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
+      -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
+      ./cloud-provider.conf.template > \
+      /etc/kubernetes/cloud-provider.conf
+EOF
+
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
@@ -81,9 +98,7 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   apt-get update
   apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
 
-  # Create a suitable cloud-config file for the cloud provider and set the cloud
-  # provider to "gce".
-  echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
+  # Set cloud provider to "gce".
   echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud-provider.conf"' > \
       /etc/default/kubelet
 
@@ -124,24 +139,12 @@ EXTERNAL_IP=$(gcloud compute instances list \
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
+  sudo -s
+
   set -euxo pipefail
   kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   for label in ${K8S_CLOUD_NODE_LABELS}; do
     kubectl label nodes ${NODE_NAME} \${label}
   done
-
-  # Work around a known issue with --cloud-provider=gce and CNI plugins.
-  # https://github.com/kubernetes/kubernetes/issues/44254
-  # Without the following action a node will have a node-condition of
-  # NetworkUnavailable=True, which has the result of a taint getting added to
-  # the node which may prevent some pods from getting scheduled on the node if
-  # they don't explicitly tolerate the taint.
-  kubectl proxy --port 8888 &> /dev/null &
-  # Give the proxy a couple seconds to start up.
-  sleep 2
-  curl http://localhost:8888/api/v1/nodes/${NODE_NAME}/status > a.json
-  cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
-  curl -X PUT http://localhost:8888/api/v1/nodes/${NODE_NAME}/status -H "Content-Type: application/json" -d @b.json
-  kill %1
 EOF
 

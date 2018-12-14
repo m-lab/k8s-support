@@ -39,6 +39,11 @@ GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 GCE_REGION="${!GCE_REGION_VAR}"
 GCE_ZONES="${!GCE_ZONES_VAR}"
 
+# Set up project GCS bucket variables. NOTE: these will need to be dereferenced
+# to use them.
+GCS_BUCKET_EPOXY="GCS_BUCKET_EPOXY_${PROJECT//-/_}"
+GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+
 # NOTE: GCP currently only offers tcp/udp network load balacing on a regional level.
 # If we want more redundancy than GCP zones offer, then we'll need to figure out
 # some way to use a proxying load balancer.
@@ -128,6 +133,14 @@ if [[ -n "${EXISTING_INTERNAL_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+EXISTING_HEALTH_CHECKS_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-health-checks" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_HEALTH_CHECKS_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-health-checks" \
+      "${GCP_ARGS[@]}"
+fi
+
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -195,7 +208,8 @@ for zone in $GCE_ZONES; do
 
   EXISTING_CLUSTER_NODES=$(gcloud compute instances list \
       --filter "name:k8s-platform-cluster-node AND zone:${gce_zone}" \
-      --format "value(name)" || true)
+      --format "value(name)" \
+      "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_CLUSTER_NODES}" ]]; then
     for node_name in ${EXISTING_CLUSTER_NODES}; do
       gcloud compute instances delete "${node_name}" "${GCE_ARGS[@]}"
@@ -214,9 +228,9 @@ if [[ -n "${EXISTING_K8S_SUBNET}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-# If $DELETE_ONLY is set to "yes", then exit now.
-if [[ "${DELETE_ONLY}" == "yes" ]]; then
-  echo "DELETE_ONLY set to 'yes'. All GCP objects deleted. Exiting."
+# If $EXIT_AFTER_DELETE is set to "yes", then exit now.
+if [[ "${EXIT_AFTER_DELETE}" == "yes" ]]; then
+  echo "EXIT_AFTER_DELETE set to 'yes'. All GCP objects deleted. Exiting."
   exit 0
 fi
 
@@ -329,6 +343,16 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-external" \
     --action "allow" \
     --rules "tcp:22,tcp:6443,udp:8472" \
     --source-ranges "0.0.0.0/0" \
+    "${GCP_ARGS[@]}"
+
+# Create firewall rule allowing GCP health checks.
+# https://cloud.google.com/load-balancing/docs/health-checks#firewall_rules
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-health-checks" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "all" \
+    --source-ranges "35.191.0.0/16,130.211.0.0/22" \
+    --target-tags "k8s-platform-master" \
     "${GCP_ARGS[@]}"
 
 #
@@ -527,10 +551,11 @@ for zone in $GCE_ZONES; do
     --boot-disk-device-name "${gce_name}"  \
     --network "${GCE_NETWORK}" \
     --subnet "${GCE_K8S_SUBNET}" \
+    --can-ip-forward \
     --tags "${GCE_NET_TAGS}" \
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
-    --scopes "storage-full" \
+    --scopes "${GCE_API_SCOPES}" \
     "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
@@ -627,11 +652,8 @@ for zone in $GCE_ZONES; do
     # See the README in this directory for information on this container and why
     # we use it.
     docker run --detach --publish 8080:8080 --network host --restart always \
-        --name gcp-loadbalancer-healthz-proxy -- \
-        soltesz/gcp-loadbalancer-healthz-proxy -port :8080 -url https://localhost:6443
-
-    # Create a suitable cloud-config file for the cloud provider.
-    echo -e "[Global]\nproject-id = ${PROJECT}\n" > /etc/kubernetes/cloud-provider.conf
+        --name gcp-loadbalancer-proxy -- \
+        measurementlab/gcp-loadbalancer-proxy:v1.0 -url https://localhost:6443
 
     # We have run up against "no space left on device" errors, when clearly
     # there is plenty of free disk space. It seems this could likely be related
@@ -666,7 +688,7 @@ EOF
     # Create the directory where the project's GCS bucket will be mounted, and
     # mount it.
     mkdir -p ${K8S_PKI_DIR}
-    echo "k8s-platform-master-${PROJECT} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
+    echo "${!GCS_BUCKET_K8S} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
     mount ${K8S_PKI_DIR}
 
     # Make sure that the necessary subdirectories exist. Separated into two
@@ -685,8 +707,8 @@ EOF
     cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
 EOF
 
-  # Copy the kubeadm config template to the server.
-  gcloud compute scp kubeadm-config.yml.template "${gce_name}": "${GCE_ARGS[@]}"
+  # Copy all config template files to the server.
+  gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
 
   # The etcd config 'initial-cluster:' is additive as we continue to add new
   # instances to the cluster.
@@ -699,8 +721,11 @@ EOF
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
 
-  # Evaluate the kubeadm config template with a beastly sed statement.
+  # Evaluate the kubeadm config template with a beastly sed statement, and also
+  # evaludate the cloud-provider.conf template.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    sudo -s
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
@@ -714,6 +739,12 @@ EOF
         -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
+
+    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+        -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
+        -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
+        ./cloud-provider.conf.template > \
+        /etc/kubernetes/cloud-provider.conf
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
@@ -767,7 +798,7 @@ EOF
   # easily access kubectl as well as etcdctl.  As we productionize this process,
   # this code should be deleted.  For the next steps, we no longer want to be
   # root.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -796,7 +827,7 @@ EOF
                    openssl rsa -pubin -outform der 2>/dev/null | \
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
+    gsutil cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
   fi
 
   # Evaluate the common.yml.template network config template file.
@@ -818,22 +849,12 @@ EOF
     set -euxo pipefail
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
     kubectl label node ${gce_name} mlab/type=cloud
-    kubectl apply -f network/crd.yml
-    kubectl apply -f network
 
-    # Work around a known issue with --cloud-provider=gce and CNI plugins.
-    # https://github.com/kubernetes/kubernetes/issues/44254
-    # Without the following action a node will have a node-condition of
-    # NetworkUnavailable=True, which has the result of a taint getting added to
-    # the node which may prevent some pods from getting scheduled on the node if
-    # they don't explicitly tolerate the taint.
-    kubectl proxy --port 8888 &> /dev/null &
-    # Give the proxy a couple seconds to start up.
-    sleep 2
-    curl http://localhost:8888/api/v1/nodes/${gce_name}/status > a.json
-    cat a.json | tr -d '\n' | sed 's/{[^}]\+NetworkUnavailable[^}]\+}/{"type": "NetworkUnavailable","status": "False","reason": "RouteCreated","message": "Manually set through k8s API."}/g' > b.json
-    curl -X PUT http://localhost:8888/api/v1/nodes/${gce_name}/status -H "Content-Type: application/json" -d @b.json
-    kill %1
+    # These k8s resources only need to be applied to the cluster once.
+    if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
+      kubectl apply -f network/crd.yml
+      kubectl apply -f network
+    fi
 EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.

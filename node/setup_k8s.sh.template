@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exec 2> /tmp/k8s_setup.log 1>&2
+exec 2> /tmp/setup_k8s.log 1>&2
 set -euxo pipefail
 
 # This script is intended to be called by epoxy as the action for the last stage
@@ -95,3 +95,4 @@ sleep 300
 systemctl stop kubelet
 sleep 30
 systemctl start kubelet
+echo 'Success: everything we did appeared to work - good luck'
