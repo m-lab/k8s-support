@@ -72,6 +72,11 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
   | sed -e 's|--cni-bin-dir=[^ "]*|--cni-bin-dir=/opt/shimcni/bin|' \
   > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
+# Copy the multus-cni configuration from the epoxy-image resources folder
+# to /etc/cni/net.d/ - this makes sure kubelet can find it on first run.
+mkdir -p /etc/cni/net.d
+cp /usr/share/oem/multus-cni.conf /etc/cni/net.d
+
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
@@ -85,11 +90,6 @@ export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 kubeadm join "${MASTER_NODE}:6443" \
   --token "${TOKEN}" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
-
-# Copy the multus-cni configuration from the epoxy-image resources folder
-# to /etc/cni/net.d/ - this makes sure kubelet can find it on first run.
-mkdir -p /etc/cni/net.d
-cp /usr/share/oem/multus-cni.conf /etc/cni/net.d
 
 systemctl daemon-reload
 systemctl enable kubelet
