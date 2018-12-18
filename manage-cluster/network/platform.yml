@@ -32,16 +32,6 @@ spec:
         effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
-      - name: empty-cni-folder
-        image: quay.io/coreos/flannel:v0.10.0-amd64
-        command:
-        - mkdir
-        args:
-        - -p
-        - /etc/cni/net.d
-        volumeMounts:
-        - name: etc
-          mountPath: /etc
       - name: install-cni
         image: quay.io/coreos/flannel:v0.10.0-amd64
         command:
@@ -96,6 +86,3 @@ spec:
       - name: flannel-cfg
         configMap:
           name: kube-flannel-cfg
-      - name: etc
-        hostPath:
-          path: /etc
