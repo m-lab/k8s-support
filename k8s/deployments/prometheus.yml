@@ -49,3 +49,6 @@ spec:
       #- name: prometheus-storage
       #  persistentVolumeClaim:
       #    claimName: auto-prometheus-disk0
+
+      # TODO: allow service-specific entry points if possible.
+      hostNetwork: true
