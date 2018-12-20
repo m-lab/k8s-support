@@ -1,11 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: prometheus-server
   labels:
     run: prometheus-server
 spec:
-  replicas: 3
   selector:
     matchLabels:
       run: prometheus-server
