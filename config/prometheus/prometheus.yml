@@ -45,7 +45,7 @@ scrape_configs:
       # Node /metrics in v1.6+ are accessible via a proxy through the
       # kubernetes api server. So, we must update the target and metric path.
       - target_label: __address__
-        replacement: kubernetes.default.svc:443
+        replacement: 172.25.0.1:443
       - source_labels: [__meta_kubernetes_node_name]
         regex: (.+)
         target_label: __metrics_path__
