@@ -45,21 +45,14 @@ scrape_configs:
       # Node /metrics in v1.6+ are accessible via a proxy through the
       # kubernetes api server. So, we must update the target and metric path.
       - target_label: __address__
+        # TODO: replace with dns name once coredns is working.
+        # replacement: kubernetes.default.svc:443
         replacement: 172.25.0.1:443
       - source_labels: [__meta_kubernetes_node_name]
         regex: (.+)
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
 
-
-  # kube-state-metrics reports status about k8s objects (pods, nodes,
-  # deployments, etc). We cannot rely on service-discovery because the metric
-  # labels used by kube-state-metrics conflict with the labels added by
-  # service-discovery. Instead, we define a static target using the ksm service.
-  - job_name: 'kube-state-metrics'
-    static_configs:
-      - targets:
-        - kube-state-metrics-service.default.svc.cluster.local:8080
 
   # Scrape config for kubernetes pods.
   - job_name: 'kubernetes-pods'
