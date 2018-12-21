@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# setup_cloud_k8s_master.sh sets up the master node in GCE for k8s in the cloud.
+# bootstrap_k8s_master_cluster.sh sets up the master node in GCE for k8s in the
+# cloud.
 #
 # By default (with no special environment variables set) it will set up in
 # mlab-sandbox.  To change the defaults, override the shell variables
@@ -49,6 +50,7 @@ GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 # some way to use a proxying load balancer.
 #
 # The external load balancer will always be located in the first specified zone.
+# TODO: remove if unused.
 EXTERNAL_LB_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES_VAR} | awk '{print $1}')"
 
 # Delete any temporary files and dirs from a previous run.
@@ -79,7 +81,7 @@ fi
 # break in strange ways.
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
-#
+
 # DELETE ANY EXISTING GCP OBJECTS
 #
 # This script assumes you want to start totally fresh.
@@ -285,7 +287,7 @@ if [[ -z "${EXISTING_EXTERNAL_LB_DNS_IP}" ]]; then
       --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${EXTERNAL_IP}" \
+      "${EXTERNAL_LB_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction execute \
       --zone "${PROJECT}-measurementlab-net" \
@@ -352,7 +354,7 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-health-checks" \
     --action "allow" \
     --rules "all" \
     --source-ranges "35.191.0.0/16,130.211.0.0/22" \
-    --target-tags "k8s-platform-master" \
+    --target-tags "${GCE_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
 #
