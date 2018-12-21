@@ -1,6 +1,15 @@
 #!/bin/bash
 #
-# TODO: add help text.
+# bootstrap_prometheus.sh is a companion to bootstrap_k8s_master_cluster.sh and
+# k8s/daemonsets/core/prometheus.yml config that creates additional GCP objects
+# for a public load balancer with "CLIENT_IP" session affinity and persistent
+# storage.
+#
+# USAGE:
+#
+#  * Run bootstrap_k8s_master_cluster.sh
+#  * Run bootstrap_prometheus.sh
+#  * Apply k8s/daemonsets/core/prometheus.yml
 
 
 set -euxo pipefail
@@ -21,7 +30,7 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
-# Prometheus
+# Prometheus load balancer.
 CURRENT_PROMETHEUS_LB_IP=$(gcloud compute addresses list \
     --filter "name=${PROM_BASE_NAME}-lb AND region:${GCE_REGION}" \
     --format "value(address)" \
