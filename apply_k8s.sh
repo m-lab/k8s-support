@@ -18,9 +18,9 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 # Ask an Ops person how to find the NDT TLS certificate and private key.  Once
 # in hand, you'll need to create a directory named ndt-tls/ and drop they key in
 # there as "key.pem" and the certificate as "cert.pem".
-# 
+#
 # Commands:
-# 
+#
 # $ kubectl create secret generic pusher-credentials --from-file pusher.json
 # $ kubectl create secret generic ndt-tls --from-file ndt-tls/
 
@@ -28,8 +28,9 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 kubectl apply -f k8s/roles/
 
 # Apply ConfigMaps
-kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}"
-kubectl create configmap prometheus-config --from-file config/prometheus/prometheus.yml
+kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" || :
+kubectl create configmap prometheus-config --from-file config/prometheus/prometheus.yml || :
+kubectl create configmap demo-nodeexporter --from-file config/demo || :
 
 # Apply Deployments
 #

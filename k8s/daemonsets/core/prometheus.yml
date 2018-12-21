@@ -1,11 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: prometheus-server
   labels:
     run: prometheus-server
 spec:
-  replicas: 1
   selector:
     matchLabels:
       run: prometheus-server
@@ -20,10 +19,17 @@ spec:
       serviceAccountName: prometheus
       nodeSelector:
         mlab/type: cloud
-        prometheus-node: 'true'
+        node-role.kubernetes.io/master: ""
+
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+
       containers:
-      - name: prometheus-server
+      - name: prometheus
         image: prom/prometheus:v2.4.2
+        # TODO: enable longer retention once persistent volumes are available.
+        #      "--storage.tsdb.retention=2880h",
         args: ["--config.file=/etc/prometheus/prometheus.yml",
                "--storage.tsdb.path=/prometheus",
                "--web.enable-lifecycle"]
@@ -38,6 +44,11 @@ spec:
       - name: prometheus-config
         configMap:
           name: prometheus-config
+      # TODO: use native k8s persistent volume claims, if possible.
       - name: prometheus-storage
-        persistentVolumeClaim:
-          claimName: auto-prometheus-disk0
+        hostPath:
+          path: /mnt/local/prometheus
+          type: Directory
+
+      # TODO: use native k8s service entry points, if possible.
+      hostNetwork: true
