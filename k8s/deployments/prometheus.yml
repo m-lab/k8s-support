@@ -18,8 +18,8 @@ spec:
     spec:
       serviceAccountName: prometheus
       nodeSelector:
-        # TODO: we need only the master nodes.
         mlab/type: cloud
+        node-role.kubernetes.io/master: ""
 
       tolerations:
       - key: node-role.kubernetes.io/master
