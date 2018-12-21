@@ -17,6 +17,7 @@ spec:
       containers:
       - name: node-exporter
         image: prom/node-exporter
+        # TODO: enable --web.listen-address to listen on private IPs.
         args:
         - --path.procfs=/host/proc
         - --path.sysfs=/host/sys
@@ -45,8 +46,5 @@ spec:
       - name: textfile
         configMap:
           name: demo-nodeexporter
-      #- name: textfile
-      #  hostPath:
-      #    path: /var/spool/node_exporter
-      hostNetwork: true
+      # hostNetwork: true
       hostPID: true
