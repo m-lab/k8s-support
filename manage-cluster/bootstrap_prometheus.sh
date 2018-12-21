@@ -203,9 +203,11 @@ for zone in $GCE_ZONES; do
 
     # TODO: find a better way to discovery the device-name.
     # TODO: make formatting conditional on a hard reset.
-    # mkfs.ext4 /dev/sdb
+    if ! mount /dev/sdb /mnt/local ; then
+        mkfs.ext4 /dev/sdb
+        mount /dev/sdb /mnt/local
+    fi
 
-    mount /dev/sdb /mnt/local
     if [[ ! -d /mnt/local/prometheus ]]; then
         echo 'Creating /mnt/local/prometheus'
         mkdir -p /mnt/local/prometheus
