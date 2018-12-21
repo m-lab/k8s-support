@@ -166,4 +166,44 @@ for zone in $GCE_ZONES; do
       --instances-zone "${gce_zone}" \
       "${GCP_ARGS[@]}"
 
+  # Attempt to create disk and ignore errors.
+  disk="${PROM_BASE_NAME}-${gce_zone}-disk"
+  gcloud compute disks create \
+      "${disk}" \
+      --size "200GB" \
+      --type "pd-standard" \
+      --labels "${PROM_BASE_NAME}=true" \
+      "${GCE_ARGS[@]}" || :
+
+  # NOTE: while promising, --device-name doesn't seem to do what it sounds like.
+  # NOTE: we assume the disk and instance already exist.
+  gcloud compute instances attach-disk \
+      "${gce_name}" \
+      --disk "${disk}" \
+      "${GCE_ARGS[@]}" || :
+
+  # Verify that the disk is mounted and formatted.
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
+    sudo -s
+    set -euxo pipefail
+
+    if [[ ! -d /mnt/local ]]; then
+        echo 'Creating /mnt/local'
+        mkdir -p /mnt/local
+    fi
+
+    # TODO: find a better way to discovery the device-name.
+    # TODO: make formatting conditional on a hard reset.
+    # mkfs.ext4 /dev/sdb
+
+    mount /dev/sdb /mnt/local
+    if [[ ! -d /mnt/local/prometheus ]]; then
+        echo 'Creating /mnt/local/prometheus'
+        mkdir -p /mnt/local/prometheus
+        # Create with permissions for prometheus.
+        # TODO: replace with native k8s persistent volumes, if possible.
+        chown nobody:nogroup /mnt/local/prometheus/
+    fi
+EOF
+
 done
