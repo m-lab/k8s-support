@@ -53,7 +53,6 @@ scrape_configs:
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
 
-
   # Scrape config for kubernetes pods.
   - job_name: 'kubernetes-pods'
     kubernetes_sd_configs:
@@ -72,6 +71,11 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
         action: keep
         regex: true
+
+      # Don't scrape port 3010 on ndt-cloud pods
+      - source_labels: [__meta_kubernetes_pod_container_port_number]
+        action: drop
+        regex: 3010
 
       # Only keep containers that have a declared container port.
       - source_labels: [__meta_kubernetes_pod_container_port_number]
