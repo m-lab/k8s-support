@@ -32,6 +32,18 @@ spec:
       #
       # TODO: enable before receiving production traffic.
       # terminationGracePeriodSeconds: 150
+      #
+
+      # TODO (kinkade): Remove this toleration once we have discovered why
+      # the route_controller on platform nodes logs "FailedToCreateRoute [...]
+      # Could not create route [...]: instance not found". When this happens the
+      # route_controller set the NetworkUnavailable node condition to True,
+      # which adds this taint, which, without this toleration, causes the nodes
+      # to be unschedulable for the ndt-cloud pods.
+      tolerations:
+      - key: "node.kubernetes.io/network-unavailable"
+        operator: "Exists"
+        effect: "NoSchedule"
 
       nodeSelector:
         mlab/type: 'platform'
@@ -39,7 +51,6 @@ spec:
       - name: ndt-cloud
         image: measurementlab/ndt-cloud:v0.3
         ports:
-        - containerPort: 3010
         - containerPort: 9090
         volumeMounts:
         - name: ndt-tls
