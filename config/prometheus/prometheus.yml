@@ -73,11 +73,6 @@ scrape_configs:
         action: keep
         regex: true
 
-      # Don't scrape port 3010 on ndt-cloud pods
-      - source_labels: [__meta_kubernetes_pod_container_port_number]
-        action: drop
-        regex: 3010
-
       # Only keep containers that have a declared container port.
       - source_labels: [__meta_kubernetes_pod_container_port_number]
         action: keep
