@@ -51,7 +51,6 @@ spec:
       - name: ndt-cloud
         image: measurementlab/ndt-cloud:v0.3
         ports:
-        - containerPort: 3010
         - containerPort: 9090
         volumeMounts:
         - name: ndt-tls
