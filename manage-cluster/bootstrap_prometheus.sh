@@ -117,6 +117,11 @@ gcloud compute target-pools delete "${PROM_BASE_NAME}" \
 # health checks
 gcloud compute http-health-checks delete "${PROM_BASE_NAME}" "${GCP_ARGS[@]}" || :
 
+# If $EXIT_AFTER_DELETE is set to "yes", then exit now.
+if [[ "${EXIT_AFTER_DELETE}" == "yes" ]]; then
+  echo "EXIT_AFTER_DELETE set to 'yes'. All GCP objects deleted. Exiting."
+  exit 0
+fi
 
 #######################################################
 # CREATE THINGS
