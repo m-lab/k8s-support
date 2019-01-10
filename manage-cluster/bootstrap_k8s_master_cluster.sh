@@ -191,7 +191,7 @@ for zone in $GCE_ZONES; do
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
   EXISTING_INSTANCE=$(gcloud compute instances list \
-      --filter "name=${gce_name} AND zone:${gce_zone}" \
+      --filter "name=${gce_name} AND zone:($gce_zone)" \
       --format "value(name)" \
       "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_INSTANCE}" ]]; then
@@ -199,7 +199,7 @@ for zone in $GCE_ZONES; do
   fi
 
   EXISTING_INSTANCE_GROUP=$(gcloud compute instance-groups list \
-      --filter "name=${gce_name} AND zone:${gce_zone}" \
+      --filter "name=${gce_name} AND zone:($gce_zone)" \
       --format "value(name)" \
       "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_INSTANCE_GROUP}" ]]; then
@@ -209,7 +209,7 @@ for zone in $GCE_ZONES; do
   fi
 
   EXISTING_CLUSTER_NODES=$(gcloud compute instances list \
-      --filter "name:k8s-platform-cluster-node AND zone:${gce_zone}" \
+      --filter "name:k8s-platform-cluster-node AND zone:($gce_zone)" \
       --format "value(name)" \
       "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_CLUSTER_NODES}" ]]; then
@@ -578,7 +578,7 @@ for zone in $GCE_ZONES; do
 
   # Get the instances internal IP address.
   INTERNAL_IP=$(gcloud compute instances list \
-      --filter "name=${gce_name} AND zone:${gce_zone}" \
+      --filter "name=${gce_name} AND zone:(${gce_zone})" \
       --format "value(networkInterfaces[0].networkIP)" \
       "${GCP_ARGS[@]}" || true)
 
