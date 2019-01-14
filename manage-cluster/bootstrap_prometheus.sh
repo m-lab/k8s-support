@@ -211,6 +211,9 @@ for zone in $GCE_ZONES; do
     if ! mount /dev/sdb /mnt/local ; then
         mkfs.ext4 /dev/sdb
         mount /dev/sdb /mnt/local
+        # Add an entry to /etc/fstab so that this volume gets remounted when the
+        # VM reboots.
+        echo "/dev/sdb /mnt/local ext4 defaults 0 0" >> /etc/fstab
     fi
 
     if [[ ! -d /mnt/local/prometheus ]]; then
