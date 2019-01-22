@@ -117,6 +117,11 @@ gcloud compute target-pools delete "${PROM_BASE_NAME}" \
 # health checks
 gcloud compute http-health-checks delete "${PROM_BASE_NAME}" "${GCP_ARGS[@]}" || :
 
+# If $EXIT_AFTER_DELETE is set to "yes", then exit now.
+if [[ "${EXIT_AFTER_DELETE}" == "yes" ]]; then
+  echo "EXIT_AFTER_DELETE set to 'yes'. All GCP objects deleted. Exiting."
+  exit 0
+fi
 
 #######################################################
 # CREATE THINGS
@@ -206,6 +211,9 @@ for zone in $GCE_ZONES; do
     if ! mount /dev/sdb /mnt/local ; then
         mkfs.ext4 /dev/sdb
         mount /dev/sdb /mnt/local
+        # Add an entry to /etc/fstab so that this volume gets remounted when the
+        # VM reboots.
+        echo "/dev/sdb /mnt/local ext4 defaults 0 0" >> /etc/fstab
     fi
 
     if [[ ! -d /mnt/local/prometheus ]]; then

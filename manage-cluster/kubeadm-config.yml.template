@@ -36,6 +36,7 @@ controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
   cloud-provider: "gce"
   cloud-config: "/etc/kubernetes/cloud-provider.conf"
+  configure-cloud-routes: "false"
 controllerManagerExtraVolumes:
 - name: cloud
   hostPath: "/etc/kubernetes/cloud-provider.conf"
