@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -euxo pipefail
+
+USAGE="USAGE: $0 <google-cloud-project>"
+PROJECT=${1:?Please specify the google cloud project: $USAGE}
+
+# Source the main configuration file.
+source ./k8s_deploy.conf
+
+# Create a string representing region and zone variable names for this project.
+GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
+
+# Dereference the region and zones variables.
+GCE_REGION="${!GCE_REGION_VAR}"
+GCE_ZONES="${!GCE_ZONES_VAR}"
+
+GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
+GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
+GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
+
+GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+
+# Fetch the kubeconfig from the first master so we can run kubectl commands
+# locally, then export it into the local environment.
+gcloud compute scp ${GCE_NAME}:.kube/config ./kube-config "${GCE_ARGS[@]}"
+export KUBECONFIG=./kube-config
+
+# Fetch Secrets from GCS.
+gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
+gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
+
+# Apply Secrets.
+kubectl create secret generic pusher-credentials --from-file pusher.json
+kubectl create secret generic ndt-tls --from-file ndt-tls/
+
+# Apply RBAC configs.
+kubectl apply -f ../k8s/roles/
+
+# Apply ConfigMaps
+kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" || :
+kubectl create configmap prometheus-config --from-file ../config/prometheus/prometheus.yml || :
+kubectl create configmap demo-nodeexporter --from-file ../config/demo || :
+
+# Apply DaemonSets
+kubectl apply -f ../k8s/daemonsets/core/node-exporter.yml
+kubectl apply -f ../k8s/daemonsets/experiments/ndt-cloud-with-fast-sidestream.yml
+kubectl apply -f ../k8s/daemonsets/core/prometheus.yml
