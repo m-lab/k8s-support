@@ -37,8 +37,8 @@ spec:
       nodeSelector:
         mlab/type: 'platform'
       containers:
-      - name: ndt-cloud
-        image: measurementlab/ndt-cloud:v0.3
+      - name: ndt-server
+        image: measurementlab/ndt-server:v0.5
         ports:
         - containerPort: 9090
         volumeMounts:
