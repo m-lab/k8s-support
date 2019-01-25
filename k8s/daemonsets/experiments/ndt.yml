@@ -1,16 +1,16 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: ndt-server
+  name: ndt
   namespace: default
 spec:
   selector:
     matchLabels:
-      run: ndt-server
+      run: ndt
   template:
     metadata:
       labels:
-        run: ndt-server
+        run: ndt
       annotations:
         prometheus.io/scrape: 'true'
         k8s.v1.cni.cncf.io/networks: '[
