@@ -39,6 +39,9 @@ spec:
       containers:
       - name: ndt-server
         image: measurementlab/ndt-server:v0.5
+        args:
+        - -key=/certs/key.pem
+        - -cert=/certs/cert.pem
         ports:
         - containerPort: 9090
         volumeMounts:
