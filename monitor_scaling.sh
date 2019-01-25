@@ -22,13 +22,25 @@ while true; do
 done
 echo "All ndt-server pods running: ${SECONDS}s"
 
-# Reset the built-in bash variable SECONDS to zero, so we can restart timing for
+#
+# Time basic kubectl-exec command to a random ndt-server pod.
+#
+RANDOM_NDT_POD=$(kubectl $KUBECTL_ARGS get --no-headers=true pods -o custom-columns=:metadata.name | grep ndt-server | shuf | head -n1)
+
+# Reset the built-in bash variable SECONDS.
+SECONDS=0
+
+kubectl $KUBECTL_ARGS exec $RANDOM_NDT_POD -c ndt-server /bin/ls > /dev/null
+echo "Ran kubectl-exec on random ndt-server pod: ${SECONDS}s"
+
+#
+# Delete the ndt-server DaemonSet.
+#
+
+# Reset the built-in bash variable SECONDS.
 # the next operation.
 SECONDS=0
 
-#
-# Delete the ndt-server DaemonSet
-#
 kubectl $KUBECTL_ARGS delete daemonset ndt-server > /dev/null
 echo "Delete ndt-server DaemonSet command returned: ${SECONDS}s"
 
@@ -39,3 +51,5 @@ while true; do
   fi
 done
 echo "All ndt-server pods removed: ${SECONDS}s"
+
+
