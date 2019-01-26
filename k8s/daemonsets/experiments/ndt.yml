@@ -1,16 +1,16 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: ndt-cloud
+  name: ndt
   namespace: default
 spec:
   selector:
     matchLabels:
-      run: ndt-cloud
+      run: ndt
   template:
     metadata:
       labels:
-        run: ndt-cloud
+        run: ndt
       annotations:
         prometheus.io/scrape: 'true'
         k8s.v1.cni.cncf.io/networks: '[
@@ -37,8 +37,11 @@ spec:
       nodeSelector:
         mlab/type: 'platform'
       containers:
-      - name: ndt-cloud
-        image: measurementlab/ndt-cloud:v0.3
+      - name: ndt-server
+        image: measurementlab/ndt-server:v0.5
+        args:
+        - -key=/certs/key.pem
+        - -cert=/certs/cert.pem
         ports:
         - containerPort: 9090
         volumeMounts:
