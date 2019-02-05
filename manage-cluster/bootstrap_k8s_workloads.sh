@@ -44,6 +44,5 @@ kubectl create configmap prometheus-config --from-file ../config/prometheus/prom
 kubectl create configmap demo-nodeexporter --from-file ../config/demo || :
 
 # Apply DaemonSets
-kubectl apply -f ../k8s/daemonsets/core/node-exporter.yml
-kubectl apply -f ../k8s/daemonsets/experiments/ndt-cloud-with-fast-sidestream.yml
-kubectl apply -f ../k8s/daemonsets/core/prometheus.yml
+kubectl apply -f ../k8s/daemonsets/experiments/
+kubectl apply -f ../k8s/daemonsets/core/
