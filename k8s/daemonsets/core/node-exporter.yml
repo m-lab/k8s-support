@@ -14,6 +14,20 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
     spec:
+      # We want node-exporter running on the k8s masters too.
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+      # The kube-controller-manager is launched with flag
+      # --configure-cloud-routes=false to avoid issues with the platform
+      # bare-metal nodes (which are not in the cloud), but this has the side
+      # effect of adding the following taint to all cloud nodes, which we
+      # tolerate here, since we need Prometheus running regardless.
+      - key: "node.kubernetes.io/network-unavailable"
+        operator: "Exists"
+        effect: "NoSchedule"
+
       containers:
       - name: node-exporter
         image: prom/node-exporter
