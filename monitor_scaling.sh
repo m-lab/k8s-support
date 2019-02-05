@@ -19,11 +19,11 @@ KUBECTL_ARGS="--kubeconfig ./kube-config"
 # The node on which to run the kubectl-exec command.
 KUBECTL_EXEC_NODE="mlab4.bru02"
 
-# Get the count of mlab4 nodes. Each of these nodes should have a pod scheduled
+# Get the count of mlab nodes. Each of these nodes should have a pod scheduled
 # on them, so the running number of pods for a given daemonset should match this
 # number once that daemonset is fully deployed.
-MLAB4_COUNT=$(kubectl $KUBECTL_ARGS get nodes | grep mlab4 | wc -l)
-echo "mlab4 count: ${MLAB4_COUNT}"
+NODE_COUNT=$(kubectl $KUBECTL_ARGS get nodes | grep '^mlab[1-4]' | wc -l)
+echo "mlab4 count: ${NODE_COUNT}"
 
 #
 # Delete the ndt-server DaemonSet.
@@ -65,7 +65,7 @@ echo -n "All pods in Running state in: "
 while true; do
   POD_COUNT=$(kubectl $KUBECTL_ARGS get pods | grep ndt | \
       grep Running | wc -l)
-  if [[ "${POD_COUNT}" -eq "${MLAB4_COUNT}" ]]; then
+  if [[ "${POD_COUNT}" -eq "${NODE_COUNT}" ]]; then
     break
   fi
   # Loosen the loop just a tiny bit.
@@ -88,7 +88,7 @@ kubectl $KUBECTL_ARGS exec $KUBECTL_EXEC_POD -c ndt-server /bin/ls > /dev/null
 KUBECTL_EXEC_SECS="${SECONDS}"
 echo "${KUBECTL_EXEC_SECS}"
 
-echo -e "\nmlab4_cnt, delete_cmd, delete_done, apply_cmd, apply_running," \
+echo -e "\nnode_cnt, delete_cmd, delete_done, apply_cmd, apply_running," \
         "kubectl_exec"
-echo "${MLAB4_COUNT}, ${DEL_CMD_SECS}, ${DEL_DONE_SECS}, ${APPLY_CMD_SECS}," \
+echo "${NODE_COUNT}, ${DEL_CMD_SECS}, ${DEL_DONE_SECS}, ${APPLY_CMD_SECS}," \
      "${APPLY_RUNNING_SECS}, ${KUBECTL_EXEC_SECS}"
