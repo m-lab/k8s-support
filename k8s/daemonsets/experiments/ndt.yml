@@ -59,6 +59,8 @@ spec:
         image: measurementlab/tcp-info:prod-v0.0.1a
         args:
         - -prom=9797
+        ports:
+        - containerPort: 9797
         volumeMounts:
         - name: fast-sidestream-data
           mountPath: /home

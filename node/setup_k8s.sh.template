@@ -77,6 +77,12 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 mkdir -p /etc/cni/net.d
 cp /usr/share/oem/multus-cni.conf /etc/cni/net.d
 
+# Make the directory /etc/kubernetes/manifests. The declaration staticPodPath in
+# `staticPodPath` /var/lib/kubelet/config.yaml defines this and is a standard
+# for k8s. If it doesn't exist the kubelet logs a message every few seconds that
+# it doesn't exist, polluting the logs terribly.
+mkdir -p /etc/kubernetes/manifests
+
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
