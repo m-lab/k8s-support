@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kube-state-metrics
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: kube-state-metrics
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      nodeSelector:
+        mlab/type: cloud
+      containers:
+      - name: kube-state-metrics
+        image: quay.io/coreos/kube-state-metrics:v1.5.0
+        args: [
+          "--collectors=deployments,nodes,pods,services",
+          "--port=9999",
+        ]
+        ports:
+        - containerPort: 9999
