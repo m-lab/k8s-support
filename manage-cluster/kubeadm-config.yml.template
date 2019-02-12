@@ -24,6 +24,8 @@ clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
+  node-monitor-grace-period: "2m"
+  pod-eviction-timeout: "1m"
 etcd:
   local:
     dataDir: /var/lib/etcd
