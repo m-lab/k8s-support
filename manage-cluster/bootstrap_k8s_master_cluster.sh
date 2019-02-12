@@ -811,7 +811,7 @@ EOF
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u root):$(id -g root) /root/.kube/config
     sudo bash -c "(cat <<-EOF2
-        export ETCDCTL_API=3
+		export ETCDCTL_API=3
 		export ETCDCTL_DIAL_TIMEOUT=3s
 		export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
 		export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
