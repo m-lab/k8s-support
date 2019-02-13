@@ -723,8 +723,7 @@ EOF
   # Many of the following configurations were gleaned from:
   # https://kubernetes.io/docs/setup/independent/high-availability/
 
-  # Evaluate the kubeadm config template with a beastly sed statement, and also
-  # evaludate the cloud-provider.conf template.
+  # Evaluate the kubeadm config template with a beastly sed statement.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
     sudo -s
 
@@ -741,12 +740,6 @@ EOF
         -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
-
-    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-        -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
-        -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
-        ./cloud-provider.conf.template > \
-        /etc/kubernetes/cloud-provider.conf
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then

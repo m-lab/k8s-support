@@ -9,22 +9,12 @@ nodeRegistration:
   taints:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
-  kubeletExtraArgs:
-    cloud-provider: "gce"
-    cloud-config: "/etc/kubernetes/cloud-provider.conf"
 ---
 apiVersion: kubeadm.k8s.io/v1alpha3
 kind: ClusterConfiguration
 kubernetesVersion: v{{K8S_VERSION}}
 apiServerCertSANs:
 - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
-apiServerExtraArgs:
-  cloud-provider: "gce"
-  cloud-config: "/etc/kubernetes/cloud-provider.conf"
-apiServerExtraVolumes:
-- name: cloud
-  hostPath: "/etc/kubernetes/cloud-provider.conf"
-  mountPath: "/etc/kubernetes/cloud-provider.conf"
 auditPolicy:
   logDir: /var/log/kubernetes/audit
   logMaxAge: 2
@@ -34,13 +24,9 @@ clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
-  cloud-provider: "gce"
-  cloud-config: "/etc/kubernetes/cloud-provider.conf"
-  configure-cloud-routes: "false"
-controllerManagerExtraVolumes:
-- name: cloud
-  hostPath: "/etc/kubernetes/cloud-provider.conf"
-  mountPath: "/etc/kubernetes/cloud-provider.conf"
+  # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
+  node-monitor-grace-period: "2m"
+  pod-eviction-timeout: "1m"
 etcd:
   local:
     dataDir: /var/lib/etcd
@@ -103,3 +89,8 @@ oomScoreAdj: -999
 portRange: ""
 resourceContainer: /kube-proxy
 udpIdleTimeout: 250ms
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+# https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
+nodeStatusUpdateFrequency: "20s"

@@ -7,7 +7,7 @@ command, replacing <gcp-project-name> with the name of your GCP project (e.g.,
 mlab-sandbox). NOTE: be sure look at and modify the global variables in the
 script appropriately, else the results will not be what you want or expect.
 ```bash
-./setup_cloud_k8s_master.sh <gcp-project-name>
+./bootstrap_k8s_master_cluster.sh <gcp-project-name>
 ```
 
 # Master node setup
@@ -15,7 +15,7 @@ We use `kubeadm` to set everything up.  It's alpha, but it works pretty well.
 
 All the kubernetes configs for the master are stored under [./network/](./network/).
 
-# The ./setup\_cloud\_k8s\_master.sh script
+# The ./bootstrap\_k8s\_master\_cluster.sh script
 This is a ridiculously long bash script, but it is not complicated; there are
 just a lot of steps to take and commands to be run. Additionally, line wrapping
 for readability makes is a good deal longer than it might otherwise be.  The
