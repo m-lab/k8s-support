@@ -823,7 +823,8 @@ EOF
                    openssl rsa -pubin -outform der 2>/dev/null | \
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
+    cache_control="Cache-Control:private, max-age=0, no-transform"
+    gsutil -h $cache_control cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
   fi
 
   # Evaluate the common.yml.template network config template file.
