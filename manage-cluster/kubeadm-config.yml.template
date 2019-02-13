@@ -24,6 +24,7 @@ clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
+  # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
   node-monitor-grace-period: "2m"
   pod-eviction-timeout: "1m"
 etcd:
@@ -91,4 +92,5 @@ udpIdleTimeout: 250ms
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
+# https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
 nodeStatusUpdateFrequency: "20s"
