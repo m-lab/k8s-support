@@ -31,6 +31,20 @@ spec:
       - operator: Exists
         effect: NoSchedule
       serviceAccountName: flannel
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.10.0-amd64
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/platform-node-cni-conf.json
+        - /etc/cni/net.d/multus-cni.conf
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
         image: quay.io/coreos/flannel:v0.10.0-amd64

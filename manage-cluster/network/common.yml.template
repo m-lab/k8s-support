@@ -113,3 +113,24 @@ data:
         }
       ]
     }
+  # This is the CNI config needed for the platform nodes.
+  # This file should not contain any index2ip stuff. It is the backup config
+  # for when multus isn't working or a pod is not tagged with any network
+  # annotations.
+  platform-node-cni-conf.json: |
+    {
+      "name": "multus-network",
+      "type": "multus",
+      "kubeconfig": "/etc/kubernetes/kubelet.conf",
+      "delegates": [
+        {
+          "type": "flannel",
+          "delegate": {
+            "hairpinMode": true,
+            "isDefaultGateway": false,
+            "forceAddress": true
+          },
+          "masterplugin": true
+        }
+      ]
+    }
