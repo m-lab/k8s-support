@@ -69,7 +69,7 @@ NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/
 DYNAMIC_CONFIG_DIR="/var/lib/kubelet/dynamic-configs"
 mkdir -p /etc/systemd/system/kubelet.service.d
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
-  | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS --dynamic-config-dir=$DYNAMIC_CONFIG_DIR|g" \
+  | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS --dynamic-config-dir=$DYNAMIC_CONFIG_DIR|g " \
   | sed -e 's|--cni-bin-dir=[^ "]*|--cni-bin-dir=/opt/shimcni/bin|' \
   > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
