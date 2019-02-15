@@ -59,4 +59,4 @@ spec:
           path: /sys
       - name: textfile
         configMap:
-          name: demo-nodeexporter
+          name: prometheus-synthetic-textfile-metrics
