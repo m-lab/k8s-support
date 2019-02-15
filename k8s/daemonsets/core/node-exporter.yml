@@ -60,5 +60,3 @@ spec:
       - name: textfile
         configMap:
           name: demo-nodeexporter
-      hostNetwork: true
-      hostPID: true
