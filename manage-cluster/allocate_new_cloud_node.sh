@@ -69,22 +69,6 @@ until gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}" && \
   gcloud compute config-ssh "${GCP_ARGS[@]}"
 done
 
-# Copy the cloud-provider.conf config template file to the server.
-gcloud compute scp cloud-provider.conf.template "${NODE_NAME}": "${GCE_ARGS[@]}"
-
-# evaludate the cloud-provider.conf template.
-gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
-  sudo -s
-
-  mkdir /etc/kubernetes
-
-  sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-      -e 's|{{GCE_NETWORK}}|${GCE_NETWORK}|g' \
-      -e 's|{{GCE_K8S_SUBNET}}|${GCE_K8S_SUBNET}|g' \
-      ./cloud-provider.conf.template > \
-      /etc/kubernetes/cloud-provider.conf
-EOF
-
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
@@ -97,10 +81,6 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
   apt-get update
   apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
-
-  # Set cloud provider to "gce".
-  echo 'KUBELET_EXTRA_ARGS="--cloud-provider=gce --cloud-config=/etc/kubernetes/cloud-provider.conf"' > \
-      /etc/default/kubelet
 
   systemctl daemon-reload
   systemctl enable docker.service
