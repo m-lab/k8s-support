@@ -59,6 +59,8 @@ scrape_configs:
     kubernetes_sd_configs:
       - role: pod
 
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
     relabel_configs:
       # For inventory, record whether a pod is ready. This helps distinguish
       # between: missing from inventory, not ready and failing, ready but
