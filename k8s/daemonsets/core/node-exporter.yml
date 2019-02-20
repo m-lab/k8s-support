@@ -31,7 +31,6 @@ spec:
         - --no-collector.bcache
         - --no-collector.bonding
         - --no-collector.conntrack
-        - --no-collector.cpufreq
         - --no-collector.entropy
         - --no-collector.filefd
         - --no-collector.infiniband
@@ -67,10 +66,10 @@ spec:
           name: textfile
           readOnly: true
       - name: kube-rbac-proxy
-        image: quay.io/coreos/kube-rbac-proxy
+        image: quay.io/coreos/kube-rbac-proxy:v0.4.1
         args:
         - --logtostderr
-        - --insecure-listen-address=$(IP):9100
+        - --secure-listen-address=$(IP):9100
         - --upstream=http://127.0.0.1:9100/
         env:
         - name: IP
