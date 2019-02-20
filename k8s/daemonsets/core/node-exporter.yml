@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
@@ -18,12 +18,13 @@ spec:
       serviceAccountName: kube-rbac-proxy
       containers:
       - name: node-exporter
-        image: quay.io/prometheus/node-exporter:v0.17.0
+        image: quay.io/prometheus/node-exporter
         args:
         - --web.listen-address=127.0.0.1:9100
         - --path.procfs=/host/proc
         - --path.sysfs=/host/sys
         - --path.rootfs=/host/root
+        - --collector.textfile.directory=/host/textfile
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
         resources:
@@ -44,8 +45,11 @@ spec:
           mountPropagation: HostToContainer
           name: root
           readOnly: true
+        - mountPath: /host/textfile
+          name: textfile
+          readOnly: true
       - name: kube-rbac-proxy
-        image: quay.io/coreos/kube-rbac-proxy:v0.4.1
+        image: quay.io/coreos/kube-rbac-proxy
         args:
         - --logtostderr
         - --insecure-listen-address=$(IP):9100
@@ -80,3 +84,6 @@ spec:
       - hostPath:
           path: /
         name: root
+      - configMap:
+          name: demo-nodeexporter
+        name: textfile
