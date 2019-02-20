@@ -1,64 +1,82 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: DaemonSet
 metadata:
+  labels:
+    app: node-exporter
   name: node-exporter
-  namespace: default
 spec:
   selector:
     matchLabels:
-      run: node-exporter
+      app: node-exporter
   template:
     metadata:
       labels:
-        run: node-exporter
+        app: node-exporter
       annotations:
         prometheus.io/scrape: 'true'
     spec:
-      # We want node-exporter running on the k8s masters too.
-      tolerations:
-      - key: "node-role.kubernetes.io/master"
-        operator: "Exists"
-        effect: "NoSchedule"
-      # The kube-controller-manager is launched with flag
-      # --configure-cloud-routes=false to avoid issues with the platform
-      # bare-metal nodes (which are not in the cloud), but this has the side
-      # effect of adding the following taint to all cloud nodes, which we
-      # tolerate here, since we need Prometheus running regardless.
-      - key: "node.kubernetes.io/network-unavailable"
-        operator: "Exists"
-        effect: "NoSchedule"
-
+      serviceAccountName: kube-rbac-proxy
       containers:
       - name: node-exporter
-        image: prom/node-exporter
-        # TODO: enable --web.listen-address to listen on private IPs.
+        image: quay.io/prometheus/node-exporter:v0.17.0
         args:
+        - --web.listen-address=127.0.0.1:9100
         - --path.procfs=/host/proc
         - --path.sysfs=/host/sys
-        - --collector.textfile.directory=/host/textfile
+        - --path.rootfs=/host/root
+        - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+        - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+        resources:
+          limits:
+            cpu: 250m
+            memory: 180Mi
+          requests:
+            cpu: 102m
+            memory: 180Mi
+        volumeMounts:
+        - mountPath: /host/proc
+          name: proc
+          readOnly: false
+        - mountPath: /host/sys
+          name: sys
+          readOnly: false
+        - mountPath: /host/root
+          mountPropagation: HostToContainer
+          name: root
+          readOnly: true
+      - name: kube-rbac-proxy
+        image: quay.io/coreos/kube-rbac-proxy:v0.4.1
+        args:
+        - --logtostderr
+        - --insecure-listen-address=$(IP):9100
+        - --upstream=http://127.0.0.1:9100/
+        env:
+        - name: IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         ports:
         - containerPort: 9100
           hostPort: 9100
-          name: scrape
-        volumeMounts:
-        - name: proc
-          mountPath: /host/proc
-          readOnly: true
-        - name: sys
-          mountPath: /host/sys
-          readOnly: true
-        - name: textfile
-          mountPath: /host/textfile
-          readOnly: true
-      volumes:
-      - name: proc
-        hostPath:
-          path: /proc
-      - name: sys
-        hostPath:
-          path: /sys
-      - name: textfile
-        configMap:
-          name: demo-nodeexporter
+        resources:
+          limits:
+            cpu: 20m
+            memory: 40Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
       hostNetwork: true
       hostPID: true
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      volumes:
+      - hostPath:
+          path: /proc
+        name: proc
+      - hostPath:
+          path: /sys
+        name: sys
+      - hostPath:
+          path: /
+        name: root
