@@ -27,6 +27,24 @@ spec:
         - --collector.textfile.directory=/host/textfile
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+        - --no-collector.arp
+        - --no-collector.bcache
+        - --no-collector.bonding
+        - --no-collector.conntrack
+        - --no-collector.cpufreq
+        - --no-collector.entropy
+        - --no-collector.filefd
+        - --no-collector.infiniband
+        - --no-collector.ipvs
+        - --no-collector.mdadm
+        - --no-collector.netclass
+        - --no-collector.nfs
+        - --no-collector.nfsd
+        - --no-collector.timex
+        - --no-collector.uname
+        - --no-collector.vmstat
+        - --no-collector.xfs
+        - --no-collector.zfs
         resources:
           limits:
             cpu: 250m
