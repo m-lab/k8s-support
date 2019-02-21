@@ -31,7 +31,6 @@ spec:
         - --no-collector.bcache
         - --no-collector.bonding
         - --no-collector.conntrack
-        - --no-collector.cpufreq
         - --no-collector.entropy
         - --no-collector.filefd
         - --no-collector.infiniband
@@ -103,5 +102,5 @@ spec:
           path: /
         name: root
       - configMap:
-          name: demo-nodeexporter
+          name: prometheus-synthetic-textfile-metrics
         name: textfile
