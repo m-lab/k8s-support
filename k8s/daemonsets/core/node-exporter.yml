@@ -103,5 +103,5 @@ spec:
           path: /
         name: root
       - configMap:
-          name: demo-nodeexporter
+          name: prometheus-synthetic-textfile-metrics
         name: textfile
