@@ -692,11 +692,6 @@ EOF
   # Install gcsfuse and fusermount, then mount the repository's GCS bucket so we
   # can read and/or write the generated CA files to it to persist them in the
   # event we need to recreate a k8s master.
-  #
-  # See https://github.com/GoogleCloudPlatform/gcsfuse/blob/master/docs/installing.md#building-from-source
-  export GO15VENDOREXPERIMENT=1
-  go get -u github.com/googlecloudplatform/gcsfuse
-  gcloud compute scp "${GCE_ARGS[@]}" /bin/fusermount "${gce_name}":.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
     set -euxo pipefail
     sudo -s
