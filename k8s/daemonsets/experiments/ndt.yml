@@ -56,7 +56,7 @@ spec:
           mountPath: /etc/credentials
           readOnly: true
       - name: fast-sidestream
-        image: measurementlab/tcp-info:prod-v0.0.1a
+        image: measurementlab/tcp-info:prod-v0.0.2
         args:
         - -prom=9797
         ports:
@@ -65,7 +65,7 @@ spec:
         - name: fast-sidestream-data
           mountPath: /home
       - name: pusher
-        image: measurementlab/pusher:v1.1
+        image: measurementlab/pusher:v1.4
         env:
         - name: DIRECTORY
           value: /var/spool/fast-sidestream
@@ -79,7 +79,7 @@ spec:
         - name: EXPERIMENT
           value: fast-sidestream
         - name: ARCHIVE_SIZE_THRESHOLD
-          value: 1MB
+          value: 50MB
         - name: MLAB_NODE_NAME
           valueFrom:
             fieldRef:
