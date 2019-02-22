@@ -671,7 +671,7 @@ for zone in $GCE_ZONES; do
         --volume /:/ro:ro \
         --restart always \
         --name token-server \
-        measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
+        measurementlab/k8s-token-server:v0.0 -command /ro/opt/bin/kubeadm
 
     # See the README in this directory for information on this container and why
     # we use it.
