@@ -616,26 +616,48 @@ for zone in $GCE_ZONES; do
     FIRST_INSTANCE_IP="${INTERNAL_IP}"
   fi
 
-  # Become root and install everything.
-  #
-  # Eventually we want this to work on Container Linux as the master. However, it
-  # is too hard to hack on for a place in which to build an alpha system.  The
-  # below commands work on Ubuntu.
-  #
-  # Some of the following is derived from the "Ubuntu" instructions at
-  #   https://kubernetes.io/docs/setup/independent/install-kubeadm/
+  # Become root, install and configure all the k8s components, and launch the
+  # k8s-token-server and gcp-loadbalancer-proxy.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
-    sudo -s
     set -euxo pipefail
-    apt-get update
-    apt-get install -y docker.io etcd-client
-    systemctl enable docker.service
+    sudo -s
 
-    apt-get update && apt-get install -y apt-transport-https curl
-    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-    echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
-    apt-get update
-    apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
+    # We set bash options again inside the sudo shell. If we don't, then any
+    # failed command below will simply exit the sudo shell and all subsequent
+    # commands will will be run a non-root user, and will fail.  Setting bash
+    # options before and after sudo should ensure that the entire process fails
+    # if something inside the sudo shell fails.
+    set -euxo pipefail
+
+    # Binaries will get installed in /opt/bin, put it in root's PATH
+    echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
+
+    # Install CNI plugins.
+    mkdir -p /opt/cni/bin
+    curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+    # Install crictl.
+    mkdir -p /opt/bin
+    curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
+
+    # Install kubeadm, kubelet and kubectl.
+    cd /opt/bin
+    curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+    chmod +x {kubeadm,kubelet,kubectl}
+
+    # Install kubelet systemd service and enable it.
+    curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/kubelet.service" \
+        | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
+    mkdir -p /etc/systemd/system/kubelet.service.d
+    curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
+        | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+    # Enable and start kubelet and docker services
+    systemctl enable --now kubelet.service
+    systemctl enable --now docker.service
+    systemctl daemon-reload
+    systemctl restart kubelet
+    systemctl restart docker
 
     # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
     #
@@ -649,7 +671,7 @@ for zone in $GCE_ZONES; do
         --volume /:/ro:ro \
         --restart always \
         --name token-server \
-        measurementlab/k8s-token-server:v0.0 -command /ro/usr/bin/kubeadm
+        measurementlab/k8s-token-server:v0.0 -command /ro/opt/bin/kubeadm
 
     # See the README in this directory for information on this container and why
     # we use it.
@@ -663,35 +685,59 @@ for zone in $GCE_ZONES; do
     # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
     # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
     # it from the default of 8192.
-    echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.conf
-    sysctl -p
-
-    systemctl daemon-reload
-    systemctl restart kubelet
+    echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.d/fs_inotify.conf
+    sysctl --system
 EOF
 
-  # Setup GCSFUSE, then mount the repository's GCS bucket so we can read and/or
-  # write the generated CA files to it to persist them in the event we need to
-  # recreate a k8s master.
+  # Install gcsfuse and fusermount, then mount the repository's GCS bucket so we
+  # can read and/or write the generated CA files to it to persist them in the
+  # event we need to recreate a k8s master.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
+    set -euxo pipefail
     sudo -s
+
+    # We set bash options again inside the sudo shell. If we don't, then any
+    # failed command below will simply exit the sudo shell and all subsequent
+    # commands will will be run a non-root user, and will fail.  Setting bash
+    # options before and after sudo should ensure that the entire process fails
+    # if something inside the sudo shell fails.
     set -euxo pipefail
 
-    export GCSFUSE_REPO=gcsfuse-\$(lsb_release -c -s)
-    echo "deb http://packages.cloud.google.com/apt \$GCSFUSE_REPO main" \
-      | tee /etc/apt/sources.list.d/gcsfuse.list
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-      | apt-key add -
+    # Build the gcsfuse binary in a throwaway Docker container. The build
+    # artifact will end up directly in /opt/bin due to the volume mount. Also,
+    # while in there, install the fuse package so we can extract the fusermount
+    # binary
+    docker run --rm --volume /opt/bin:/tmp/go/bin --env "GOPATH=/tmp/go" \
+        amd64/golang:1.11.5 \
+        /bin/bash -c \
+        "go get -u github.com/googlecloudplatform/gcsfuse &&
+        apt-get update --quiet=2 &&
+        apt-get install --yes fuse &&
+        cp /bin/fusermount /tmp/go/bin"
 
-    # Install the gcsfuse package.
-    apt-get update
-    apt-get install gcsfuse
-
-    # Create the directory where the project's GCS bucket will be mounted, and
-    # mount it.
+    # Create the mount point for the GCS bucket
     mkdir -p ${K8S_PKI_DIR}
-    echo "${!GCS_BUCKET_K8S} ${K8S_PKI_DIR} gcsfuse rw,user,allow_other,implicit_dirs" >> /etc/fstab
-    mount ${K8S_PKI_DIR}
+
+    systemd_gcsfuse_filename="mount_gcs_bucket.service"
+
+    sudo bash -c "(cat <<-EOF2
+		[Unit]
+		Description = Mount GCS bucket ${!GCS_BUCKET_K8S}
+
+		[Service]
+		Type=oneshot
+		RemainAfterExit=yes
+		Environment="PATH=/opt/bin"
+		ExecStart=/opt/bin/gcsfuse --implicit-dirs -o rw,allow_other k8s-platform-master-mlab-sandbox ${K8S_PKI_DIR}
+		ExecStop=/opt/bin/fusermount -u ${K8S_PKI_DIR}
+
+		[Install]
+		WantedBy = multi-user.target
+EOF2
+	) >> /etc/systemd/system/\${systemd_gcsfuse_filename}"
+
+	systemctl enable --now "\${systemd_gcsfuse_filename}"
+	systemctl start "\${systemd_gcsfuse_filename}"
 
     # Make sure that the necessary subdirectories exist. Separated into two
     # steps due to limitations of gcsfuse.
@@ -725,7 +771,15 @@ EOF
 
   # Evaluate the kubeadm config template with a beastly sed statement.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    set -euxo pipefail
     sudo -s
+
+    # We set bash options again inside the sudo shell. If we don't, then any
+    # failed command below will simply exit the sudo shell and all subsequent
+    # commands will will be run a non-root user, and will fail.  Setting bash
+    # options before and after sudo should ensure that the entire process fails
+    # if something inside the sudo shell fails.
+    set -euxo pipefail
 
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
@@ -744,7 +798,14 @@ EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+      set -euxo pipefail
       sudo -s
+
+      # We set bash options again inside the sudo shell. If we don't, then any
+      # failed command below will simply exit the sudo shell and all subsequent
+      # commands will will be run a non-root user, and will fail.  Setting bash
+      # options before and after sudo should ensure that the entire process fails
+      # if something inside the sudo shell fails.
       set -euxo pipefail
 
       kubeadm init --config kubeadm-config.yml
@@ -762,7 +823,14 @@ EOF
 EOF
   else
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+      set -euxo pipefail
       sudo -s
+
+      # We set bash options again inside the sudo shell. If we don't, then any
+      # failed command below will simply exit the sudo shell and all subsequent
+      # commands will will be run a non-root user, and will fail.  Setting bash
+      # options before and after sudo should ensure that the entire process fails
+      # if something inside the sudo shell fails.
       set -euxo pipefail
 
       # Bootstrap the kubelet
@@ -824,7 +892,7 @@ EOF
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     cache_control="Cache-Control:private, max-age=0, no-transform"
-    gsutil -h $cache_control cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
+    gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
   fi
 
   # Evaluate the common.yml.template network config template file.
@@ -842,8 +910,16 @@ EOF
   # The CustomResourceDefinition needs to be defined before any resources which
   # use that definition, so we apply that config first.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
-    sudo -s
     set -euxo pipefail
+    sudo -s
+
+    # We set bash options again inside the sudo shell. If we don't, then any
+    # failed command below will simply exit the sudo shell and all subsequent
+    # commands will will be run a non-root user, and will fail.  Setting bash
+    # options before and after sudo should ensure that the entire process fails
+    # if something inside the sudo shell fails.
+    set -euxo pipefail
+
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
     kubectl label node ${gce_name} mlab/type=cloud
 
