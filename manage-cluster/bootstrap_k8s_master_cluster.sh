@@ -689,24 +689,14 @@ for zone in $GCE_ZONES; do
     sysctl --system
 EOF
 
-  # Setup GCSFUSE, then mount the repository's GCS bucket so we can read and/or
-  # write the generated CA files to it to persist them in the event we need to
-  # recreate a k8s master.
-  #
-  # NOTE: These commands are run from your local machine, and they assume that
-  # you have a working golang install, and that you are working on a amd64 arch
-  # machine, and that you have the fusermount binary installed! It's a lot to
-  # assume, but not unreasonable.
-  #
-  # TODO(kinkade): Installing binaries from a user's system is not ideal. This
-  # is a possibly temporary workaround to get up and running on CoreOS with the
-  # least resistance/work. We should probably be building the gcsfuse binary on
-  # the VM, and possibly also the fusermount binary.
+  # Install gcsfuse and fusermount, then mount the repository's GCS bucket so we
+  # can read and/or write the generated CA files to it to persist them in the
+  # event we need to recreate a k8s master.
   #
   # See https://github.com/GoogleCloudPlatform/gcsfuse/blob/master/docs/installing.md#building-from-source
   export GO15VENDOREXPERIMENT=1
   go get -u github.com/googlecloudplatform/gcsfuse
-  gcloud compute scp "${GCE_ARGS[@]}" $GOPATH/bin/gcsfuse /bin/fusermount "${gce_name}":.
+  gcloud compute scp "${GCE_ARGS[@]}" /bin/fusermount "${gce_name}":.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
     set -euxo pipefail
     sudo -s
@@ -718,9 +708,17 @@ EOF
     # if something inside the sudo shell fails.
     set -euxo pipefail
 
-    mv gcsfuse /opt/bin
-    mv fusermount /opt/bin
-    chown -R root:root /opt/bin
+    # Build the gcsfuse binary in a throwaway Docker container. The build
+    # artifact will end up directly in /opt/bin due to the volume mount. Also,
+    # while in there, install the fuse package so we can extract the fusermount
+    # binary
+    docker run --rm --volume /opt/bin:/tmp/go/bin --env "GOPATH=/tmp/go" \
+        amd64/golang:1.11.5 \
+        /bin/bash -c \
+        "go get -u github.com/googlecloudplatform/gcsfuse &&
+        apt-get update --quiet=2 &&
+        apt-get install --yes fuse &&
+        cp /bin/fusermount /tmp/go/bin"
 
     # Create the mount point for the GCS bucket
     mkdir -p ${K8S_PKI_DIR}
