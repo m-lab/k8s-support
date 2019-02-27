@@ -146,6 +146,15 @@ if [[ -n "${EXISTING_HEALTH_CHECKS_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+EXISTING_TOKEN_SERVER_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-token-server" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_TOKEN_SERVER_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-token-server" \
+      "${GCP_ARGS[@]}"
+fi
+
+
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
@@ -351,6 +360,26 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-health-checks" \
     --source-ranges "35.191.0.0/16,130.211.0.0/22" \
     --target-tags "${GCE_BASE_NAME}" \
     "${GCP_ARGS[@]}"
+
+# Determine the CIDR range of the epoxy subnet.
+EPOXY_SUBNET=$(gcloud compute networks subnets list \
+    --network "${GCE_NETWORK}" \
+    --filter "name=${GCE_EPOXY_SUBNET} AND region:(${GCE_REGION})" \
+    --format "value(ipCidrRange)")
+if [[ -z "${EPOXY_SUBNET}" ]]; then
+  echo "Could not determine the CIDR range for the ePoxy subnet."
+  exit 1
+fi
+
+# Create firewall rule allowing the ePoxy server to communicate with the
+# token-server
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-token-server" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "tcp:8800" \
+    --source-ranges "${EPOXY_SUBNET}" \
+    "${GCP_ARGS[@]}"
+
 
 #
 # INTERNAL LOAD BALANCING for the token server.
