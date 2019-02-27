@@ -1,25 +1,15 @@
 #!/bin/bash
 #
-# A script that can add a new master node to a k8s cluster.
-#
-# NOTE: If a master node in the same zone already existed then you will want to
-# both manually delete the node from the k8s cluster as well as manually
-# removing the node from the etcd cluster. Removing the node from the k8s
-# cluster is as simple as `kubectl delete node <node name>`. Deleting the nodce
-# from the etcd cluster can be achieved with the following (run on an existing
-# master node):
-#
-# $ etcdctl member list
-# // Note the endpoint ID (a 16 char sring)
-# $ etcdctl member remove <ID>
+# Adds a new master node to an existing k8s cluster.
 
 set -euxo pipefail
 
-USAGE="$0 <cloud project> <zone> <existing master>"
+USAGE="$0 <cloud project> <zone> <existing master zone>"
 PROJECT=${1:?Please provide the GCP project (e.g., mlab-sandbox): ${USAGE}}
 ZONE=${2:?Please provide a GCE zone (e.g., c): ${USAGE}}
 BOOTSTRAP_ZONE=${3:?Please provide the GCE zone of any existing master node (e.g., b): ${USAGE}}
 
+# Include global configs and the bootstrap function "library".
 source k8s_deploy.conf
 source bootstraplib.sh
 
