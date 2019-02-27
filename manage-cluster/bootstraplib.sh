@@ -93,6 +93,7 @@ function create_master {
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
     --scopes "${GCE_API_SCOPES}" \
+    --metadata-from-file "user-data=cloud-config.yml" \
     "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
@@ -187,41 +188,10 @@ function create_master {
     curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
         | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
-    # Enable and start kubelet and docker services
+    # Enable and start the kubelet service
     systemctl enable --now kubelet.service
-    systemctl enable --now docker.service
     systemctl daemon-reload
     systemctl restart kubelet
-    systemctl restart docker
-
-    # Run the k8s-token-server (supporting the ePoxy Extension API), such that:
-    #
-    #   1) the host root (/) is mounted read-only in the container as /ro
-    #   2) the host etc (/etc) is mounted read-only as the container's /etc
-    #
-    # The first gives access the kubeadm command.
-    # The second gives kubeadm read access to /etc/kubernetes/admin.conf.
-    docker run --detach --publish 8800:8800 \
-        --volume /etc:/etc:ro \
-        --volume /:/ro:ro \
-        --restart always \
-        --name token-server \
-        measurementlab/k8s-token-server:v0.0 -command /ro/opt/bin/kubeadm
-
-    # See the README in this directory for information on this container and why
-    # we use it.
-    docker run --detach --publish 8080:8080 --network host --restart always \
-        --name gcp-loadbalancer-proxy -- \
-        measurementlab/gcp-loadbalancer-proxy:v1.0 -url https://localhost:6443
-
-    # We have run up against "no space left on device" errors, when clearly
-    # there is plenty of free disk space. It seems this could likely be related
-    # to this:
-    # https://github.com/kubernetes/kubernetes/issues/7815#issuecomment-124566117
-    # To be sure we don't hit the limit of fs.inotify.max_user_watches, increase
-    # it from the default of 8192.
-    echo fs.inotify.max_user_watches=131072 >> /etc/sysctl.d/fs_inotify.conf
-    sysctl --system
 EOF
 
   # Install gcsfuse and fusermount, then mount the repository's GCS bucket so we
@@ -500,14 +470,14 @@ function delete_target_pool_instance {
   local name=$1
   local zone=$2
 
-  EXISTING_INSTANCEs=$(gcloud compute target-pools describe "${GCE_BASE_NAME}" \
+  EXISTING_INSTANCES=$(gcloud compute target-pools describe "${GCE_BASE_NAME}" \
       --format "value(instances)" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}" || true)
   if echo "${EXISTING_INSTANCES}" | grep "${name}"; then
     gcloud compute target-pools remove-instances "${GCE_BASE_NAME}" \
         --instances "${name}" \
-        --instances-zone "${zone}"
+        --instances-zone "${zone}" \
         "${GCP_ARGS[@]}"
   fi
 }
