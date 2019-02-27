@@ -16,9 +16,9 @@
 set -euxo pipefail
 
 USAGE="$0 <cloud project> <zone> <existing master>"
-PROJECT=${1:?Please provide the cloud project (e.g., mlab-sandbox): ${USAGE}}
-ZONE=${2:?Please provide a GCP zone (e.g., c): ${USAGE}}
-BOOTSTRAP_MASTER=${3:?Please provide the GCE name of any existing master node: ${USAGE}}
+PROJECT=${1:?Please provide the GCP project (e.g., mlab-sandbox): ${USAGE}}
+ZONE=${2:?Please provide a GCE zone (e.g., c): ${USAGE}}
+BOOTSTRAP_ZONE=${3:?Please provide the GCE zone of any existing master node (e.g., b): ${USAGE}}
 
 source k8s_deploy.conf
 source bootstraplib.sh
@@ -36,19 +36,12 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 ETCD_CLUSTER_STATE="existing"
 ETCD_INITIAL_CLUSTER=""
 
+BOOTSTRAP_MASTER="${GCE_BASE_NAME}-${GCE_REGION}-${BOOTSTRAP_ZONE}"
+BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${BOOTSTRAP_ZONE}"
+
 # This command returns the existing master cluster nodes and their internal IP
 # addresses.
 SSH_COMMAND="PATH=\$PATH:/opt/bin kubectl get nodes --selector=node-role.kubernetes.io/master -o jsonpath='{range .items[*]}{@.metadata.name}{\",\"}{@.status.addresses[?(@.type==\"InternalIP\")].address}{\"\n\"}{end}'"
-
-# Determine the GCE zone of the bootstrap master node.
-BOOTSTRAP_MASTER_ZONE=$(gcloud compute instances list \
-    --filter "name=${BOOTSTRAP_MASTER}" \
-    --format "value(zone)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -z "${BOOTSTRAP_MASTER_ZONE}" ]]; then
-  echo "Could not determine the zone of ${BOOTSTRAP_MASTER}. Exiting."
-  exit 1
-fi
 
 # Be sure that a master doesn't already exist in the specified zone.
 EXISTING_MASTER=$(gcloud compute instances list \
@@ -62,7 +55,7 @@ fi
 
 master_nodes=$(gcloud compute ssh "${BOOTSTRAP_MASTER}" \
     --command "${SSH_COMMAND}" \
-    --project "${PROJECT}" --zone "${BOOTSTRAP_MASTER_ZONE}")
+    "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}")
 # Populates ETCD_INITIAL_CLUSTER with all existing etcd cluster nodes.
 for node in $master_nodes; do
   node_name=$(echo $node | cut -d, -f1)
@@ -77,7 +70,36 @@ for node in $master_nodes; do
   fi
 done
 
+# Be sure that the node that is being added is already deleted from the k8s
+# cluster and etcd.
+gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}" <<EOF
+  set -eoux pipefail
+  sudo -s
+  # Run set again for use inside the sudo shell
+  set -eoux pipefail
+
+  # etcdctl env variables need to be sourced.
+  source /root/.bashrc
+
+  export PATH=\$PATH:/opt/bin
+
+  # Remove the node from the cluster.
+  if kubectl get nodes --selector=node-role.kubernetes.io/master | grep ${GCE_NAME}; then
+    kubectl delete node ${GCE_NAME}
+  fi
+
+  # See if the node is a member of the etcd cluster, and if so, delete it.
+  delete_node=\$(etcdctl member list | grep ${GCE_NAME} || true)
+  if [[ -n "\${delete_node}" ]]; then
+    node_id=\$(echo "\${delete_node}" | cut -d, -f1)
+    etcdctl member remove \$node_id
+  fi
+EOF
+
+# If they exist, delete the node name from various loadbalancer group resources.
 delete_token_server_backend "${GCE_NAME}" "${GCE_ZONE}"
 delete_target_pool_instance "${GCE_NAME}" "${GCE_ZONE}"
 delete_instance_group "${GCE_NAME}" "${GCE_ZONE}"
+
+# Now add the new master.
 create_master "${ZONE}"
