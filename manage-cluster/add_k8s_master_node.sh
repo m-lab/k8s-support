@@ -31,7 +31,7 @@ BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${BOOTSTRAP_ZONE}"
 
 # This command returns the existing master cluster nodes and their internal IP
 # addresses.
-SSH_COMMAND="PATH=\$PATH:/opt/bin kubectl get nodes --selector=node-role.kubernetes.io/master -o jsonpath='{range .items[*]}{@.metadata.name}{\",\"}{@.status.addresses[?(@.type==\"InternalIP\")].address}{\"\n\"}{end}'"
+LIST_CLUSTER_NODES="PATH=\$PATH:/opt/bin kubectl get nodes --selector=node-role.kubernetes.io/master -o jsonpath='{range .items[*]}{@.metadata.name}{\",\"}{@.status.addresses[?(@.type==\"InternalIP\")].address}{\"\n\"}{end}'"
 
 # Be sure that a master doesn't already exist in the specified zone.
 EXISTING_MASTER=$(gcloud compute instances list \
@@ -44,7 +44,7 @@ if [[ -n "${EXISTING_MASTER}" ]]; then
 fi
 
 master_nodes=$(gcloud compute ssh "${BOOTSTRAP_MASTER}" \
-    --command "${SSH_COMMAND}" \
+    --command "${LIST_CLUSTER_NODES}" \
     "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}")
 # Populates ETCD_INITIAL_CLUSTER with all existing etcd cluster nodes.
 for node in $master_nodes; do
