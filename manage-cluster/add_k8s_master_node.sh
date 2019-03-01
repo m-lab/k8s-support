@@ -74,7 +74,7 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
   export PATH=\$PATH:/opt/bin
 
   # Remove the node from the cluster.
-  if kubectl get nodes --selector=node-role.kubernetes.io/master | grep ${GCE_NAME}; then
+  if kubectl get nodes | grep ${GCE_NAME}; then
     kubectl delete node ${GCE_NAME}
   fi
 
