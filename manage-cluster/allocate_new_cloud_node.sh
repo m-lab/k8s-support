@@ -51,6 +51,7 @@ gcloud compute instances create "${NODE_NAME}" \
   --network "${GCE_NETWORK}" \
   --subnet "${GCE_K8S_SUBNET}" \
   --scopes "${GCE_API_SCOPES}" \
+  --metadata-from-file "user-data=cloud-config_node.yml" \
   "${GCE_ARGS[@]}"
 
 # Give the instance time to appear.  Make sure it appears twice - there have

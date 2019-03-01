@@ -93,7 +93,7 @@ function create_master {
     --machine-type "${GCE_TYPE}" \
     --address "${EXTERNAL_IP}" \
     --scopes "${GCE_API_SCOPES}" \
-    --metadata-from-file "user-data=cloud-config.yml" \
+    --metadata-from-file "user-data=cloud-config_master.yml" \
     "${GCE_ARGS[@]}"
 
   #  Give the instance time to appear.  Make sure it appears twice - there have
