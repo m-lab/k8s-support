@@ -233,7 +233,7 @@ EOF
 		Type=oneshot
 		RemainAfterExit=yes
 		Environment="PATH=/opt/bin"
-		ExecStart=/opt/bin/gcsfuse --implicit-dirs -o rw,allow_other k8s-platform-master-mlab-sandbox ${K8S_PKI_DIR}
+		ExecStart=/opt/bin/gcsfuse --implicit-dirs -o rw,allow_other k8s-platform-master-${PROJECT} ${K8S_PKI_DIR}
 		ExecStop=/opt/bin/fusermount -u ${K8S_PKI_DIR}
 
 		[Install]
