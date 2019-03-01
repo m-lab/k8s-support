@@ -10,8 +10,15 @@
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <google-cloud-project>"
+USAGE="USAGE: $0 <google-cloud-project> <[label=value], ...>"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
+shift
+
+# All args after PROJECT are assumed to be arbitrary label definitions. For
+# example:
+#
+# ./allocate_new_cloud_node.sh mlab-sandbox run=prometheus app=bar
+LABELS="$@"
 
 # Source all the global configuration variables.
 source k8s_deploy.conf
@@ -72,19 +79,47 @@ done
 
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
-  sudo -s
   set -euxo pipefail
-  apt-get update
-  apt-get install -y docker.io
+  sudo -s
 
-  apt-get update && apt-get install -y apt-transport-https curl
-  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-  echo deb http://apt.kubernetes.io/ kubernetes-xenial main >/etc/apt/sources.list.d/kubernetes.list
-  apt-get update
-  apt-get install -y kubelet=${K8S_VERSION}-${K8S_PKG_VERSION} kubeadm=${K8S_VERSION}-${K8S_PKG_VERSION} kubectl=${K8S_VERSION}-${K8S_PKG_VERSION}
+  # We set bash options again inside the sudo shell. If we don't, then any
+  # failed command below will simply exit the sudo shell and all subsequent
+  # commands will will be run a non-root user, and will fail.  Setting bash
+  # options before and after sudo should ensure that the entire process fails
+  # if something inside the sudo shell fails.
+  set -euxo pipefail
 
+  # Binaries will get installed in /opt/bin, put it in root's PATH
+  echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
+
+  # Install CNI plugins.
+  mkdir -p /opt/cni/bin
+  curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+  # Install crictl.
+  mkdir -p /opt/bin
+  curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
+
+  # Install kubeadm, kubelet and kubectl.
+  cd /opt/bin
+  curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+  chmod +x {kubeadm,kubelet,kubectl}
+
+  # Install kubelet systemd service and enable it.
+  curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/kubelet.service" \
+      | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
+  mkdir -p /etc/systemd/system/kubelet.service.d
+  curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
+      | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+  # Override the node name, which without this will be something like:
+  #     ${NODE_NAME}.c.mlab-sandbox.internal
+  # https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
+  echo "KUBELET_EXTRA_ARGS='--hostname-override ${NODE_NAME}'" > /etc/default/kubelet
+
+  # Enable and start the kubelet service
+  systemctl enable --now kubelet.service
   systemctl daemon-reload
-  systemctl enable docker.service
   systemctl restart kubelet
 EOF
 
@@ -96,17 +131,33 @@ EOF
 # on k8s-platform-master.  We should figure out how that should work and do that
 # instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
-  sudo -s
   set -euxo pipefail
+  sudo -s
+
+  # We set bash options again inside the sudo shell. If we don't, then any
+  # failed command below will simply exit the sudo shell and all subsequent
+  # commands will will be run a non-root user, and will fail.  Setting bash
+  # options before and after sudo should ensure that the entire process fails
+  # if something inside the sudo shell fails.
+  set -euxo pipefail
+
   kubeadm token create --ttl=5m --print-join-command --description="Token for ${NODE_NAME}"
 EOF
 ))
 
 # Ssh to the new node and use the newly created token to join the cluster.
 gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
-  sudo -s
   set -euxo pipefail
-  sudo ${JOIN_COMMAND}
+  sudo -s
+
+  # We set bash options again inside the sudo shell. If we don't, then any
+  # failed command below will simply exit the sudo shell and all subsequent
+  # commands will will be run a non-root user, and will fail.  Setting bash
+  # options before and after sudo should ensure that the entire process fails
+  # if something inside the sudo shell fails.
+  set -euxo pipefail
+
+  sudo ${JOIN_COMMAND} --node-name ${NODE_NAME}
 EOF
 
 # This command takes long enough that the race condition with node registration
@@ -120,11 +171,23 @@ EXTERNAL_IP=$(gcloud compute instances list \
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
+  set -euxo pipefail
   sudo -s
 
+  # We set bash options again inside the sudo shell. If we don't, then any
+  # failed command below will simply exit the sudo shell and all subsequent
+  # commands will will be run a non-root user, and will fail.  Setting bash
+  # options before and after sudo should ensure that the entire process fails
+  # if something inside the sudo shell fails.
   set -euxo pipefail
+
   kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
   for label in ${K8S_CLOUD_NODE_LABELS}; do
+    kubectl label nodes ${NODE_NAME} \${label}
+  done
+
+  # Add any labels passed as arguments to this script.
+  for label in ${LABELS}; do
     kubectl label nodes ${NODE_NAME} \${label}
   done
 EOF
