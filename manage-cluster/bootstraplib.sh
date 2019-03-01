@@ -453,12 +453,13 @@ EOF
 function delete_instance_group {
   local name=$1
   local zone=$2
+  local existing_instance_group
 
-  EXISTING_INSTANCE_GROUP=$(gcloud compute instance-groups list \
+  existing_instance_group=$(gcloud compute instance-groups list \
       --filter "name=${name} AND zone:($zone)" \
       --format "value(name)" \
       "${GCP_ARGS[@]}" || true)
-  if [[ -n "${EXISTING_INSTANCE_GROUP}" ]]; then
+  if [[ -n "${existing_instance_group}" ]]; then
     gcloud compute instance-groups unmanaged delete "${name}" \
         --zone "${zone}" \
         "${GCP_ARGS[@]}"
@@ -469,12 +470,13 @@ function delete_instance_group {
 function delete_target_pool_instance {
   local name=$1
   local zone=$2
+  local existing_instances
 
-  EXISTING_INSTANCES=$(gcloud compute target-pools describe "${GCE_BASE_NAME}" \
+  existing_instances=$(gcloud compute target-pools describe "${GCE_BASE_NAME}" \
       --format "value(instances)" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}" || true)
-  if echo "${EXISTING_INSTANCES}" | grep "${name}"; then
+  if echo "${existing_instances}" | grep "${name}"; then
     gcloud compute target-pools remove-instances "${GCE_BASE_NAME}" \
         --instances "${name}" \
         --instances-zone "${zone}" \
@@ -486,17 +488,18 @@ function delete_target_pool_instance {
 function delete_token_server_backend {
   local name=$1
   local zone=$2
+  local existing_backends
 
-  EXISTING_BACKENDS=$(gcloud compute backend-services describe "${TOKEN_SERVER_BASE_NAME}" \
+  existing_backends=$(gcloud compute backend-services describe "${TOKEN_SERVER_BASE_NAME}" \
       --format "value(backends)" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}" || true)
-  if echo "${EXISTING_BACKENDS}" | grep "${name}"; then
+  if echo "${existing_backends}" | grep "${name}"; then
     gcloud compute backend-services remove-backend "${TOKEN_SERVER_BASE_NAME}" \
         --instance-group "${name}" \
         --instance-group-zone "${zone}" \
         --region "${GCE_REGION}" \
         "${GCP_ARGS[@]}"
   fi
-
 }
+
