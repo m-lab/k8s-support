@@ -383,6 +383,10 @@ EOF
 		export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
 		export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+		export LOCKSMITHCTL_ENDPOINT=$ETCDCTL_ENDPOINTS
+		export LOCKSMITHCTL_ETCD_CAFILE=$ETCDCTL_CACERT
+		export LOCKSMITHCTL_ETCD_CERTFILE=$ETCDCTL_CERT
+		export LOCKSMITHCTL_ETCD_KEYFILE=$ETCDCTL_KEY
 EOF2
 	) >> /root/.bashrc"
 EOF
