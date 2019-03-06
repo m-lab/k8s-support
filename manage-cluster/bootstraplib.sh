@@ -99,9 +99,9 @@ function create_master {
   #  Give the instance time to appear.  Make sure it appears twice - there have
   #  been multiple instances of it connecting just once and then failing again for
   #  a bit.
-  until gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}" && \
+  until gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}" --ssh-flag "-o PasswordAuthentication=no" && \
         sleep 10 && \
-        gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}"; do
+        gcloud compute ssh "${gce_name}" --command true "${GCE_ARGS[@]}" --ssh-flag "-o PasswordAuthentication=no"; do
     echo Waiting for "${gce_name}" to boot up.
     # Refresh keys in case they changed mid-boot. They change as part of the
     # GCE bootup process, and it is possible to ssh at the precise moment a
