@@ -188,6 +188,15 @@ function create_master {
     curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
         | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
+    # Stop the locksmithd service and mask it, since we will instead be using CLUO:
+    # https://github.com/coreos/container-linux-update-operator
+    systemctl stop locksmithd.service
+    systemctl mask locksmithd.service
+
+    # To be 100% sure, explicitly unmask and enable the update-engine
+    systemctl unmask update-engine.service
+    systemctl start update-engine.service
+
     # Enable and start the kubelet service
     systemctl enable --now kubelet.service
     systemctl daemon-reload
@@ -369,10 +378,10 @@ EOF
 		export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
 		export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-		export LOCKSMITHCTL_ENDPOINT=$ETCDCTL_ENDPOINTS
-		export LOCKSMITHCTL_ETCD_CAFILE=$ETCDCTL_CACERT
-		export LOCKSMITHCTL_ETCD_CERTFILE=$ETCDCTL_CERT
-		export LOCKSMITHCTL_ETCD_KEYFILE=$ETCDCTL_KEY
+		export LOCKSMITHCTL_ENDPOINT=\$ETCDCTL_ENDPOINTS
+		export LOCKSMITHCTL_ETCD_CAFILE=\$ETCDCTL_CACERT
+		export LOCKSMITHCTL_ETCD_CERTFILE=\$ETCDCTL_CERT
+		export LOCKSMITHCTL_ETCD_KEYFILE=\$ETCDCTL_KEY
 EOF2
 	) >> /root/.bashrc"
 EOF
