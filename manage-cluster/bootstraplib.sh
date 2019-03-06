@@ -223,26 +223,9 @@ EOF
     # Create the mount point for the GCS bucket
     mkdir -p ${K8S_PKI_DIR}
 
-    systemd_gcsfuse_filename="mount_gcs_bucket.service"
-
-    sudo bash -c "(cat <<-EOF2
-		[Unit]
-		Description = Mount GCS bucket ${!GCS_BUCKET_K8S}
-
-		[Service]
-		Type=oneshot
-		RemainAfterExit=yes
-		Environment="PATH=/opt/bin"
-		ExecStart=/opt/bin/gcsfuse --implicit-dirs -o rw,allow_other k8s-platform-master-${PROJECT} ${K8S_PKI_DIR}
-		ExecStop=/opt/bin/fusermount -u ${K8S_PKI_DIR}
-
-		[Install]
-		WantedBy = multi-user.target
-EOF2
-	) >> /etc/systemd/system/\${systemd_gcsfuse_filename}"
-
-	systemctl enable --now "\${systemd_gcsfuse_filename}"
-	systemctl start "\${systemd_gcsfuse_filename}"
+    # Mount the GCS bucket.
+    /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
+        k8s-platform-master-${PROJECT} ${K8S_PKI_DIR}
 
     # Make sure that the necessary subdirectories exist. Separated into two
     # steps due to limitations of gcsfuse.
@@ -258,6 +241,9 @@ EOF2
 
     # Copy the admin KUBECONFIG file from the bucket, if it exists.
     cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
+
+    # Unmount the GCS bucket.
+    /opt/bin/fusermount -u ${K8S_PKI_DIR}
 EOF
 
   # Copy all config template files to the server.
