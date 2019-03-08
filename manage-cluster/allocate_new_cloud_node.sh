@@ -5,20 +5,39 @@
 # (infrequently) by a human as we add more monitoring services to the platform
 # k8s cluster and start needing more and higher capacity compute nodes running
 # in cloud.
-#
-# TODO: Make the node be a CoreOS node instead of Ubuntu
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <google-cloud-project> <[label=value], ...>"
-PROJECT=${1:?Please specify the google cloud project: $USAGE}
-shift
+usage() {
+  echo "USAGE: $0 -p <project> [-n <node-name>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
+}
 
-# All args after PROJECT are assumed to be arbitrary label definitions. For
-# example:
-#
-# ./allocate_new_cloud_node.sh mlab-sandbox run=prometheus app=bar
-LABELS="$@"
+LABELS=""
+TAGS=""
+
+while getopts ':p:n:a:l:t:' opt; do
+  case $opt in
+    p) PROJECT=$OPTARG ;;
+    n) NODE_NAME=$OPTARG ;;
+    a) ADDRESS=$OPTARG ;;
+    l) LABELS="$LABELS $OPTARG" ;;
+    t)
+      if [[ -z "${TAGS}" ]]; then
+        TAGS="$OPTARG"
+      else
+        TAGS="$TAGS,$OPTARG"
+      fi
+      ;;
+    \?) echo "Invalid option: -$OPTARG"; usage; exit 1 ;;
+    :) echo "Options -$OPTARG requires a argument."; usage; exit 1 ;;
+  esac
+done
+
+if [[ -z $PROJECT ]]; then
+  echo "Please specify the GCP with the -p flag."
+  usage
+  exit 1
+fi
 
 # Source all the global configuration variables.
 source k8s_deploy.conf
@@ -34,28 +53,43 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 # the cluster.
 K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
 
-# Get a list of all VMs in the desired project that have a name in the right
-# format (the format ends with a number) and find the lowest number that is
-# not in the list (it may fill in a hole in the middle).
-set +e  # The next command exits with nonzero, even when it works properly.
-NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
-    <(gcloud compute instances list \
-        --filter="name~'${K8S_CLOUD_NODE_BASE_NAME}-\d+'" \
-        --format='value(name)' \
-        "${GCP_ARGS[@]}" \
-      | sed -e 's/.*-//' \
-      | sort -n) \
-    <(seq 10000) \
-  | head -n 1)
-set -e
+if [[ -z "$NODE_NAME" ]]; then
+  # Get a list of all VMs in the desired project that have a name in the right
+  # format (the format ends with a number) and find the lowest number that is
+  # not in the list (it may fill in a hole in the middle).
+  set +e  # The next command exits with nonzero, even when it works properly.
+  NEW_NODE_NUM=$(comm -1 -3 --nocheck-order \
+      <(gcloud compute instances list \
+          --filter="name~'${K8S_CLOUD_NODE_BASE_NAME}-\d+'" \
+          --format='value(name)' \
+          "${GCP_ARGS[@]}" \
+        | sed -e 's/.*-//' \
+        | sort -n) \
+      <(seq 10000) \
+    | head -n 1)
+  set -e
+  NODE_NAME="${K8S_CLOUD_NODE_BASE_NAME}-${NEW_NODE_NUM}"
+fi
 
-NODE_NAME="${K8S_CLOUD_NODE_BASE_NAME}-${NEW_NODE_NUM}"
+if [[ -n "${ADDRESS}" ]]; then
+  ADDRESS_FLAG="--address ${ADDRESS}"
+else
+  ADDRESS_FLAG=""
+fi
+
+if [[ -n "${TAGS}" ]]; then
+  TAGS_FLAG="--tags ${TAGS}"
+else
+  TAGS_FLAG=""
+fi
 
 # Allocate a new VM.
 gcloud compute instances create "${NODE_NAME}" \
   --image-family "${GCE_IMAGE_FAMILY}" \
   --image-project "${GCE_IMAGE_PROJECT}" \
   --network "${GCE_NETWORK}" \
+  ${ADDRESS_FLAG} \
+  ${TAGS_FLAG} \
   --subnet "${GCE_K8S_SUBNET}" \
   --scopes "${GCE_API_SCOPES}" \
   --metadata-from-file "user-data=cloud-config_node.yml" \
@@ -64,9 +98,9 @@ gcloud compute instances create "${NODE_NAME}" \
 # Give the instance time to appear.  Make sure it appears twice - there have
 # been multiple instances of it connecting just once and then failing again for
 # a bit.
-until gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}" && \
+until gcloud compute ssh "${NODE_NAME}" --command true --ssh-flag "-o PasswordAuthentication=no" "${GCE_ARGS[@]}" && \
       sleep 10 && \
-      gcloud compute ssh "${NODE_NAME}" --command true "${GCE_ARGS[@]}"; do
+      gcloud compute ssh "${NODE_NAME}" --command true --ssh-flag "-o PasswordAuthentication=no" "${GCE_ARGS[@]}"; do
   echo Waiting for "${NODE_NAME}" to boot up.
   # Refresh keys in case they changed mid-boot. They change as part of the
   # GCE bootup process, and it is possible to ssh at the precise moment a
@@ -181,14 +215,17 @@ gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   # if something inside the sudo shell fails.
   set -euxo pipefail
 
-  kubectl annotate node ${NODE_NAME} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
+  kubectl annotate node ${NODE_NAME} \
+      flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP} \
+      --overwrite=true
+
   for label in ${K8S_CLOUD_NODE_LABELS}; do
-    kubectl label nodes ${NODE_NAME} \${label}
+    kubectl label nodes ${NODE_NAME} \${label} --overwrite=true
   done
 
   # Add any labels passed as arguments to this script.
   for label in ${LABELS}; do
-    kubectl label nodes ${NODE_NAME} \${label}
+    kubectl label nodes ${NODE_NAME} \${label} --overwrite=true
   done
 EOF
 
