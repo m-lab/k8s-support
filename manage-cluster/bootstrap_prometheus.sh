@@ -9,7 +9,7 @@
 #
 #  * Run bootstrap_k8s_master_cluster.sh
 #  * Run bootstrap_prometheus.sh
-#  * Apply k8s/daemonsets/core/prometheus.yml
+#  * Apply k8s/deployment/prometheus.yml
 
 
 set -euxo pipefail
@@ -28,34 +28,38 @@ GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 GCE_REGION="${!GCE_REGION_VAR}"
 GCE_ZONES="${!GCE_ZONES_VAR}"
 
-GCP_ARGS=("--project=${PROJECT}" "--quiet")
+# Grab the first zone in the list of GCE_ZONES.
+GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
 
-# Prometheus load balancer.
-CURRENT_PROMETHEUS_LB_IP=$(gcloud compute addresses list \
-    --filter "name=${PROM_BASE_NAME}-lb AND region:${GCE_REGION}" \
+GCP_ARGS=("--project=${PROJECT}" "--quiet")
+GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
+
+# Prometheus public IP
+CURRENT_PROMETHEUS_IP=$(gcloud compute addresses list \
+    --filter "name=${PROM_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(address)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${CURRENT_PROMETHEUS_LB_IP}" ]]; then
-  PROMETHEUS_LB_IP="${CURRENT_PROMETHEUS_LB_IP}"
+if [[ -n "${CURRENT_PROMETHEUS_IP}" ]]; then
+  PROMETHEUS_IP="${CURRENT_PROMETHEUS_IP}"
 else
-  gcloud compute addresses create "${PROM_BASE_NAME}-lb" \
+  gcloud compute addresses create "${PROM_BASE_NAME}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
-  PROMETHEUS_LB_IP=$(gcloud compute addresses list \
-      --filter "name=${PROM_BASE_NAME}-lb AND region:${GCE_REGION}" \
+  PROMETHEUS_IP=$(gcloud compute addresses list \
+      --filter "name=${PROM_BASE_NAME} AND region:${GCE_REGION}" \
       --format "value(address)" \
       "${GCP_ARGS[@]}")
 fi
 
-# Check the value of the existing IP address associated with the external load
-# balancer name. If it's the same as the current/existing IP, then leave DNS
+# Check the value of the existing IP address associated with Prometheus. If
+# it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
-CURRENT_PROMETHEUS_LB_DNS_IP=$(gcloud dns record-sets list \
+CURRENT_PROMETHEUS_DNS_IP=$(gcloud dns record-sets list \
     --zone "${PROJECT}-measurementlab-net" \
     --name "${PROM_BASE_NAME}.${PROJECT}.measurementlab.net." \
     --format "value(rrdatas[0])" \
     "${GCP_ARGS[@]}" || true)
-if [[ -z "${CURRENT_PROMETHEUS_LB_DNS_IP}" ]]; then
+if [[ -z "${CURRENT_PROMETHEUS_DNS_IP}" ]]; then
   # Add the record.
   gcloud dns record-sets transaction start \
       --zone "${PROJECT}-measurementlab-net" \
@@ -65,13 +69,13 @@ if [[ -z "${CURRENT_PROMETHEUS_LB_DNS_IP}" ]]; then
       --name "${PROM_BASE_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${PROMETHEUS_LB_IP}" \
+      "${PROMETHEUS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction execute \
       --zone "${PROJECT}-measurementlab-net" \
       "${GCP_ARGS[@]}"
 
-elif [[ "${CURRENT_PROMETHEUS_LB_DNS_IP}" != "${PROMETHEUS_LB_IP}" ]]; then
+elif [[ "${CURRENT_PROMETHEUS_DNS_IP}" != "${PROMETHEUS_IP}" ]]; then
   # Update the record.
   gcloud dns record-sets transaction start \
       --zone "${PROJECT}-measurementlab-net" \
@@ -81,14 +85,14 @@ elif [[ "${CURRENT_PROMETHEUS_LB_DNS_IP}" != "${PROMETHEUS_LB_IP}" ]]; then
       --name "${PROM_BASE_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${CURRENT_PROMETHEUS_LB_DNS_IP}" \
+      "${CURRENT_PROMETHEUS_DNS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
       --name "${PROM_BASE_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${PROMETHEUS_LB_IP}" \
+      "${PROMETHEUS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction execute \
       --zone "${PROJECT}-measurementlab-net" \
@@ -103,19 +107,9 @@ fi
 # firewall
 gcloud compute firewall-rules delete "${PROM_BASE_NAME}-external" \
     "${GCP_ARGS[@]}" || :
-gcloud compute firewall-rules delete "${PROM_BASE_NAME}-health-checks" \
-    "${GCP_ARGS[@]}" || :
 
-# forwaring
-gcloud compute forwarding-rules delete "${PROM_BASE_NAME}" \
-    --region "${GCE_REGION}" "${GCP_ARGS[@]}" || :
-
-# target pools
-gcloud compute target-pools delete "${PROM_BASE_NAME}" \
-    --region "${GCE_REGION}" "${GCP_ARGS[@]}" || :
-
-# health checks
-gcloud compute http-health-checks delete "${PROM_BASE_NAME}" "${GCP_ARGS[@]}" || :
+gcloud compute instances delete "${PROM_BASE_NAME}" \
+    "${GCE_ARGS[@]}" || :
 
 # If $EXIT_AFTER_DELETE is set to "yes", then exit now.
 if [[ "${EXIT_AFTER_DELETE}" == "yes" ]]; then
@@ -127,26 +121,12 @@ fi
 # CREATE THINGS
 #######################################################
 
-# Create the http-health-check for the nodes in the target pool.
-gcloud compute http-health-checks create "${PROM_BASE_NAME}" \
-    --port 9090 \
-    --request-path "/-/healthy" \
-    "${GCP_ARGS[@]}"
-
-# Create the target pool for our load balancer.
-gcloud compute target-pools create "${PROM_BASE_NAME}" \
-    --region "${GCE_REGION}" \
-    --http-health-check="${PROM_BASE_NAME}" \
-    --session-affinity="CLIENT_IP" \
-    "${GCP_ARGS[@]}"
-
-# Create the forwarding rule using the target pool we just created.
-gcloud compute forwarding-rules create "${PROM_BASE_NAME}" \
-    --region "${GCE_REGION}" \
-    --ports 9090 \
-    --address "${PROM_BASE_NAME}-lb" \
-    --target-pool "${PROM_BASE_NAME}" \
-    "${GCP_ARGS[@]}"
+# Create the new node
+./allocate_new_cloud_node.sh -p "${PROJECT}" \
+    -n "${PROM_BASE_NAME}" \
+    -a "${PROM_BASE_NAME}" \
+    -l "run=prometheus" \
+    -t "${PROM_BASE_NAME}"
 
 # Create a firewall rule allowing external access to ports:
 #   TCP 22: SSH
@@ -156,73 +136,82 @@ gcloud compute firewall-rules create "${PROM_BASE_NAME}-external" \
     --action "allow" \
     --rules "tcp:22,tcp:9090" \
     --source-ranges "0.0.0.0/0" \
-    "${GCP_ARGS[@]}"
-
-# Create firewall rule allowing GCP health checks.
-# https://cloud.google.com/load-balancing/docs/health-checks#firewall_rules
-gcloud compute firewall-rules create "${PROM_BASE_NAME}-health-checks" \
-    --network "${GCE_NETWORK}" \
-    --action "allow" \
-    --rules "all" \
-    --source-ranges "35.191.0.0/16,130.211.0.0/22" \
     --target-tags "${PROM_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
-for zone in $GCE_ZONES; do
+# The name and mount point of the GCE persistent disk.
+DISK_NAME="${PROM_BASE_NAME}-${GCE_ZONE}"
+DISK_MOUNT_POINT="/mnt/local"
 
-  gce_zone="${GCE_REGION}-${zone}"
-  gce_name="${GCE_BASE_NAME}-${gce_zone}"
-
-  GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
-
-  gcloud compute target-pools add-instances "${PROM_BASE_NAME}" \
-      --instances "${gce_name}" \
-      --instances-zone "${gce_zone}" \
-      "${GCP_ARGS[@]}"
-
+# We don't ever delete the persistent disk in an automated way, but instead
+# reuse it if it already exists. If you want to start from scratch, then delete
+# the disk manually before running this.
+EXISTING_DISK=$(gcloud compute disks list \
+    --filter "name=${DISK_NAME}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}")
+if [[ -z "${EXISTING_DISK}" ]]; then
   # Attempt to create disk and ignore errors.
-  disk="${PROM_BASE_NAME}-${gce_zone}-disk"
   gcloud compute disks create \
-      "${disk}" \
+      "${DISK_NAME}" \
       --size "200GB" \
       --type "pd-standard" \
       --labels "${PROM_BASE_NAME}=true" \
       "${GCE_ARGS[@]}" || :
+fi
 
-  # NOTE: while promising, --device-name doesn't seem to do what it sounds like.
-  # NOTE: we assume the disk and instance already exist.
-  gcloud compute instances attach-disk \
-      "${gce_name}" \
-      --disk "${disk}" \
-      "${GCE_ARGS[@]}" || :
+# NOTE: while promising, --device-name doesn't seem to do what it sounds like.
+# NOTE: we assume the disk and instance already exist.
+gcloud compute instances attach-disk \
+    "${PROM_BASE_NAME}" \
+    --disk "${DISK_NAME}" \
+    "${GCE_ARGS[@]}" || :
 
-  # Verify that the disk is mounted and formatted.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
-    sudo -s
-    set -euxo pipefail
+# Verify that the disk is mounted and formatted.
+gcloud compute ssh "${PROM_BASE_NAME}" "${GCE_ARGS[@]}" <<EOF
+  set -euxo pipefail
+  sudo -s
 
-    if [[ ! -d /mnt/local ]]; then
-        echo 'Creating /mnt/local'
-        mkdir -p /mnt/local
-    fi
+  # We set bash options again inside the sudo shell. If we don't, then any
+  # failed command below will simply exit the sudo shell and all subsequent
+  # commands will will be run a non-root user, and will fail.  Setting bash
+  # options before and after sudo should ensure that the entire process fails
+  # if something inside the sudo shell fails.
+  set -euxo pipefail
 
-    # TODO: find a better way to discovery the device-name.
-    # TODO: make formatting conditional on a hard reset.
-    if ! mount /dev/sdb /mnt/local ; then
-        mkfs.ext4 /dev/sdb
-        mount /dev/sdb /mnt/local
-        # Add an entry to /etc/fstab so that this volume gets remounted when the
-        # VM reboots.
-        echo "/dev/sdb /mnt/local ext4 defaults 0 0" >> /etc/fstab
-    fi
+  if [[ ! -d ${DISK_MOUNT_POINT} ]]; then
+      echo 'Creating ${DISK_MOUNT_POINT}'
+      mkdir -p ${DISK_MOUNT_POINT}
+  fi
 
-    if [[ ! -d /mnt/local/prometheus ]]; then
-        echo 'Creating /mnt/local/prometheus'
-        mkdir -p /mnt/local/prometheus
-        # Create with permissions for prometheus.
-        # TODO: replace with native k8s persistent volumes, if possible.
-        chown nobody:nogroup /mnt/local/prometheus/
-    fi
+  # TODO: find a better way to discovery the device-name.
+  # TODO: make formatting conditional on a hard reset.
+  if ! mount /dev/sdb ${DISK_MOUNT_POINT} ; then
+    mkfs.ext4 /dev/sdb
+
+    # Create a systemd service that will remount this disk on future reboots.
+    systemd_service_name="mount_gce_disk.service"
+    sudo bash -c "(cat <<-EOF2
+		[Unit]
+		Description = Mount GCE disk ${DISK_NAME}
+		[Service]
+		Type=oneshot
+		RemainAfterExit=yes
+		ExecStart=/usr/bin/mount /dev/sdb ${DISK_MOUNT_POINT}
+		ExecStop=/usr/bin/umount ${DISK_NAME}
+		[Install]
+		WantedBy = multi-user.target
+EOF2
+    ) >> /etc/systemd/system/\${systemd_service_name}"
+    systemctl enable --now "\${systemd_service_name}"
+    systemctl start "\${systemd_service_name}"
+  fi
+
+  if [[ ! -d /mnt/local/prometheus ]]; then
+      echo 'Creating /mnt/local/prometheus'
+      mkdir -p /mnt/local/prometheus
+      # Create with permissions for prometheus.
+      # TODO: replace with native k8s persistent volumes, if possible.
+      chown nobody:nogroup /mnt/local/prometheus/
+  fi
 EOF
-
-done
