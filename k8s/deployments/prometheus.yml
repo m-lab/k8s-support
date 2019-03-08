@@ -1,17 +1,16 @@
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: prometheus-server
-  labels:
-    run: prometheus-server
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      run: prometheus-server
+      app: prometheus-server
   template:
     metadata:
       labels:
-        run: prometheus-server
+        app: prometheus-server
       annotations:
         # Tell prometheus service discovery to scrape the pod containers.
         prometheus.io/scrape: 'true'
@@ -19,21 +18,7 @@ spec:
       serviceAccountName: prometheus
       nodeSelector:
         mlab/type: cloud
-        node-role.kubernetes.io/master: ""
-
-      tolerations:
-      - key: "node-role.kubernetes.io/master"
-        operator: "Exists"
-        effect: "NoSchedule"
-      # The kube-controller-manager is launched with flag
-      # --configure-cloud-routes=false to avoid issues with the platform
-      # bare-metal nodes (which are not in the cloud), but this has the side
-      # effect of adding the following taint to all cloud nodes, which we
-      # tolerate here, since we need Prometheus running regardless.
-      - key: "node.kubernetes.io/network-unavailable"
-        operator: "Exists"
-        effect: "NoSchedule"
-
+        run: "prometheus-server"
       containers:
       - name: prometheus
         image: prom/prometheus:v2.4.2
