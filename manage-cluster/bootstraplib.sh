@@ -353,6 +353,10 @@ EOF
     sudo mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
     sudo chown $(id -u root):$(id -g root) /root/.kube/config
+    # We are not using CoreOS's locksmithd, but we add appropriate env
+    # variables for it below because the locksmithctl command can still be used
+    # to mock-flag that a node needs to be rebooted for an OS upgrade, which
+    # may be useful for testing.
     sudo bash -c "(cat <<-EOF2
 		export ETCDCTL_API=3
 		export ETCDCTL_DIAL_TIMEOUT=3s

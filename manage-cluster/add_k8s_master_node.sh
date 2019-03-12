@@ -77,6 +77,8 @@ for node in $master_nodes; do
   node_name=$(echo $node | cut -d, -f1)
   node_ip=$(echo $node | cut -d, -f2)
 
+  # The following variables are all used in the create_master() function in
+  # bootstraplib.sh.
   if [[ -z "${ETCD_INITIAL_CLUSTER}" ]]; then
     ETCD_INITIAL_CLUSTER="${node_name}=https://${node_ip}:2380"
     FIRST_INSTANCE_NAME="${node_name}"

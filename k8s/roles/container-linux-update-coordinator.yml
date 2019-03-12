@@ -1,3 +1,4 @@
+# From: https://github.com/coreos/container-linux-update-operator/tree/master/examples/deploy
 apiVersion: v1
 kind: ServiceAccount
 metadata:
