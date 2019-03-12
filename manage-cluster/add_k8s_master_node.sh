@@ -43,23 +43,6 @@ if [[ -n "${EXISTING_MASTER}" ]]; then
   exit 1
 fi
 
-master_nodes=$(gcloud compute ssh "${BOOTSTRAP_MASTER}" \
-    --command "${LIST_CLUSTER_NODES}" \
-    "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}")
-# Populates ETCD_INITIAL_CLUSTER with all existing etcd cluster nodes.
-for node in $master_nodes; do
-  node_name=$(echo $node | cut -d, -f1)
-  node_ip=$(echo $node | cut -d, -f2)
-
-  if [[ -z "${ETCD_INITIAL_CLUSTER}" ]]; then
-    ETCD_INITIAL_CLUSTER="${node_name}=https://${node_ip}:2380"
-    FIRST_INSTANCE_NAME="${node_name}"
-    FIRST_INSTANCE_IP="${node_ip}"
-  else
-    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${node_name}=https://${node_ip}:2380"
-  fi
-done
-
 # Be sure that the node that is being added is already deleted from the k8s
 # cluster and etcd.
 gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}" <<EOF
@@ -74,7 +57,7 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
   export PATH=\$PATH:/opt/bin
 
   # Remove the node from the cluster.
-  if kubectl get nodes --selector=node-role.kubernetes.io/master | grep ${GCE_NAME}; then
+  if kubectl get nodes | grep ${GCE_NAME}; then
     kubectl delete node ${GCE_NAME}
   fi
 
@@ -85,6 +68,25 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
     etcdctl member remove \$node_id
   fi
 EOF
+
+master_nodes=$(gcloud compute ssh "${BOOTSTRAP_MASTER}" \
+    --command "${LIST_CLUSTER_NODES}" \
+    "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}")
+# Populates ETCD_INITIAL_CLUSTER with all existing etcd cluster nodes.
+for node in $master_nodes; do
+  node_name=$(echo $node | cut -d, -f1)
+  node_ip=$(echo $node | cut -d, -f2)
+
+  # The following variables are all used in the create_master() function in
+  # bootstraplib.sh.
+  if [[ -z "${ETCD_INITIAL_CLUSTER}" ]]; then
+    ETCD_INITIAL_CLUSTER="${node_name}=https://${node_ip}:2380"
+    FIRST_INSTANCE_NAME="${node_name}"
+    FIRST_INSTANCE_IP="${node_ip}"
+  else
+    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${node_name}=https://${node_ip}:2380"
+  fi
+done
 
 # If they exist, delete the node name from various loadbalancer group resources.
 delete_token_server_backend "${GCE_NAME}" "${GCE_ZONE}"

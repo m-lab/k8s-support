@@ -1,0 +1,35 @@
+# From: https://github.com/coreos/container-linux-update-operator/tree/master/examples/deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container-linux-update-operator
+  namespace: reboot-coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container-linux-update-operator
+  template:
+    metadata:
+      labels:
+        app: container-linux-update-operator
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+      - name: update-operator
+        image: quay.io/coreos/container-linux-update-operator:v0.7.0
+        command:
+        - "/bin/update-operator"
+        args:
+        - -reboot-window-start=Tue 15:00
+        - -reboot-window-length=2h
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
