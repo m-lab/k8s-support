@@ -1,6 +1,6 @@
-apiVersion: kubeadm.k8s.io/v1alpha3
+apiVersion: kubeadm.k8s.io/v1beta1
 kind: InitConfiguration
-apiEndpoint:
+localAPIEndpoint:
   advertiseAddress: {{EXTERNAL_IP}}
   bindPort: 6443
 nodeRegistration:
@@ -10,23 +10,21 @@ nodeRegistration:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
 ---
-apiVersion: kubeadm.k8s.io/v1alpha3
-kind: ClusterConfiguration
-kubernetesVersion: {{K8S_VERSION}}
-apiServerCertSANs:
-- {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
-auditPolicy:
-  logDir: /var/log/kubernetes/audit
-  logMaxAge: 2
-  path: ""
+apiServer:
+  certSANs:
+  - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta1
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
-controllerManagerExtraArgs:
-  node-cidr-mask-size: "26"
-  # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
-  node-monitor-grace-period: "2m"
-  pod-eviction-timeout: "1m"
+controllerManager:
+  extraArgs:
+    node-cidr-mask-size: "26"
+    node-monitor-grace-period: 2m
+    pod-eviction-timeout: 1m
+dns:
+  type: CoreDNS
 etcd:
   local:
     dataDir: /var/lib/etcd
@@ -38,7 +36,6 @@ etcd:
       listen-client-urls: https://127.0.0.1:2379,https://{{INTERNAL_IP}}:2379
       listen-peer-urls: https://{{INTERNAL_IP}}:2380
       name: {{MASTER_NAME}}
-    image: ""
     peerCertSANs:
     - {{MASTER_NAME}}.c.{{PROJECT}}.internal
     - {{INTERNAL_IP}}
@@ -46,14 +43,15 @@ etcd:
     - {{MASTER_NAME}}.c.{{PROJECT}}.internal
     - {{INTERNAL_IP}}
 imageRepository: k8s.gcr.io
+kind: ClusterConfiguration
+kubernetesVersion: {{K8S_VERSION}}
 networking:
   dnsDomain: cluster.local
   podSubnet: {{K8S_CLUSTER_CIDR}}
   serviceSubnet: {{K8S_SERVICE_CIDR}}
-unifiedControlPlaneImage: ""
+scheduler: {}
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
 bindAddress: 0.0.0.0
 clientConnection:
   acceptContentTypes: ""
@@ -82,6 +80,7 @@ ipvs:
   minSyncPeriod: 0s
   scheduler: ""
   syncPeriod: 30s
+kind: KubeProxyConfiguration
 metricsBindAddress: 127.0.0.1:10249
 mode: ""
 nodePortAddresses: null
@@ -90,7 +89,77 @@ portRange: ""
 resourceContainer: /kube-proxy
 udpIdleTimeout: 250ms
 ---
+address: 0.0.0.0
 apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 2m0s
+    enabled: true
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+cgroupDriver: cgroupfs
+cgroupsPerQOS: true
+clusterDNS:
+- 172.25.0.10
+clusterDomain: cluster.local
+configMapAndSecretChangeDetectionStrategy: Watch
+containerLogMaxFiles: 5
+containerLogMaxSize: 10Mi
+contentType: application/vnd.kubernetes.protobuf
+cpuCFSQuota: true
+cpuCFSQuotaPeriod: 100ms
+cpuManagerPolicy: none
+cpuManagerReconcilePeriod: 10s
+enableControllerAttachDetach: true
+enableDebuggingHandlers: true
+enforceNodeAllocatable:
+- pods
+eventBurst: 10
+eventRecordQPS: 5
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 100Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+evictionPressureTransitionPeriod: 5m0s
+failSwapOn: true
+fileCheckFrequency: 20s
+hairpinMode: promiscuous-bridge
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 20s
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+imageMinimumGCAge: 2m0s
+iptablesDropBit: 15
+iptablesMasqueradeBit: 14
 kind: KubeletConfiguration
+kubeAPIBurst: 10
+kubeAPIQPS: 5
+makeIPTablesUtilChains: true
+maxOpenFiles: 1000000
+maxPods: 110
+nodeLeaseDurationSeconds: 40
+nodeStatusReportFrequency: 20s
 # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
-nodeStatusUpdateFrequency: "20s"
+nodeStatusUpdateFrequency: 20s
+oomScoreAdj: -999
+podPidsLimit: -1
+port: 10250
+registryBurst: 10
+registryPullQPS: 5
+resolvConf: /etc/resolv.conf
+rotateCertificates: true
+runtimeRequestTimeout: 2m0s
+serializeImagePulls: true
+staticPodPath: /etc/kubernetes/manifests
+streamingConnectionIdleTimeout: 4h0m0s
+syncFrequency: 1m0s
+volumeStatsAggPeriod: 1m0s
