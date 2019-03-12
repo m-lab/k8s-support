@@ -34,7 +34,7 @@ while getopts ':p:n:a:l:t:' opt; do
 done
 
 if [[ -z $PROJECT ]]; then
-  echo "Please specify the GCP with the -p flag."
+  echo "Please specify the GCP project with the -p flag."
   usage
   exit 1
 fi
