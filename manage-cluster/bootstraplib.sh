@@ -158,11 +158,7 @@ function create_master {
     set -euxo pipefail
     sudo -s
 
-    # We set bash options again inside the sudo shell. If we don't, then any
-    # failed command below will simply exit the sudo shell and all subsequent
-    # commands will will be run a non-root user, and will fail.  Setting bash
-    # options before and after sudo should ensure that the entire process fails
-    # if something inside the sudo shell fails.
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
 
     # Binaries will get installed in /opt/bin, put it in root's PATH
@@ -210,11 +206,7 @@ EOF
     set -euxo pipefail
     sudo -s
 
-    # We set bash options again inside the sudo shell. If we don't, then any
-    # failed command below will simply exit the sudo shell and all subsequent
-    # commands will will be run a non-root user, and will fail.  Setting bash
-    # options before and after sudo should ensure that the entire process fails
-    # if something inside the sudo shell fails.
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
 
     # Build the gcsfuse binary in a throwaway Docker container. The build
@@ -274,11 +266,7 @@ EOF
     set -euxo pipefail
     sudo -s
 
-    # We set bash options again inside the sudo shell. If we don't, then any
-    # failed command below will simply exit the sudo shell and all subsequent
-    # commands will will be run a non-root user, and will fail.  Setting bash
-    # options before and after sudo should ensure that the entire process fails
-    # if something inside the sudo shell fails.
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
 
     # Create the kubeadm config from the template
@@ -301,11 +289,7 @@ EOF
       set -euxo pipefail
       sudo -s
 
-      # We set bash options again inside the sudo shell. If we don't, then any
-      # failed command below will simply exit the sudo shell and all subsequent
-      # commands will will be run a non-root user, and will fail.  Setting bash
-      # options before and after sudo should ensure that the entire process fails
-      # if something inside the sudo shell fails.
+      # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
       kubeadm init --config kubeadm-config.yml
@@ -326,11 +310,7 @@ EOF
       set -euxo pipefail
       sudo -s
 
-      # We set bash options again inside the sudo shell. If we don't, then any
-      # failed command below will simply exit the sudo shell and all subsequent
-      # commands will will be run a non-root user, and will fail.  Setting bash
-      # options before and after sudo should ensure that the entire process fails
-      # if something inside the sudo shell fails.
+      # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
       # Bootstrap the kubelet
@@ -417,11 +397,7 @@ EOF
     set -euxo pipefail
     sudo -s
 
-    # We set bash options again inside the sudo shell. If we don't, then any
-    # failed command below will simply exit the sudo shell and all subsequent
-    # commands will will be run a non-root user, and will fail.  Setting bash
-    # options before and after sudo should ensure that the entire process fails
-    # if something inside the sudo shell fails.
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
 
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}

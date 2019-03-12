@@ -116,12 +116,8 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
-  # We set bash options again inside the sudo shell. If we don't, then any
-  # failed command below will simply exit the sudo shell and all subsequent
-  # commands will will be run a non-root user, and will fail.  Setting bash
-  # options before and after sudo should ensure that the entire process fails
-  # if something inside the sudo shell fails.
-  set -euxo pipefail
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
+  set -euxo  set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
   echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
@@ -168,11 +164,7 @@ JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<
   set -euxo pipefail
   sudo -s
 
-  # We set bash options again inside the sudo shell. If we don't, then any
-  # failed command below will simply exit the sudo shell and all subsequent
-  # commands will will be run a non-root user, and will fail.  Setting bash
-  # options before and after sudo should ensure that the entire process fails
-  # if something inside the sudo shell fails.
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
   kubeadm token create --ttl=5m --print-join-command --description="Token for ${NODE_NAME}"
@@ -184,11 +176,7 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
-  # We set bash options again inside the sudo shell. If we don't, then any
-  # failed command below will simply exit the sudo shell and all subsequent
-  # commands will will be run a non-root user, and will fail.  Setting bash
-  # options before and after sudo should ensure that the entire process fails
-  # if something inside the sudo shell fails.
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
   sudo ${JOIN_COMMAND} --node-name ${NODE_NAME}
@@ -208,11 +196,7 @@ gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
-  # We set bash options again inside the sudo shell. If we don't, then any
-  # failed command below will simply exit the sudo shell and all subsequent
-  # commands will will be run a non-root user, and will fail.  Setting bash
-  # options before and after sudo should ensure that the entire process fails
-  # if something inside the sudo shell fails.
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
   kubectl annotate node ${NODE_NAME} \
