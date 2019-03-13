@@ -125,7 +125,7 @@ fi
 ./allocate_new_cloud_node.sh -p "${PROJECT}" \
     -n "${PROM_BASE_NAME}" \
     -a "${PROM_BASE_NAME}" \
-    -l "run=prometheus" \
+    -l "run=prometheus-server" \
     -t "${PROM_BASE_NAME}"
 
 # Create a firewall rule allowing external access to ports:
