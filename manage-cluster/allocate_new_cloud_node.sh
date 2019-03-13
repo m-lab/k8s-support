@@ -117,7 +117,7 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   sudo -s
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
-  set -euxo  set -euxo pipefail
+  set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
   echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
