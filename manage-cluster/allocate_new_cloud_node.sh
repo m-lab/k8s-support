@@ -9,18 +9,19 @@
 set -euxo pipefail
 
 usage() {
-  echo "USAGE: $0 -p <project> [-n <node-name>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
+  echo "USAGE: $0 -p <project> [-m <machine-type>] [-n <node-name>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
 LABELS=""
 TAGS=""
 
-while getopts ':p:n:a:l:t:' opt; do
+while getopts ':a:l:m:n:p:t:' opt; do
   case $opt in
-    p) PROJECT=$OPTARG ;;
-    n) NODE_NAME=$OPTARG ;;
     a) ADDRESS=$OPTARG ;;
     l) LABELS="$LABELS $OPTARG" ;;
+    m) MACHINE_TYPE=$OPTARG ;;
+    n) NODE_NAME=$OPTARG ;;
+    p) PROJECT=$OPTARG ;;
     t)
       if [[ -z "${TAGS}" ]]; then
         TAGS="$OPTARG"
@@ -83,10 +84,15 @@ else
   TAGS_FLAG=""
 fi
 
+if [[ -z "${MACHINE_TYPE}" ]]; then
+  MACHINE_TYPE="n1-standard-1"
+fi
+
 # Allocate a new VM.
 gcloud compute instances create "${NODE_NAME}" \
   --image-family "${GCE_IMAGE_FAMILY}" \
   --image-project "${GCE_IMAGE_PROJECT}" \
+  --machine-type "${MACHINE_TYPE}" \
   --network "${GCE_NETWORK}" \
   ${ADDRESS_FLAG} \
   ${TAGS_FLAG} \
