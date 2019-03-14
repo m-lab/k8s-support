@@ -31,6 +31,9 @@ export KUBECONFIG=./kube-config
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 
+# Apply Namespaces
+kubectl apply -f ../k8s/namespaces/
+
 # Apply Secrets.
 kubectl create secret generic pusher-credentials --from-file pusher.json
 kubectl create secret generic ndt-tls --from-file ndt-tls/
