@@ -37,9 +37,9 @@ spec:
       nodeSelector:
         mlab/type: 'platform'
       containers:
-      #Image tags refer to hub.docker.com images, e.g. docker pull measurementlab/ndt-server:v0.6.1
+      #Image tags refer to hub.docker.com images, e.g. docker pull measurementlab/ndt-server:v0.6.0
       - name: ndt-server
-        image: measurementlab/ndt-server:0.6.1
+        image: measurementlab/ndt-server:v0.6.0
         args:
         - -key=/certs/key.pem
         - -cert=/certs/cert.pem
