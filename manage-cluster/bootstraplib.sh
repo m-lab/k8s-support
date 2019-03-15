@@ -144,14 +144,6 @@ function create_master {
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 
-  # We need to record the name and IP of the first instance we instantiate
-  # because its name and IP will be needed when joining later instances to the
-  # cluster.
-  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    FIRST_INSTANCE_NAME="${gce_name}"
-    FIRST_INSTANCE_IP="${INTERNAL_IP}"
-  fi
-
   # Become root, install and configure all the k8s components, and launch the
   # k8s-token-server and gcp-loadbalancer-proxy.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
@@ -244,49 +236,18 @@ EOF
 
     # Copy the admin KUBECONFIG file from the bucket, if it exists.
     cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
-
-    # Unmount the GCS bucket.
-    /opt/bin/fusermount -u ${K8S_PKI_DIR}
 EOF
 
-  # Copy all config template files to the server.
-  gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
-
-  # The etcd config 'initial-cluster:' is additive as we continue to add new
-  # instances to the cluster.
+  # Setting up the initial master node is very different than adding additional
+  # master nodes later, hence this section.
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    ETCD_INITIAL_CLUSTER="${gce_name}=https://${INTERNAL_IP}:2380"
-  else
-    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${gce_name}=https://${INTERNAL_IP}:2380"
-  fi
+    # Copy all config template files to the server.
+    gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
 
-  # Many of the following configurations were gleaned from:
-  # https://kubernetes.io/docs/setup/independent/high-availability/
+    # Many of the following configurations were gleaned from:
+    # https://kubernetes.io/docs/setup/independent/high-availability/
 
-  # Evaluate the kubeadm config template with a beastly sed statement.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
-    set -euxo pipefail
-    sudo -s
-
-    # Bash options are not inherited by subshells. Reset them to exit on any error.
-    set -euxo pipefail
-
-    # Create the kubeadm config from the template
-    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-        -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
-        -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
-        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-        -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
-        -e 's|{{ETCD_CLUSTER_STATE}}|${ETCD_CLUSTER_STATE}|g' \
-        -e 's|{{ETCD_INITIAL_CLUSTER}}|${ETCD_INITIAL_CLUSTER}|g' \
-        -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
-        -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
-        -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
-        ./kubeadm-config.yml.template > \
-        ./kubeadm-config.yml
-EOF
-
-  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
+    # Evaluate the kubeadm config template with a beastly sed statement.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
       sudo -s
@@ -294,20 +255,38 @@ EOF
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
-      kubeadm init --config kubeadm-config.yml
+      # Create the kubeadm config from the template
+      sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+          -e 's|{{MASTER_NAME}}|${gce_name}|g' \
+          -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
+          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
+          -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
+          -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
+          ./kubeadm-config.yml.template > \
+          ./kubeadm-config.yml
+
+      kubeadm init --config kubeadm-config.yml --node-name ${gce_name}
 
       # Copy the admin KUBECONFIG file to the GCS bucket.
       cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}
 
-      # Since we don't know which of the CA files already existed the GCS bucket
-      # before creating this first instance (ETCD_CLUSTER_STATE=new), just copy
-      # them all back. If they already existed it will be a no-op, and if they
-      # didn't then they will now be persisted.
+      # Since we don't know which of the CA files already existed in the GCS
+      # bucket before creating this first instance (ETCD_CLUSTER_STATE=new),
+      # just copy them all back. If they already existed it will be a no-op,
+      # and if they didn't then they will now be persisted.
       for f in ${K8S_CA_FILES}; do
         cp /etc/kubernetes/pki/\${f} ${K8S_PKI_DIR}/pki/\${f}
       done
 EOF
   else
+
+    # Get the join commmand from the existing master.
+    JOIN_COMMAND=$(
+      gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" --command \
+          'sudo /opt/bin/kubeadm token create --print-join-command'
+    )
+
+    # Join the new master node using the join command we just retrieved.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
       sudo -s
@@ -315,34 +294,17 @@ EOF
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
-      # Bootstrap the kubelet
-      kubeadm alpha phase certs all --config kubeadm-config.yml
-      kubeadm alpha phase kubelet config write-to-disk --config kubeadm-config.yml
-      kubeadm alpha phase kubelet write-env-file --config kubeadm-config.yml
-      kubeadm alpha phase kubeconfig kubelet --config kubeadm-config.yml
-      systemctl start kubelet
-
-      # Add the instance to the etcd cluster
-      export KUBECONFIG=/etc/kubernetes/admin.conf
-      kubectl exec -n kube-system etcd-${FIRST_INSTANCE_NAME} -- etcdctl \
-          --ca-file /etc/kubernetes/pki/etcd/ca.crt \
-          --cert-file /etc/kubernetes/pki/etcd/peer.crt \
-          --key-file /etc/kubernetes/pki/etcd/peer.key \
-          --endpoints=https://${FIRST_INSTANCE_IP}:2379 \
-          member add ${gce_name} https://${INTERNAL_IP}:2380
-      kubeadm alpha phase etcd local --config kubeadm-config.yml
-
-      # Deploy the control plane components and mark the node as a master
-      kubeadm alpha phase kubeconfig all --config kubeadm-config.yml
-      kubeadm alpha phase controlplane all --config kubeadm-config.yml
-      kubeadm alpha phase mark-master --config kubeadm-config.yml
+      # Join the master node to the existing cluster.
+      # NOTE: In some future k8s release (v1.14.x?) the flag
+      # --experimental-control-plane will change to simply --control-plane.
+      $JOIN_COMMAND --experimental-control-plane --node-name ${gce_name}
 EOF
   fi
 
   # Allow the user who installed k8s on the master to call kubectl. And let root
   # easily access kubectl as well as etcdctl.  As we productionize this process,
   # this code should be deleted.  For the next steps, we no longer want to be
-  # root.
+  # root for everything.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
     mkdir -p $HOME/.kube
@@ -364,10 +326,10 @@ EOF
 		export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
 		export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-		export LOCKSMITHCTL_ENDPOINT=\$ETCDCTL_ENDPOINTS
-		export LOCKSMITHCTL_ETCD_CAFILE=\$ETCDCTL_CACERT
-		export LOCKSMITHCTL_ETCD_CERTFILE=\$ETCDCTL_CERT
-		export LOCKSMITHCTL_ETCD_KEYFILE=\$ETCDCTL_KEY
+		export LOCKSMITHCTL_ENDPOINT=https://127.0.0.1:2379
+		export LOCKSMITHCTL_ETCD_CAFILE=/etc/kubernetes/pki/etcd/ca.crt
+		export LOCKSMITHCTL_ETCD_CERTFILE=/etc/kubernetes/pki/etcd/peer.crt
+		export LOCKSMITHCTL_ETCD_KEYFILE=/etc/kubernetes/pki/etcd/peer.key
 EOF2
 	) >> /root/.bashrc"
 EOF

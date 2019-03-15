@@ -24,14 +24,9 @@ GCP_ARGS=("--project=${PROJECT}" "--quiet")
 GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 ETCD_CLUSTER_STATE="existing"
-ETCD_INITIAL_CLUSTER=""
 
 BOOTSTRAP_MASTER="${GCE_BASE_NAME}-${GCE_REGION}-${BOOTSTRAP_ZONE}"
 BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${BOOTSTRAP_ZONE}"
-
-# This command returns the existing master cluster nodes and their internal IP
-# addresses.
-LIST_CLUSTER_NODES="PATH=\$PATH:/opt/bin kubectl get nodes --selector=node-role.kubernetes.io/master -o jsonpath='{range .items[*]}{@.metadata.name}{\",\"}{@.status.addresses[?(@.type==\"InternalIP\")].address}{\"\n\"}{end}'"
 
 # Be sure that a master doesn't already exist in the specified zone.
 EXISTING_MASTER=$(gcloud compute instances list \
@@ -67,26 +62,28 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
     node_id=\$(echo "\${delete_node}" | cut -d, -f1)
     etcdctl member remove \$node_id
   fi
+
+  # Remove the node from the ClusterStatus key of kubeadm-config ConfigMap (in
+  # kube-system namespace). If this isn't done, the new node will fail to join
+  # because kubeadm will think the etcd cluster is down, even though it isn't.
+  # It's basing it's decision on the etcd endpoints it *thinks* should exist
+  # per the kubeadm-config, even though the live cluster doesn't have that node.
+  # https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/util/etcd/etcd.go#L81
+  #
+  # Extract the ClusterStatus, removing the reference to the node that was
+  # deleted. The sed statement matches the deleted node name, then deletes that
+  # line and the 2 lines after it.
+  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterStatus}' | \
+      sed -e "/$GCE_NAME/,+2d" > ClusterStatus
+  # Extract the ClusterConfiguration
+  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterConfiguration}' \
+      > ClusterConfiguration
+  # Generate the new ConfigMap using the two files we just created, and replace the existing ConfigMap.
+  kubectl create configmap kubeadm-config -n kube-system \
+      --from-file ClusterConfiguration \
+      --from-file ClusterStatus \
+      -o yaml --dry-run | kubectl replace -f -
 EOF
-
-master_nodes=$(gcloud compute ssh "${BOOTSTRAP_MASTER}" \
-    --command "${LIST_CLUSTER_NODES}" \
-    "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}")
-# Populates ETCD_INITIAL_CLUSTER with all existing etcd cluster nodes.
-for node in $master_nodes; do
-  node_name=$(echo $node | cut -d, -f1)
-  node_ip=$(echo $node | cut -d, -f2)
-
-  # The following variables are all used in the create_master() function in
-  # bootstraplib.sh.
-  if [[ -z "${ETCD_INITIAL_CLUSTER}" ]]; then
-    ETCD_INITIAL_CLUSTER="${node_name}=https://${node_ip}:2380"
-    FIRST_INSTANCE_NAME="${node_name}"
-    FIRST_INSTANCE_IP="${node_ip}"
-  else
-    ETCD_INITIAL_CLUSTER="${ETCD_INITIAL_CLUSTER},${node_name}=https://${node_ip}:2380"
-  fi
-done
 
 # If they exist, delete the node name from various loadbalancer group resources.
 delete_token_server_backend "${GCE_NAME}" "${GCE_ZONE}"
