@@ -24,7 +24,9 @@ GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
 # Fetch the kubeconfig from the first master so we can run kubectl commands
 # locally, then export it into the local environment.
-gcloud compute scp ${GCE_NAME}:.kube/config ./kube-config "${GCE_ARGS[@]}"
+# (obsolete) gcloud compute scp ${GCE_NAME}:.kube/config ./kube-config "${GCE_ARGS[@]}"
+gcloud --project ${PROJECT} compute ssh ${GCE_NAME} \
+    --command "sudo cat /etc/kubernetes/admin.conf" "${GCE_ARGS[@]}" > ./kube-config
 export KUBECONFIG=./kube-config
 
 # Fetch Secrets from GCS.
