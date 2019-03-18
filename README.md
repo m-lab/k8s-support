@@ -35,5 +35,12 @@ Each machine that wants to be controlled by k8s (each Node) needs:
 
 To deploy NDT pod:
 
-1. Use manage-cluster/bootstrap_k8s_workloads.sh
-2.
+1. Check https://grafana.mlab-sandbox.measurementlab.net/d/Uu56HtIfb/k8s-master-cluster?orgId=1&var-datasource=k8s%20platform%20(mlab-sandbox)&var-master=All
+1. cd manage-cluster
+1. ./bootstrap_k8s_workloads.sh
+1. kubectl get pods
+
+Rebooting a fleet machine
+
+1. Need planetlab ssh key
+1. ssh core@mlab1.lga0t.measurement-lab.org
