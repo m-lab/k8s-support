@@ -39,8 +39,3 @@ To deploy NDT pod:
 1. cd manage-cluster
 1. ./bootstrap_k8s_workloads.sh
 1. kubectl get pods
-
-Rebooting a fleet machine
-
-1. Need planetlab ssh key
-1. ssh core@mlab1.lga0t.measurement-lab.org
