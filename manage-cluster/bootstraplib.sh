@@ -238,16 +238,32 @@ EOF
     cp ${K8S_PKI_DIR}/admin.conf /etc/kubernetes/ 2> /dev/null || true
 EOF
 
-  # Setting up the initial master node is very different than adding additional
-  # master nodes later, hence this section.
+  # Copy all config template files to the server.
+  gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
+
+  # Evaluate the kubeadm config template with a beastly sed statement.
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    set -euxo pipefail
+    sudo -s
+
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
+    set -euxo pipefail
+
+    # Create the kubeadm config from the template
+    sed -e 's|{{PROJECT}}|${PROJECT}|g' \
+        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
+        -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
+        -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
+        -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
+        -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
+        -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
+        -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
+        ./kubeadm-config.yml.template > \
+        ./kubeadm-config.yml
+EOF
+
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    # Copy all config template files to the server.
-    gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
 
-    # Many of the following configurations were gleaned from:
-    # https://kubernetes.io/docs/setup/independent/high-availability/
-
-    # Evaluate the kubeadm config template with a beastly sed statement.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
       sudo -s
@@ -255,17 +271,17 @@ EOF
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
-      # Create the kubeadm config from the template
-      sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-          -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-          -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
-          -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
-          -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
-          -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
-          ./kubeadm-config.yml.template > \
-          ./kubeadm-config.yml
+      # The template variables {{TOKEN}} and {{CA_CERT_HASH}} are not used when
+      # creating the initial master node but kubeadm cannot parse the YAML with
+      # the variables in the file. Here we simply replace the variables with
+      # some meaningless text so that the YAML can be parse. These variables
+      # are in the JoinConfiguration section, which isn't used here so the
+      # values aren't used and don't matter.
+      sed -i -e 's|{{TOKEN}}|NOT_USED|' \
+             -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
+             kubeadm-config.yml
 
-      kubeadm init --config kubeadm-config.yml --node-name ${gce_name}
+      kubeadm init --config kubeadm-config.yml
 
       # Copy the admin KUBECONFIG file to the GCS bucket.
       cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}
@@ -280,12 +296,6 @@ EOF
 EOF
   else
 
-    # Get the join commmand from the existing master.
-    JOIN_COMMAND=$(
-      gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" --command \
-          'sudo /opt/bin/kubeadm token create --print-join-command'
-    )
-
     # Join the new master node using the join command we just retrieved.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
@@ -294,10 +304,20 @@ EOF
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
 
+      # Get the join command.
+      JOIN_COMMAND=\$(/opt/bin/kubeadm token create --print-join-command)
+
+      # Extract the token from the join command
+      TOKEN=\$(echo "\$JOIN_COMMAND" | egrep -o '[0-9a-z]{6}\.[0-9a-z]{16}')
+      CA_CERT_HASH=\$(echo "\$JOIN_COMMAND" | egrep -o 'sha256:[0-9a-z]+')
+
+      # Replace a few more variables in the config file.
+      sed -i -e "s|{{TOKEN}}|\${TOKEN}|" \
+             -e "s|{{CA_CERT_HASH}}|\${CA_CERT_HASH}|" \
+             ./kubeadm-config.yml
+
       # Join the master node to the existing cluster.
-      # NOTE: In some future k8s release (v1.14.x?) the flag
-      # --experimental-control-plane will change to simply --control-plane.
-      $JOIN_COMMAND --experimental-control-plane --node-name ${gce_name}
+      kubeadm join --config kubeadm-config.yml
 EOF
   fi
 

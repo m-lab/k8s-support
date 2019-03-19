@@ -1,7 +1,33 @@
 apiVersion: kubeadm.k8s.io/v1beta1
+kind: InitConfiguration
+nodeRegistration:
+  name: "{{MASTER_NAME}}"
+localAPIEndpoint:
+  advertiseAddress: "{{INTERNAL_IP}}"
+  bindPort: 6443
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
+    token: {{TOKEN}}
+    caCertHashes:
+    - "{{CA_CERT_HASH}}"
+  timeout: 15m0s
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: "{{INTERNAL_IP}}"
+    bindPort: 6443
+nodeRegistration:
+  name: "{{MASTER_NAME}}"
+---
+apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 kubernetesVersion: {{K8S_VERSION}}
 apiServer:
+  extraArgs:
+    advertise-address: "{{EXTERNAL_IP}}"
   certSANs:
   - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
