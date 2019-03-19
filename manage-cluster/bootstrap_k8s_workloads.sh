@@ -24,7 +24,7 @@ GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
 # Fetch the kubeconfig from the first master so we can run kubectl commands
 # locally
-gcloud --project ${PROJECT} compute ssh ${GCE_NAME} \
+gcloud compute ssh ${GCE_NAME} \
     --command "sudo cat /etc/kubernetes/admin.conf" "${GCE_ARGS[@]}" > ./kube-config
 export KUBECONFIG=./kube-config
 
@@ -33,8 +33,8 @@ gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 
 # Apply Secrets.
-kubectl create secret generic pusher-credentials --from-file pusher.json
-kubectl create secret generic ndt-tls --from-file ndt-tls/
+kubectl create secret generic pusher-credentials --from-file pusher.json || :
+kubectl create secret generic ndt-tls --from-file ndt-tls/ || :
 
 # Apply RBAC configs.
 kubectl apply -f ../k8s/roles/
@@ -46,8 +46,12 @@ kubectl create configmap prometheus-synthetic-textfile-metrics \
     --from-file ../config/prometheus-synthetic-textfile-metrics || :
 
 # Apply DaemonSets
+# Apply does not seem to be working if pods are already running.  As a workaround
+# we have been manually running 'kubectl delete ds ndt', (e.g. to remove the ndt pods), then
+# rerunning the first apply command.
 kubectl apply -f ../k8s/daemonsets/experiments/
 kubectl apply -f ../k8s/daemonsets/core/
 
 # Apply Deployments
+# kubectl delete -f ../k8s/deployments/
 kubectl apply -f ../k8s/deployments/
