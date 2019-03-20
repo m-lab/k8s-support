@@ -9,8 +9,6 @@ spec:
       app: prometheus-server
   updateStrategy:
     type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
   template:
     metadata:
       labels:
