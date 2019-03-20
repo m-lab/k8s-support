@@ -10,6 +10,7 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
+      # TODO: Find a way of ensuring that "5%" never takes an entire site down at once.
       maxUnavailable: 5%
   template:
     metadata:
@@ -32,9 +33,11 @@ spec:
       #  * monitoring reads lame duck status (60s max)
       #  * mlab-ns updates server status (60s max)
       #  * all currently running tests complete. (30s max)
-      # TODO(uncomment this for prod deployment)
-      # terminationGracePeriodSeconds: 150
-      terminationGracePeriodSeconds: 10
+      #
+      # Feel free to change this to a smaller value for speedy sandbox
+      # deployments to enable faster compile-run-debug loops, but 60+60+30=150
+      # is what it needs to be for staging and prod.
+      terminationGracePeriodSeconds: 150
 
       nodeSelector:
         mlab/type: 'platform'
