@@ -251,8 +251,8 @@ EOF
 
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
-        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
+        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
         -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
         -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
