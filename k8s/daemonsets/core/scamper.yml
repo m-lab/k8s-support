@@ -7,6 +7,8 @@ spec:
   selector:
     matchLabels:
       run: scamper
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -14,6 +16,8 @@ spec:
       annotations:
         prometheus.io/scrape: 'false'
     spec:
+      nodeSelector:
+        mlab/type: 'platform'
       containers:
       - name: scamper
         image: measurementlab/scamper:v2.0

@@ -8,6 +8,8 @@ spec:
   selector:
     matchLabels:
       app: node-exporter
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:

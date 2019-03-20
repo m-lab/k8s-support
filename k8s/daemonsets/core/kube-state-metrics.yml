@@ -10,6 +10,8 @@ spec:
     matchLabels:
       k8s-app: kube-state-metrics
   replicas: 1
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
