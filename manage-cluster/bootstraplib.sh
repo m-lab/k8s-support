@@ -302,8 +302,7 @@ EOF
       done
 EOF
   else
-
-    # Join the new master node using the join command we just retrieved.
+    # Join the new master node to the existing cluster.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
       sudo -s
