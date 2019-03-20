@@ -53,5 +53,4 @@ kubectl apply -f ../k8s/daemonsets/experiments/
 kubectl apply -f ../k8s/daemonsets/core/
 
 # Apply Deployments
-# kubectl delete -f ../k8s/deployments/
 kubectl apply -f ../k8s/deployments/
