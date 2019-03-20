@@ -335,37 +335,33 @@ EOF
 EOF
   fi
 
-  # Allow the user who installed k8s on the master to call kubectl. And let root
-  # easily access kubectl as well as etcdctl.  As we productionize this process,
-  # this code should be deleted.  For the next steps, we no longer want to be
-  # root for everything.
+  # Configure root's account to be able to easily access kubectl as well as
+  # etcdctl and locksmithctl.  As we productionize this process, this code
+  # should be deleted.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    sudo -s
 
-    # Allow root to run kubectl also, and etcdctl too.
-    sudo mkdir -p /root/.kube
-    sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-    sudo chown $(id -u root):$(id -g root) /root/.kube/config
+    mkdir -p /root/.kube
+    cp -i /etc/kubernetes/admin.conf /root/.kube/config
+    chown root:root /root/.kube/config
     # We are not using CoreOS's locksmithd, but we add appropriate env
     # variables for it below because the locksmithctl command can still be used
     # to mock-flag that a node needs to be rebooted for an OS upgrade, which
     # may be useful for testing.
-    sudo bash -c "(cat <<-EOF2
-		export ETCDCTL_API=3
-		export ETCDCTL_DIAL_TIMEOUT=3s
-		export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
-		export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
-		export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
-		export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-		export LOCKSMITHCTL_ENDPOINT=https://127.0.0.1:2379
-		export LOCKSMITHCTL_ETCD_CAFILE=/etc/kubernetes/pki/etcd/ca.crt
-		export LOCKSMITHCTL_ETCD_CERTFILE=/etc/kubernetes/pki/etcd/peer.crt
-		export LOCKSMITHCTL_ETCD_KEYFILE=/etc/kubernetes/pki/etcd/peer.key
+    bash -c "(cat <<-EOF2
+	export ETCDCTL_API=3
+	export ETCDCTL_DIAL_TIMEOUT=3s
+	export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
+	export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
+	export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
+	export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+	export LOCKSMITHCTL_ENDPOINT=https://127.0.0.1:2379
+	export LOCKSMITHCTL_ETCD_CAFILE=/etc/kubernetes/pki/etcd/ca.crt
+	export LOCKSMITHCTL_ETCD_CERTFILE=/etc/kubernetes/pki/etcd/peer.crt
+	export LOCKSMITHCTL_ETCD_KEYFILE=/etc/kubernetes/pki/etcd/peer.key
 EOF2
-	) >> /root/.bashrc"
+    ) >> /root/.bashrc"
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
