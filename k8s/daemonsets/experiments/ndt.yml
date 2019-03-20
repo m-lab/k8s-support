@@ -32,7 +32,9 @@ spec:
       #  * monitoring reads lame duck status (60s max)
       #  * mlab-ns updates server status (60s max)
       #  * all currently running tests complete. (30s max)
-      terminationGracePeriodSeconds: 150
+      # TODO(uncomment this for prod deployment)
+      # terminationGracePeriodSeconds: 150
+      terminationGracePeriodSeconds: 10
 
       nodeSelector:
         mlab/type: 'platform'
@@ -56,7 +58,7 @@ spec:
       - name: fast-sidestream
         image: measurementlab/tcp-info:v0.0.3
         args:
-        - -prom=9797
+        - -prom=:9797
         - -uuid-prefix-file=/var/local/uuid/prefix
         ports:
         - containerPort: 9797
@@ -107,7 +109,7 @@ spec:
       - name: set-up-uuid-prefix-file
         image: measurementlab/uuid:v0.1
         args:
-        - -filename /var/local/uuid/prefix
+        - -filename=/var/local/uuid/prefix
         volumeMounts:
         - name: uuid-prefix
           mountPath: /var/local/uuid
