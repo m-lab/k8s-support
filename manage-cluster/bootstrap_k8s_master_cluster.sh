@@ -365,7 +365,8 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-health-checks" \
 EPOXY_SUBNET=$(gcloud compute networks subnets list \
     --network "${GCE_NETWORK}" \
     --filter "name=${GCE_EPOXY_SUBNET} AND region:(${GCE_REGION})" \
-    --format "value(ipCidrRange)")
+    --format "value(ipCidrRange)" \
+    "${GCP_ARGS[@]}")
 if [[ -z "${EPOXY_SUBNET}" ]]; then
   echo "Could not determine the CIDR range for the ePoxy subnet."
   exit 1
@@ -487,9 +488,6 @@ gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
 # Create one GCE instance for each of $GCE_ZONES defined.
 #
 ETCD_CLUSTER_STATE="new"
-ETCD_INITIAL_CLUSTER=""
-FIRST_INSTANCE_NAME=""
-FIRST_INSTANCE_IP=""
 
 for zone in $GCE_ZONES; do
   create_master $zone

@@ -34,6 +34,13 @@ GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
+# The type of GCE VM which will be deployed.
+if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
+  MACHINE_TYPE="n1-standard-2"
+else
+  MACHINE_TYPE="n1-highmem-4"
+fi
+
 # Prometheus public IP
 CURRENT_PROMETHEUS_IP=$(gcloud compute addresses list \
     --filter "name=${PROM_BASE_NAME} AND region:${GCE_REGION}" \
@@ -123,9 +130,10 @@ fi
 
 # Create the new node
 ./allocate_new_cloud_node.sh -p "${PROJECT}" \
+    -m "${MACHINE_TYPE}" \
     -n "${PROM_BASE_NAME}" \
     -a "${PROM_BASE_NAME}" \
-    -l "run=prometheus" \
+    -l "run=prometheus-server" \
     -t "${PROM_BASE_NAME}"
 
 # Create a firewall rule allowing external access to ports:
