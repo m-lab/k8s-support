@@ -7,6 +7,10 @@ spec:
   selector:
     matchLabels:
       run: ndt
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 5%
   template:
     metadata:
       labels:
@@ -17,7 +21,6 @@ spec:
           { "name": "flannel-conf" },
           { "name": "index2ip-index-2-conf" } ]'
     spec:
-
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
       # grace period to give time for the following shutdown sequence. After the
       # grace period, kubernetes sends SIGKILL.
@@ -29,41 +32,41 @@ spec:
       #  * monitoring reads lame duck status (60s max)
       #  * mlab-ns updates server status (60s max)
       #  * all currently running tests complete. (30s max)
-      #
-      # TODO: enable before receiving production traffic.
-      # terminationGracePeriodSeconds: 150
-      #
+      terminationGracePeriodSeconds: 150
 
       nodeSelector:
         mlab/type: 'platform'
       containers:
       - name: ndt-server
-        image: measurementlab/ndt-server:v0.5
+        image: measurementlab/ndt-server:v0.6.2
         args:
         - -key=/certs/key.pem
         - -cert=/certs/cert.pem
+        - -uuid-prefix-file=/var/local/uuid/prefix
         ports:
         - containerPort: 9090
         volumeMounts:
         - name: ndt-tls
           mountPath: /certs
           readOnly: true
-      - name: busybox
-        image: busybox
-        command: ["top"]
-        volumeMounts:
-        - name: pusher-credentials
-          mountPath: /etc/credentials
+        - name: uuid-prefix
+          mountPath: /var/local/uuid
           readOnly: true
+
       - name: fast-sidestream
-        image: measurementlab/tcp-info:v0.0.2
+        image: measurementlab/tcp-info:v0.0.3
         args:
         - -prom=9797
+        - -uuid-prefix-file=/var/local/uuid/prefix
         ports:
         - containerPort: 9797
         volumeMounts:
         - name: fast-sidestream-data
           mountPath: /home
+        - name: uuid-prefix
+          mountPath: /var/local/uuid
+          readOnly: true
+
       - name: pusher
         image: measurementlab/pusher:v1.4
         env:
@@ -84,7 +87,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-
         # TODO: specify the node & site names using kubernetes magic.
         volumeMounts:
         - name: fast-sidestream-data
@@ -100,6 +102,16 @@ spec:
         image: busybox
         command: ['sh', '-c', 'echo "nameserver 8.8.8.8" > /etc/resolv.conf']
 
+      # Write out the UUID prefix to a well-known location.
+      # For more on this, see DESIGN.md in https://github.com/m-lab/uuid/
+      - name: set-up-uuid-prefix-file
+        image: measurementlab/uuid:v0.1
+        args:
+        - -filename /var/local/uuid/prefix
+        volumeMounts:
+        - name: uuid-prefix
+          mountPath: /var/local/uuid
+
       volumes:
       - name: fast-sidestream-data
         hostPath:
@@ -111,3 +123,5 @@ spec:
       - name: ndt-tls
         secret:
           secretName: ndt-tls
+      - name: uuid-prefix
+        emptyDir: {}
