@@ -283,7 +283,10 @@ EOF
       kubeadm init --config kubeadm-config.yml
 
       # Modify the --advertise-address flag to point to the external IP,
-      # instead of the internal one that kubeadm populated.
+      # instead of the internal one that kubeadm populated. This is necessary
+      # because external nodes (and especially kube-proxy) need to know of the
+      # master node by its public IP, even though it is technically running in
+      # a private VPC.
       sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
           /etc/kubernetes/manifests/kube-apiserver.yaml
 
@@ -324,7 +327,10 @@ EOF
       kubeadm join --config kubeadm-config.yml
 
       # Modify the --advertise-address flag to point to the external IP,
-      # instead of the internal one that kubeadm populated.
+      # instead of the internal one that kubeadm populated. This is necessary
+      # because external nodes (and especially kube-proxy) need to know of the
+      # master node by its public IP, even though it is technically running in
+      # a private VPC.
       sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
           /etc/kubernetes/manifests/kube-apiserver.yaml
 EOF
