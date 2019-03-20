@@ -26,10 +26,8 @@ apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 kubernetesVersion: {{K8S_VERSION}}
 apiServer:
-  extraArgs:
-    advertise-address: "{{EXTERNAL_IP}}"
   certSANs:
-  - {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+  - "{{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net"
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManager:
   extraArgs:

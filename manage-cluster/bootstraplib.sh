@@ -252,7 +252,6 @@ EOF
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-        -e 's|{{EXTERNAL_IP}}|${EXTERNAL_IP}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
         -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
@@ -282,6 +281,11 @@ EOF
              kubeadm-config.yml
 
       kubeadm init --config kubeadm-config.yml
+
+      # Modify the --advertise-address flag to point to the external IP,
+      # instead of the internal one that kubeadm populated.
+      sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
+          /etc/kubernetes/manifests/kube-apiserver.yaml
 
       # Copy the admin KUBECONFIG file to the GCS bucket.
       cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}
@@ -318,6 +322,11 @@ EOF
 
       # Join the master node to the existing cluster.
       kubeadm join --config kubeadm-config.yml
+
+      # Modify the --advertise-address flag to point to the external IP,
+      # instead of the internal one that kubeadm populated.
+      sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
+          /etc/kubernetes/manifests/kube-apiserver.yaml
 EOF
   fi
 
