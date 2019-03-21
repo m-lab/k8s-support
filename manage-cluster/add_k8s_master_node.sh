@@ -1,13 +1,14 @@
 #!/bin/bash
 #
-# Adds a new master node to an existing k8s cluster.
+# Adds a new master node to an existing k8s cluster. This script assumes that
+# there are functional masters in the cluster for both of the other zones not
+# being added.
 
 set -euxo pipefail
 
-USAGE="$0 <cloud project> <zone> <existing master zone>"
+USAGE="$0 <project> <zone>"
 PROJECT=${1:?Please provide the GCP project (e.g., mlab-sandbox): ${USAGE}}
-ZONE=${2:?Please provide a GCE zone (e.g., c): ${USAGE}}
-BOOTSTRAP_ZONE=${3:?Please provide the GCE zone of any existing master node (e.g., b): ${USAGE}}
+ZONE=${2:?Please provide a GCE zone for the new node (e.g., c): ${USAGE}}
 
 # Include global configs and the bootstrap function "library".
 source k8s_deploy.conf
@@ -15,6 +16,8 @@ source bootstraplib.sh
 
 GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
 GCE_REGION="${!GCE_REGION_VAR}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
+GCE_ZONES="${!GCE_ZONES_VAR}"
 GCE_ZONE="${GCE_REGION}-${ZONE}"
 GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
 
@@ -25,8 +28,15 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 ETCD_CLUSTER_STATE="existing"
 
-BOOTSTRAP_MASTER="${GCE_BASE_NAME}-${GCE_REGION}-${BOOTSTRAP_ZONE}"
-BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${BOOTSTRAP_ZONE}"
+# The "bootstrap" zone will be the first zone in the list of zones for the
+# project that is _not_ the zone of the node being added.
+for z in $GCE_ZONES; do
+  if [[ "$z" != "${ZONE}" ]]; then
+    BOOTSTRAP_MASTER="${GCE_BASE_NAME}-${GCE_REGION}-${z}"
+    BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${z}"
+    break
+  fi
+done
 
 # Be sure that a master doesn't already exist in the specified zone.
 EXISTING_MASTER=$(gcloud compute instances list \
