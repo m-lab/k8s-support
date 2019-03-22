@@ -11,9 +11,14 @@ source k8s_deploy.conf
 # Issue a warning to the user and only continue if they agree.
 cat <<EOF
   WARNING: this script is going to upgrade the _entire_ ${PROJECT} kubernetes
-  cluster to version ${K8S_VERSION}. Problems could occur, and be 100% sure you
+  cluster to version ${K8S_VERSION}. Problems could occur. Be 100% sure you
   have read the changelogs to be sure there are no breaking changes for the
-  current configuration. Are you sure you want to continue? [y/N]:
+  current configuration. Also be sure to the specific kubeadm documentation for
+  upgrading from the existing version to the new version, as sometimes a couple
+  manual steps are required first. Also be sure you have read the kubeadm
+  documentation for recovering from a failed state.
+
+  Are you sure you want to continue? [y/N]:
 EOF
 read keepgoing
 if [[ "${keepgoing}" != "y" ]]; then
