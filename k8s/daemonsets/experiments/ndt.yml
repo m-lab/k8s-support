@@ -59,7 +59,7 @@ spec:
           readOnly: true
 
       - name: fast-sidestream
-        image: measurementlab/tcp-info:v0.0.3
+        image: measurementlab/tcp-info:v0.0.4
         args:
         - -prom=:9797
         - -uuid-prefix-file=/var/local/uuid/prefix
