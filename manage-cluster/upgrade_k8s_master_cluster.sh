@@ -85,7 +85,7 @@ for zone in $GCE_ZONES; do
 
     # The template variables {{TOKEN}} and {{CA_CERT_HASH}} are not used when
     # upgrading k8s on a node.  Here we simply replace the variables with
-    # some meaningless text so that the YAML can be parse.
+    # some meaningless text so that the YAML can be parsed.
     sed -i -e 's|{{TOKEN}}|NOT_USED|' \
            -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
            kubeadm-config.yml
