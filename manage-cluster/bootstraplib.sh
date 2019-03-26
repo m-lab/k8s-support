@@ -381,6 +381,14 @@ EOF
   sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
       ./network/common.yml.template > ./network/common.yml
 
+  # Evaluate the cloud.yml.template network config template file.
+  sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
+      ./network/cloud.yml.template > ./network/cloud.yml
+
+  # Evaluate the platform.yml.template network config template file.
+  sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
+      ./network/platform.yml.template > ./network/platform.yml
+
   # Copy the network configs to the server.
   gcloud compute scp --recurse network "${gce_name}":network "${GCE_ARGS[@]}"
 
