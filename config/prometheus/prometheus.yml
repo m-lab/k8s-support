@@ -52,6 +52,11 @@ scrape_configs:
         regex: (.+)
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
+      # Add a node label to each target node that is auto-discovered.
+      - source_labels: [__meta_kubernetes_node_address_Hostname]
+        regex: (.+)
+        target_label: node
+        replacement: ${1}
 
 
   # Scrape config for kubernetes pods.
