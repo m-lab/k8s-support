@@ -105,6 +105,12 @@ scrape_configs:
         action: replace
         target_label: node
 
+      # Add a machine label to make it easier to join these metrics with
+      # existing metrics that use machine instead of the node label.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: machine
+
       # TODO: find a better source of this information or remove it. The value
       # returned is incomplete. Used only by Prometheus_SelfMonitoring.json.
       # Extract the "<cluster>-<node-pool>" name from the GKE node name.
@@ -145,12 +151,6 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_container_name]
         action: replace
         target_label: container
-
-      # Add a machine label to make it easier to join these metrics with
-      # existing metrics that use machine instead of the node label.
-      - source_labels: [__meta_kubernetes_pod_node_name]
-        action: replace
-        target_label: machine
 
 
   # Scrape config for kubernetes service endpoints.
