@@ -53,15 +53,13 @@ scrape_configs:
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
       # Add a node label to each target node that is auto-discovered.
-      - source_labels: [__meta_kubernetes_node_address_Hostname]
-        regex: (.+)
+      - source_labels: [__meta_kubernetes_node_name]
+        action: replace
         target_label: node
-        replacement: ${1}
       # Add a machine label to each target node that is auto-discovered.
-      - source_labels: [__meta_kubernetes_node_address_Hostname]
-        regex: (.+)
+      - source_labels: [__meta_kubernetes_node_name]
+        action: replace
         target_label: machine
-        replacement: ${1}
 
 
   # Scrape config for kubernetes pods.
@@ -147,6 +145,12 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_container_name]
         action: replace
         target_label: container
+
+      # Add a machine label to make it easier to join these metrics with
+      # existing metrics that use machine instead of the node label.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: machine
 
 
   # Scrape config for kubernetes service endpoints.
