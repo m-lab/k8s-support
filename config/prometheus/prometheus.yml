@@ -228,10 +228,15 @@ scrape_configs:
         action: replace
         target_label: namespace
 
-      # Add the GKE node name.
+      # Add the node name to a label named node.
       - source_labels: [__meta_kubernetes_pod_node_name]
         action: replace
         target_label: node
+
+      # Add a machine label to each target node that is auto-discovered.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: machine
 
       # Identify the deployment name for replica set or daemon set.  Pods
       # created by deployments or daemon sets are processed here. The
