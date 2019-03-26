@@ -73,7 +73,7 @@ spec:
           readOnly: true
 
       - name: pusher
-        image: measurementlab/pusher:v1.4
+        image: measurementlab/pusher:v1.5
         env:
         - name: DIRECTORY
           value: /var/spool/fast-sidestream

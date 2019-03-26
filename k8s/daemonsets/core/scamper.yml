@@ -28,7 +28,7 @@ spec:
           mountPath: /etc/credentials
           readOnly: true
       - name: pusher
-        image: measurementlab/pusher:v1.1
+        image: measurementlab/pusher:v1.5
         env:
         - name: DIRECTORY
           value: /var/spool/scamper
