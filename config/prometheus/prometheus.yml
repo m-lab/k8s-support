@@ -52,6 +52,14 @@ scrape_configs:
         regex: (.+)
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
+      # Add a node label to each target node that is auto-discovered.
+      - source_labels: [__meta_kubernetes_node_name]
+        action: replace
+        target_label: node
+      # Add a machine label to each target node that is auto-discovered.
+      - source_labels: [__meta_kubernetes_node_name]
+        action: replace
+        target_label: machine
 
 
   # Scrape config for kubernetes pods.
@@ -96,6 +104,12 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_node_name]
         action: replace
         target_label: node
+
+      # Add a machine label to make it easier to join these metrics with
+      # existing metrics that use machine instead of the node label.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: machine
 
       # TODO: find a better source of this information or remove it. The value
       # returned is incomplete. Used only by Prometheus_SelfMonitoring.json.
@@ -214,10 +228,15 @@ scrape_configs:
         action: replace
         target_label: namespace
 
-      # Add the GKE node name.
+      # Add the node name to a label named node.
       - source_labels: [__meta_kubernetes_pod_node_name]
         action: replace
         target_label: node
+
+      # Add a machine label to each target node that is auto-discovered.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: machine
 
       # Identify the deployment name for replica set or daemon set.  Pods
       # created by deployments or daemon sets are processed here. The
