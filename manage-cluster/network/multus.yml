@@ -9,9 +9,8 @@ spec:
     "type": "flannel",
     "delegate": {
        "hairpinMode": true,
-       "isDefaultGateway": false
-    },
-    "masterplugin": true
+       "isDefaultGateway": true
+    }
   }'
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
