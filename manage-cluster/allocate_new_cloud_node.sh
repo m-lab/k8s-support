@@ -12,7 +12,11 @@ usage() {
   echo "USAGE: $0 -p <project> [-m <machine-type>] [-n <node-name>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
+ADDRESS=""
 LABELS=""
+MACHINE_TYPE=""
+NODE_NAME=""
+PROJECT=""
 TAGS=""
 
 while getopts ':a:l:m:n:p:t:' opt; do
