@@ -1,5 +1,7 @@
 *.swp
 ndt-tls/
+cloud.yml
 common.yml
+platform.yml
 pusher.json
 setup_k8s.sh

@@ -122,15 +122,6 @@ data:
       "name": "multus-network",
       "type": "multus",
       "kubeconfig": "/etc/kubernetes/kubelet.conf",
-      "delegates": [
-        {
-          "type": "flannel",
-          "delegate": {
-            "hairpinMode": true,
-            "isDefaultGateway": false,
-            "forceAddress": true
-          },
-          "masterplugin": true
-        }
-      ]
+      "multusNamespace": "default",
+      "clusterNetwork": "flannel-conf"
     }

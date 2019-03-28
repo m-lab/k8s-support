@@ -33,7 +33,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni
-        image: quay.io/coreos/flannel:v0.10.0-amd64
+        image: quay.io/coreos/flannel:{{K8S_FLANNEL_VERSION}}-amd64
         command:
         - cp
         args:
@@ -47,7 +47,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.10.0-amd64
+        image: quay.io/coreos/flannel:{{K8S_FLANNEL_VERSION}}-amd64
         command:
         - /opt/bin/flanneld
         args:

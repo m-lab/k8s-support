@@ -18,9 +18,7 @@ spec:
         run: ndt
       annotations:
         prometheus.io/scrape: 'true'
-        k8s.v1.cni.cncf.io/networks: '[
-          { "name": "flannel-conf" },
-          { "name": "index2ip-index-2-conf" } ]'
+        k8s.v1.cni.cncf.io/networks: '[{ "name": "index2ip-index-2-conf" }]'
     spec:
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
       # grace period to give time for the following shutdown sequence. After the
