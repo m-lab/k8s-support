@@ -36,17 +36,22 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 kubectl apply -f ../k8s/namespaces/
 
 # Apply Secrets.
-kubectl create secret generic pusher-credentials --from-file pusher.json
-kubectl create secret generic ndt-tls --from-file ndt-tls/
+kubectl create secret generic pusher-credentials --from-file pusher.json \
+    --dry-run -o json | kubectl apply -f -
+kubectl create secret generic ndt-tls --from-file ndt-tls/ \
+    --dry-run -o json | kubectl apply -f
 
 # Apply RBAC configs.
 kubectl apply -f ../k8s/roles/
 
 # Apply ConfigMaps
-kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" || :
-kubectl create configmap prometheus-config --from-file ../config/prometheus/prometheus.yml || :
+kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" \
+    --dry-run -o json | kubectl apply -f -
+kubectl create configmap prometheus-config --from-file ../config/prometheus/prometheus.yml \
+    --dry-run -o json | kubectl apply -f -
 kubectl create configmap prometheus-synthetic-textfile-metrics \
-    --from-file ../config/prometheus-synthetic-textfile-metrics || :
+    --from-file ../config/prometheus-synthetic-textfile-metrics \
+    --dry-run -o json | kubectl apply -f -
 
 # Apply DaemonSets
 kubectl apply -f ../k8s/daemonsets/experiments/
