@@ -1,32 +1,8 @@
-# This file must be applied first.  Kubernetes does not support defining new
-# data types and new resources of that type at the same time.
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-    # name must match the spec fields below, and be in the form:
-    #   <plural>.<group>
-    name: networks.kubernetes.com
-spec:
-    # group name to use for REST API: /apis/<group>/<version>
-    group: kubernetes.com
-    # version name to use for REST API: /apis/<group>/<version>
-    version: v1
-    # either Namespaced or Cluster
-    scope: Namespaced
-    names:
-        # plural name to be used in the URL: /apis/<group>/<version>/<plural>
-        plural: networks
-        # singular name to be used as an alias on the CLI and for display
-        singular: network
-        # kind is normally the CamelCased singular type. Your resource
-        # manifests use this.
-        kind: Network
----
-# TODO: Delete the networks.kubernetes.com CRD.
 # The new CRD type used by Multus.
 #
 # This file must be applied first.  Kubernetes does not support defining new
 # data types and new resources of that type at the same time.
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -49,3 +25,195 @@ spec:
                     properties:
                         config:
                             type: string
+
+# The CRD objects.
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: flannel-conf
+spec:
+  config: '{
+    "cniVersion": "0.3.0",
+    "type": "flannel",
+    "delegate": {
+       "hairpinMode": true,
+       "isDefaultGateway": true
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-1-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-1",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 1
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-2-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-2",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 2
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-4-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-4",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 4
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-5-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-5",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 5
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-6-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-6,
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 6
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-7-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-7",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 7
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-8-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-8",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 8
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-9-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-9",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 9
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-10-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-10",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 10
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-11-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-11",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 11
+    }
+  }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: index2ip-index-12-conf
+spec:
+  config: '{
+    "cniVersion": "0.2.0",
+    "name": "ipvlan-index-12",
+    "type": "ipvlan",
+    "master": "eth0",
+    "ipam": {
+      "type": "index2ip",
+      "index": 12
+    }
+  }'
