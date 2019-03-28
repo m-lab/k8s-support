@@ -39,7 +39,7 @@ kubectl apply -f ../k8s/namespaces/
 kubectl create secret generic pusher-credentials --from-file pusher.json \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic ndt-tls --from-file ndt-tls/ \
-    --dry-run -o json | kubectl apply -f
+    --dry-run -o json | kubectl apply -f -
 
 # Apply RBAC configs.
 kubectl apply -f ../k8s/roles/
