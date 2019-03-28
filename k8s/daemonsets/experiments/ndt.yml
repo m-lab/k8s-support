@@ -56,25 +56,32 @@ spec:
           mountPath: /var/local/uuid
           readOnly: true
 
-      - name: fast-sidestream
-        image: measurementlab/tcp-info:v0.0.4
+      - name: tcpinfo
+        image: measurementlab/tcp-info:v0.0.5
         args:
         - -prom=:9797
         - -uuid-prefix-file=/var/local/uuid/prefix
+        - -output=/var/spool/tcpinfo
         ports:
         - containerPort: 9797
         volumeMounts:
-        - name: fast-sidestream-data
-          mountPath: /home
+        - name: tcpinfo-data
+          mountPath: /var/spool/tcpinfo
         - name: uuid-prefix
           mountPath: /var/local/uuid
           readOnly: true
 
       - name: pusher
-        image: measurementlab/pusher:v1.5
+        image: measurementlab/pusher:v1.6
+        ports:
+        - containerPort: 9898
+        args:
+        - -monitoring_address=:9898
+        - -directory=/var/spool
+        - -datatype=tcpinfo
+        - -experiment=tcpinfo
+        - -archive_size_threshold=50MB
         env:
-        - name: DIRECTORY
-          value: /var/spool/fast-sidestream
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
         - name: BUCKET
@@ -82,18 +89,13 @@ spec:
             configMapKeyRef:
               name: pusher-dropbox
               key: bucket
-        - name: EXPERIMENT
-          value: fast-sidestream
-        - name: ARCHIVE_SIZE_THRESHOLD
-          value: 50MB
         - name: MLAB_NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        # TODO: specify the node & site names using kubernetes magic.
         volumeMounts:
-        - name: fast-sidestream-data
-          mountPath: /var/spool/fast-sidestream
+        - name: tcpinfo-data
+          mountPath: /var/spool/tcpinfo
         - name: pusher-credentials
           mountPath: /etc/credentials
           readOnly: true
@@ -116,9 +118,9 @@ spec:
           mountPath: /var/local/uuid
 
       volumes:
-      - name: fast-sidestream-data
+      - name: tcpinfo-data
         hostPath:
-          path: /cache/core/fast-sidestream
+          path: /cache/core/tcpinfo
           type: DirectoryOrCreate
       - name: pusher-credentials
         secret:
