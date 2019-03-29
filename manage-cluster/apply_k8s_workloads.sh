@@ -2,8 +2,9 @@
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <google-cloud-project>"
+USAGE="USAGE: $0 <google-cloud-project> [<kubeconfig>]"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
+KUBECONFIG=${2}
 
 # Source the main configuration file.
 source ./k8s_deploy.conf
@@ -22,15 +23,21 @@ GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
-# Fetch the kubeconfig from the first master so we can run kubectl commands
-# locally
-gcloud compute ssh ${GCE_NAME} \
-    --command "sudo cat /etc/kubernetes/admin.conf" "${GCE_ARGS[@]}" > ./kube-config
-export KUBECONFIG=./kube-config
+# If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
+# fetch it from the first master node in the cluster.
+if [[ -z "${KUBECONFIG}" ]]; then
+  gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/admin.conf" \
+      "${GCE_ARGS[@]}" > ./kube-config
+  KUBECONFIG=./kube-config
+fi
 
-# Fetch Secrets from GCS.
-gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
-gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
+# Fetch Secrets from GCS, if they don't already exist locally.
+if [[ ! -d "./ndt-tls" ]]; then
+  gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
+fi
+if [[ ! -f "./pusher.json" ]]; then
+  gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
+fi
 
 # Evaluate template files.
 sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
