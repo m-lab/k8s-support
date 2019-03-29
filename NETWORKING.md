@@ -14,10 +14,11 @@ does things, and
 plugin](https://github.com/containernetworking/plugins/tree/master/plugins/main/ipvlan)
 and our own [index2ip CNI IPAM plugin](https://github.com/m-lab/index2ip).
 
-For an example of how to configure a pod to receive multiple IP addresses, checkout the `networks:`
-annotation in [../experiments/ndt.yml](../experiments/ndt.yml) in concert with
-it's `name:` containing the string `index2` (or really anything that matches
-`index[0-9]+`).
+For an example of how to configure a pod to receive multiple IP addresses,
+checkout the `k8s.v1.cni.cncf.io/networks` annotation in
+[./k8s/daemonsets/experiments/ndt.yml](./k8s/daemonsets/experiments/ndt.yml) in
+concert with it's `name:` containing the string `index2` (or really anything
+that matches `index[0-9]+`).
 
 Pods with no network config receive a default Flannel config that allows them to
 communicate between cluster pods, but not to provide services to the outside
