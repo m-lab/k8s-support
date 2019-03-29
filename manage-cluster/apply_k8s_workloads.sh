@@ -4,7 +4,7 @@ set -euxo pipefail
 
 USAGE="USAGE: $0 <google-cloud-project> [<kubeconfig>]"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
-KUBECONFIG=${2}
+export KUBECONFIG=${2}
 
 # Source the main configuration file.
 source ./k8s_deploy.conf
@@ -28,7 +28,7 @@ GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 if [[ -z "${KUBECONFIG}" ]]; then
   gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/admin.conf" \
       "${GCE_ARGS[@]}" > ./kube-config
-  KUBECONFIG=./kube-config
+  export KUBECONFIG=./kube-config
 fi
 
 # Fetch Secrets from GCS, if they don't already exist locally.
