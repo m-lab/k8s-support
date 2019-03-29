@@ -19,8 +19,8 @@ spec:
       nodeSelector:
         mlab/type: 'platform'
       containers:
-      - name: scamper
-        image: measurementlab/scamper:v2.0
+      - name: traceroute-caller
+        image: measurementlab/traceroute-caller:v0.0.1
         volumeMounts:
         - name: scamper-data
           mountPath: /var/spool/scamper/
