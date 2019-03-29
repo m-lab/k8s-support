@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: prometheus-server
-  updateStrategy:
+  strategy:
     type: RollingUpdate
   template:
     metadata:

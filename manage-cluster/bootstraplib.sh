@@ -377,28 +377,13 @@ EOF
     gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
   fi
 
-  # Evaluate the common.yml.template network config template file.
-  sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
-      ./network/common.yml.template > ./network/common.yml
+  # Apply all configs and workloads to the cluster. This only needs to happen
+  # on the first master that is created.
+  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
+    ./apply_k8s_workloads.sh "${PROJECT}"
+  fi
 
-  # Evaluate the cloud.yml.template network config template file.
-  sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
-      ./network/cloud.yml.template > ./network/cloud.yml
-
-  # Evaluate the platform.yml.template network config template file.
-  sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
-      ./network/platform.yml.template > ./network/platform.yml
-
-  # Copy the network configs to the server.
-  gcloud compute scp --recurse network "${gce_name}":network "${GCE_ARGS[@]}"
-
-  # This test pod is for dev convenience.
-  # TODO: delete this once index2ip works well.
-  gcloud compute scp "${GCE_ARGS[@]}" test-pod.yml "${gce_name}":.
-
-  # Now that kubernetes is started up, set up the network configs.
-  # The CustomResourceDefinition needs to be defined before any resources which
-  # use that definition, so we apply that config first.
+  # Annotate and label the master node.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
     set -euxo pipefail
     sudo -s
@@ -408,12 +393,6 @@ EOF
 
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
     kubectl label node ${gce_name} mlab/type=cloud
-
-    # These k8s resources only need to be applied to the cluster once.
-    if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-      kubectl apply -f network/crd.yml
-      kubectl apply -f network
-    fi
 EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.

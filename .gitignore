@@ -1,7 +1,8 @@
 *.swp
 ndt-tls/
-cloud.yml
-common.yml
-platform.yml
+flannel.yml
+flannel-cloud.yml
+flannel-platform.yml
+kube-config
 pusher.json
 setup_k8s.sh

@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: container-linux-update-operator
-  updateStrategy:
+  strategy:
     type: RollingUpdate
   template:
     metadata:
