@@ -21,4 +21,4 @@ steps:
     mv ndt-tls ./manage-cluster/
     mv pusher.json ./manage-cluster/
     cd ./manage-cluster
-    ./apply_k8s_worksloads.sh $PROJECT_ID ./admin.conf
+    ./apply_k8s_workloads.sh $PROJECT_ID ./admin.conf
