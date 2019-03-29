@@ -10,7 +10,8 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      # TODO: Find a way of ensuring that "5%" never takes an entire site down at once.
+      # TODO: Find a way of ensuring that "5%" never takes an entire site down
+      # at once.
       maxUnavailable: 5%
   template:
     metadata:
@@ -41,11 +42,12 @@ spec:
         mlab/type: 'platform'
       containers:
       - name: ndt-server
-        image: measurementlab/ndt-server:v0.6.2
+        image: measurementlab/ndt-server:v0.6.3
         args:
         - -key=/certs/key.pem
         - -cert=/certs/cert.pem
         - -uuid-prefix-file=/var/local/uuid/prefix
+        - -metrics_port=:9090
         ports:
         - containerPort: 9090
         volumeMounts:
@@ -57,16 +59,31 @@ spec:
           readOnly: true
 
       - name: tcpinfo
-        image: measurementlab/tcp-info:v0.0.5
+        image: measurementlab/tcp-info:v0.0.6
         args:
-        - -prom=:9797
+        - -prom=:9091
+        - -output=/var/spool/ndt/tcpinfo
         - -uuid-prefix-file=/var/local/uuid/prefix
-        - -output=/var/spool/tcpinfo
         ports:
-        - containerPort: 9797
+        - containerPort: 9091
         volumeMounts:
         - name: tcpinfo-data
-          mountPath: /var/spool/tcpinfo
+          mountPath: /var/spool/ndt/tcpinfo
+        - name: uuid-prefix
+          mountPath: /var/local/uuid
+          readOnly: true
+
+      - name: traceroute
+        image: measurementlab/traceroute-caller:v0.0.2
+        args:
+        #- -prom=:9092  # TODO: add monitoring for scamper
+        - -outputPath=/var/spool/ndt/traceroute
+        - -uuid-prefix-file=/var/local/uuid/prefix
+        #ports:  # TODO: add monitoring for scamper
+        #- containerPort: 9092
+        volumeMounts:
+        - name: traceroute-data
+          mountPath: /var/spool/ndt/traceroute/
         - name: uuid-prefix
           mountPath: /var/local/uuid
           readOnly: true
@@ -74,13 +91,14 @@ spec:
       - name: pusher
         image: measurementlab/pusher:v1.6
         ports:
-        - containerPort: 9898
+        - containerPort: 9093
         args:
-        - -monitoring_address=:9898
-        - -directory=/var/spool
-        - -datatype=tcpinfo
-        - -experiment=tcpinfo
+        - -monitoring_address=:9093
+        - -experiment=ndt
         - -archive_size_threshold=50MB
+        - -directory=/var/spool/ndt
+        - -datatype=tcpinfo
+        - -datatype=traceroute
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
@@ -95,7 +113,9 @@ spec:
               fieldPath: spec.nodeName
         volumeMounts:
         - name: tcpinfo-data
-          mountPath: /var/spool/tcpinfo
+          mountPath: /var/spool/ndt/tcpinfo
+        - name: traceroute-data
+          mountPath: /var/spool/ndt/traceroute/
         - name: pusher-credentials
           mountPath: /etc/credentials
           readOnly: true
@@ -120,7 +140,11 @@ spec:
       volumes:
       - name: tcpinfo-data
         hostPath:
-          path: /cache/core/tcpinfo
+          path: /cache/core/ndt/tcpinfo
+          type: DirectoryOrCreate
+      - name: traceroute-data
+        hostPath:
+          path: /cache/core/ndt/traceroute
           type: DirectoryOrCreate
       - name: pusher-credentials
         secret:
