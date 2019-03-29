@@ -32,8 +32,23 @@ export KUBECONFIG=./kube-config
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 
+# Evaluate template files.
+sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
+     ../config/flannel/flannel.yml.template > \
+     ../config/flannel/flannel.yml
+sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
+    ../k8s/daemonsets/core/flannel-cloud.yml.template > \
+    ../k8s/daemonsets/core/flannel-cloud.yml
+sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
+    ../k8s/daemonsets/core/flannel-platform.yml.template > \
+    ../k8s/daemonsets/core/flannel-platform.yml
+
 # Apply Namespaces
 kubectl apply -f ../k8s/namespaces/
+
+# Apply CustomResourceDefinitions. Among other possible things, this will apply
+# NetworkAttachmentDefinitions used by multus-cni.
+kubectl apply -f ../k8s/custom-resource-definitions/
 
 # Apply Secrets.
 kubectl create secret generic pusher-credentials --from-file pusher.json \
@@ -45,6 +60,8 @@ kubectl create secret generic ndt-tls --from-file ndt-tls/ \
 kubectl apply -f ../k8s/roles/
 
 # Apply ConfigMaps
+kubectl create configmap prometheus-config --from-file ../config/flannel/flannel.yml \
+    --dry-run -o json | kubectl apply -f -
 kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" \
     --dry-run -o json | kubectl apply -f -
 kubectl create configmap prometheus-config --from-file ../config/prometheus/prometheus.yml \
