@@ -1,0 +1,24 @@
+steps:
+
+# Fetch the KUBECONFIG file from GCS.
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/admin.conf', './admin.conf' ]
+
+# Fetch the NDT TLS files from GCS.
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', '-R', 'gs://k8s-platform-master-$PROJECT_ID/ndt-tls', '.']
+
+# Fetch the Pusher JSON credentials from GCS.
+- name: gcr.io/cloud-builders/gsutil
+  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/pusher-credentials.json', './pusher.json']
+ 
+- name: 'gcr.io/cloud-builders/kubectl'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    mv admin.conf ./manage-cluster/
+    mv ndt-tls ./manage-cluster/
+    mv pusher.json ./manage-cluster/
+    cd ./manage-cluster
+    ./apply_k8s_workloads.sh $PROJECT_ID ./admin.conf
