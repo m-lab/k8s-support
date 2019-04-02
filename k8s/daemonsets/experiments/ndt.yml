@@ -20,6 +20,7 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
         k8s.v1.cni.cncf.io/networks: '[{ "name": "index2ip-index-2-conf" }]'
+        v1.multus-cni.io/default-network: flannel-experiment-conf
     spec:
       # The default grace period after k8s sends SIGTERM is 30s. We extend the
       # grace period to give time for the following shutdown sequence. After the
