@@ -28,6 +28,8 @@ spec:
 
 # The CRD objects.
 ---
+# The default flannel configuration that gets applied to non-experiment pods.
+# The important bit here is that isDefaultGateway=true.
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -42,6 +44,23 @@ spec:
     }
   }'
 ---
+# The flannel configuration that gets applied to experiment pods. Only pods
+# with the following annotation will use this configuration:
+# `v1.multus-cni.io/default-network: flannel-experiment-conf`
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+ name: flannel-experiment-conf
+spec:
+  config: '{
+    "cniVersion": "0.3.0",
+    "type": "flannel",
+    "delegate": {
+       "hairpinMode": true,
+       "isDefaultGateway": false
+    }
+  }'
+---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
@@ -52,6 +71,7 @@ spec:
     "name": "ipvlan-index-1",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 1
@@ -68,6 +88,7 @@ spec:
     "name": "ipvlan-index-2",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 2
@@ -84,6 +105,7 @@ spec:
     "name": "ipvlan-index-4",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 4
@@ -100,6 +122,7 @@ spec:
     "name": "ipvlan-index-5",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 5
@@ -116,6 +139,7 @@ spec:
     "name": "ipvlan-index-6,
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 6
@@ -132,6 +156,7 @@ spec:
     "name": "ipvlan-index-7",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 7
@@ -148,6 +173,7 @@ spec:
     "name": "ipvlan-index-8",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 8
@@ -164,6 +190,7 @@ spec:
     "name": "ipvlan-index-9",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 9
@@ -180,6 +207,7 @@ spec:
     "name": "ipvlan-index-10",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 10
@@ -196,6 +224,7 @@ spec:
     "name": "ipvlan-index-11",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 11
@@ -212,6 +241,7 @@ spec:
     "name": "ipvlan-index-12",
     "type": "ipvlan",
     "master": "eth0",
+    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 12
