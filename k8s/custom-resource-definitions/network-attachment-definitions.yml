@@ -29,7 +29,7 @@ spec:
 # The CRD objects.
 ---
 # The default flannel configuration that gets applied to non-experiment pods.
-# The important bit here is that isDefaultGateway=true.
+# The important difference here is that isDefaultGateway=true.
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
