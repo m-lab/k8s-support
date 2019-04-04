@@ -6,25 +6,25 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-    name: network-attachment-definitions.k8s.cni.cncf.io
+  name: network-attachment-definitions.k8s.cni.cncf.io
 spec:
-    group: k8s.cni.cncf.io
-    version: v1
-    scope: Namespaced
-    names:
-        plural: network-attachment-definitions
-        singular: network-attachment-definition
-        kind: NetworkAttachmentDefinition
-        shortNames:
-            - net-attach-def
-            - net
-    validation:
-        openAPIV3Schema:
-            properties:
-                spec:
-                    properties:
-                        config:
-                            type: string
+  group: k8s.cni.cncf.io
+  version: v1
+  scope: Namespaced
+  names:
+    plural: network-attachment-definitions
+    singular: network-attachment-definition
+    kind: NetworkAttachmentDefinition
+    shortNames:
+    - net-attach-def
+    - net
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            config:
+              type: string
 
 # The CRD objects.
 ---
@@ -71,7 +71,6 @@ spec:
     "name": "ipvlan-index-1",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 1
@@ -88,7 +87,6 @@ spec:
     "name": "ipvlan-index-2",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 2
@@ -105,7 +103,6 @@ spec:
     "name": "ipvlan-index-4",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 4
@@ -122,7 +119,6 @@ spec:
     "name": "ipvlan-index-5",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 5
@@ -139,7 +135,6 @@ spec:
     "name": "ipvlan-index-6,
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 6
@@ -156,7 +151,6 @@ spec:
     "name": "ipvlan-index-7",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 7
@@ -173,7 +167,6 @@ spec:
     "name": "ipvlan-index-8",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 8
@@ -190,7 +183,6 @@ spec:
     "name": "ipvlan-index-9",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 9
@@ -207,7 +199,6 @@ spec:
     "name": "ipvlan-index-10",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 10
@@ -224,7 +215,6 @@ spec:
     "name": "ipvlan-index-11",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 11
@@ -241,7 +231,6 @@ spec:
     "name": "ipvlan-index-12",
     "type": "ipvlan",
     "master": "eth0",
-    "mode": "l3s",
     "ipam": {
       "type": "index2ip",
       "index": 12
