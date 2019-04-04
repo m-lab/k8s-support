@@ -60,7 +60,7 @@ spec:
           readOnly: true
 
       - name: tcpinfo
-        image: measurementlab/tcp-info:v0.0.6
+        image: measurementlab/tcp-info:v0.0.7
         args:
         - -prom=:9091
         - -output=/var/spool/ndt/tcpinfo
