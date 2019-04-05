@@ -42,7 +42,7 @@ spec:
       - image: jimmidyson/configmap-reload:v0.2.2
         name: configmap-reload
         args: ["-webhook-url", "http://localhost:9090/-/reload",
-               "-volume-dir", "/prometheus-config"]
+               "-volume-dir", "/etc/prometheus"]
         resources:
           requests:
             memory: "400Mi"
@@ -52,7 +52,7 @@ spec:
             cpu: "200m"
         volumeMounts:
         # Mount the prometheus config volume so we can watch it for changes.
-        - mountPath: /prometheus-config
+        - mountPath: /etc/prometheus
           name: prometheus-config
 
       volumes:
