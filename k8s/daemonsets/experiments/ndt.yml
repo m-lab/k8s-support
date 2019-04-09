@@ -75,7 +75,7 @@ spec:
           readOnly: true
 
       - name: traceroute
-        image: measurementlab/traceroute-caller:v0.0.2
+        image: measurementlab/traceroute-caller:v0.0.3
         args:
         #- -prom=:9092  # TODO: add monitoring for scamper
         - -outputPath=/var/spool/ndt/traceroute
