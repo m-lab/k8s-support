@@ -141,11 +141,11 @@ spec:
       volumes:
       - name: tcpinfo-data
         hostPath:
-          path: /cache/core/ndt/tcpinfo
+          path: /cache/data/ndt/tcpinfo
           type: DirectoryOrCreate
       - name: traceroute-data
         hostPath:
-          path: /cache/core/ndt/traceroute
+          path: /cache/data/ndt/traceroute
           type: DirectoryOrCreate
       - name: pusher-credentials
         secret:
