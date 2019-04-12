@@ -76,6 +76,8 @@ kubectl create configmap prometheus-config --from-file ../config/prometheus/prom
 kubectl create configmap prometheus-synthetic-textfile-metrics \
     --from-file ../config/prometheus-synthetic-textfile-metrics \
     --dry-run -o json | kubectl apply -f -
+kubectl create configmap fluentd-config --from-file ../config/fluentd/fluentd.yml \
+    --dry-run -o json | kubectl apply -f -
 
 # Apply DaemonSets
 # Apply does not seem to be working if pods are already running.  As a workaround
