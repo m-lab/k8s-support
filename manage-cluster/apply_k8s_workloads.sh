@@ -38,6 +38,10 @@ fi
 if [[ ! -f "./pusher.json" ]]; then
   gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 fi
+if [[ ! -f "./fluentd.json" ]]; then
+  gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json ./fluentd.json
+fi
+
 
 # Evaluate template files.
 sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
@@ -61,6 +65,8 @@ kubectl apply -f ../k8s/custom-resource-definitions/
 kubectl create secret generic pusher-credentials --from-file pusher.json \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic ndt-tls --from-file ndt-tls/ \
+    --dry-run -o json | kubectl apply -f -
+kubectl create secret generic fluentd-credentials --from-file fluentd.json \
     --dry-run -o json | kubectl apply -f -
 
 # Apply RBAC configs.
