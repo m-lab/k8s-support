@@ -43,7 +43,7 @@ scrape_configs:
         action: keep
         regex: k8s-platform-master-.*
 
-      - source_labels: [__meta_kubernetes_node_address_internalIP]
+      - source_labels: [__meta_kubernetes_node_address_InternalIP]
         regex: (.*)
         target_label: __address__
         replacement: ${1}:2379
