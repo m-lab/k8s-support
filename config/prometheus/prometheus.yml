@@ -39,9 +39,9 @@ scrape_configs:
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
 
     relabel_configs:
-      - source_labels: [__meta_kubernetes_node_label_node_role_kubernetes_io_master]
+      - source_labels: [__meta_kubernetes_node_name]
         action: keep
-        regex: .*
+        regex: k8s-platform-master-.*
 
       - source_labels: [__meta_kubernetes_node_address_internalIP]
         regex: (.*)
