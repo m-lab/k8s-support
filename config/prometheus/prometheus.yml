@@ -35,8 +35,8 @@ scrape_configs:
     scheme: https
     tls_config:
       ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      insecure_skip_verify: true
-    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      cert_file: /etc/prometheus/tls/peer.crt
+      key_file: /etc/prometheus/tls/peer.key
 
     relabel_configs:
       - source_labels: [__meta_kubernetes_node_name]
