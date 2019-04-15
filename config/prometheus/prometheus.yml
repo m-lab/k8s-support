@@ -37,6 +37,12 @@ scrape_configs:
       ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       cert_file: /etc/prometheus/tls/peer.crt
       key_file: /etc/prometheus/tls/peer.key
+      # The CA certificate at
+      # /var/run/secrets/kubernetes.io/serviceaccount/ca.crt is for the API
+      # server. etcd has its own CA certificate which isn't available to us, so
+      # we just skip verifying it. This scraping is happening over the private
+      # VPC network, so this is probably okay.
+      insecure_skip_verify: true
 
     relabel_configs:
       - source_labels: [__meta_kubernetes_node_name]
