@@ -8,7 +8,9 @@ spec:
     matchLabels:
       app: prometheus-server
   strategy:
-    type: RollingUpdate
+    # This must be Recreate, because you can't do a RollingUpdate on a
+    # single-replica ReplicaSet that can only deploy to one very specific node.
+    type: Recreate
   template:
     metadata:
       labels:
@@ -36,6 +38,8 @@ spec:
           mountPath: /etc/prometheus/
         - name: prometheus-storage
           mountPath: /prometheus
+        - name: etcd-tls
+          mountPath: /etc/prometheus/tls/
 
       # Check https://hub.docker.com/r/jimmidyson/configmap-reload/tags/ for the current
       # stable version.
@@ -64,6 +68,9 @@ spec:
         hostPath:
           path: /mnt/local/prometheus
           type: Directory
+      - name: etcd-tls
+        secret:
+          secretName: etcd-tls
 
       # TODO: use native k8s service entry points, if possible.
       hostNetwork: true
