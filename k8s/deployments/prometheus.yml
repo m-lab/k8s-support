@@ -8,6 +8,8 @@ spec:
     matchLabels:
       app: prometheus-server
   strategy:
+    # This must be Recreate, because you can't do a RollingUpdate on a
+    # single-replica ReplicaSet that can only deploy to one very specific node.
     type: Recreate
   template:
     metadata:
