@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: prometheus-server
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
