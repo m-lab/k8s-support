@@ -29,8 +29,12 @@
     # Never wait more than 5 seconds before flushing logs in the non-error case.
     flush_interval 5s
     # Never wait longer than 30 seconds between retries.
+    # The default of 300 has been overridden so that re-connection after
+    # network issues happens faster.
     max_retry_wait 30
     # Disable the limit on the number of retries (retry forever).
+    # This makes sure in case of temporary network issues fluentd never stops
+    # trying to contact the Stackdriver API.
     disable_retry_limit
     # Use multiple threads for processing.
     num_threads 2
