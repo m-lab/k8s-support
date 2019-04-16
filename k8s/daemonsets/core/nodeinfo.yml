@@ -20,6 +20,10 @@ spec:
     spec:
       nodeSelector:
         mlab/type: 'platform'
+      # Note: with hostNetwork: true, this will make any metrics published by
+      # either container open to the public. If there is anything that we might
+      # consider even a little sensitive in the metrics of either, then we
+      # should work around this.
       hostNetwork: true
       hostPID: true
       containers:
