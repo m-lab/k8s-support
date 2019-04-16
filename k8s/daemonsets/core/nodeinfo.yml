@@ -18,12 +18,10 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
     spec:
+      serviceAccountName: kube-rbac-proxy
+
       nodeSelector:
         mlab/type: 'platform'
-      # Note: with hostNetwork: true, this will make any metrics published by
-      # either container open to the public. If there is anything that we might
-      # consider even a little sensitive in the metrics of either, then we
-      # should work around this.
       hostNetwork: true
       hostPID: true
       containers:
@@ -34,7 +32,7 @@ spec:
         args:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
-        - -prometheusx.listen-address=:9990
+        - -prometheusx.listen-address=127.0.0.1:9990
         - -datatype=lspci
         - -datatype=lsusb
         - -datatype=ifconfig
@@ -46,12 +44,25 @@ spec:
         - name: nodeinfo-data
           mountPath: /var/spool/nodeinfo
 
+      - name: kube-rbac-proxy-nodeinfo
+        image: quay.io/coreos/kube-rbac-proxy:v0.4.1
+        args:
+        - --logtostderr
+        - --secure-listen-address=$(IP):9990
+        - --upstream=http://127.0.0.1:9990/
+        env:
+        - name: IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+
       - name: pusher
-        image: measurementlab/pusher:v1.7
+        image: measurementlab/pusher:v1.8
         ports:
         - containerPort: 9991
         args:
-        - -monitoring_address=:9991
+        - -prometheusx.listen-address=127.0.0.1:9991
+        - -sigterm_wait_time=20s
         - -experiment=nodeinfo
         - -archive_size_threshold=50MB
         - -directory=/var/spool/nodeinfo
@@ -79,6 +90,18 @@ spec:
         - name: pusher-credentials
           mountPath: /etc/credentials
           readOnly: true
+
+      - name: kube-rbac-proxy-pusher
+        image: quay.io/coreos/kube-rbac-proxy:v0.4.1
+        args:
+        - --logtostderr
+        - --secure-listen-address=$(IP):9991
+        - --upstream=http://127.0.0.1:9991/
+        env:
+        - name: IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
 
       volumes:
       - name: nodeinfo-data
