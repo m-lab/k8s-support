@@ -53,6 +53,10 @@ sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
 sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
     ../k8s/daemonsets/core/flannel-platform.yml.template > \
     ../k8s/daemonsets/core/flannel-platform.yml
+sed -e "s|{{PROJECT_ID}}|${PROJECT}|g" \
+    -e "s|{{GCE_ZONE}}|${GCE_ZONE}|g" \
+    ../k8s/config/fluentd/output.conf.template > \
+    ../k8s/config/fluentd/output.conf
 
 # Apply Namespaces
 kubectl apply -f ../k8s/namespaces/
