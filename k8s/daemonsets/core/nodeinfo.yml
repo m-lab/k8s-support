@@ -1,17 +1,7 @@
-# Signalling the pod to reload when the configmap changes is one of the most
-# requested k8s features and should arrive soon -
-# https://github.com/kubernetes/kubernetes/issues/22368
-#
-# For now, we have added a version number to the end of the configmap name.
-# When you change the configmap, increment the number in the ConfigMap as well
-# as in the volumes of the pod.  If we end up with zillions of versions of the
-# ConfigMap we may end up needing to do garbage collection, but it would take a
-# *lot* of versions to cause such a problem, as this configmap is a very small
-# number of bytes.
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nodeinfo-config-1
+  name: nodeinfo-config
 data:
   config.json: |
     [
@@ -100,10 +90,11 @@ spec:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
         - -prometheusx.listen-address=127.0.0.1:9990
-        - -config=/nodeinfoconfig/config.json
+        - -reload-address=127.0.0.1:9981
+        - -config=/etc/nodeinfo/config.json
         volumeMounts:
         - name: nodeinfo-config
-          mountPath: /nodeinfoconfig
+          mountPath: /etc/nodeinfo
         - name: nodeinfo-data
           mountPath: /var/spool/nodeinfo
 
@@ -121,6 +112,17 @@ spec:
         ports:
         - containerPort: 9990
           hostPort: 9990
+
+      # Check https://hub.docker.com/r/jimmidyson/configmap-reload/tags/ for
+      # the current stable version.
+      - name: configmap-reload
+        image: jimmidyson/configmap-reload:v0.2.2
+        args: ["-webhook-url", "http://localhost:9981/-/reload",
+               "-volume-dir", "/etc/nodeinfo"]
+        volumeMounts:
+        # Mount the config volume so we can watch it for changes.
+        - mountPath: /etc/nodeinfo
+          name: nodeinfo-config
 
       - name: pusher
         image: measurementlab/pusher:v1.8
@@ -173,7 +175,7 @@ spec:
       volumes:
       - name: nodeinfo-config
         configMap:
-          name: nodeinfo-config-1
+          name: nodeinfo-config
       - name: nodeinfo-data
         hostPath:
           path: /cache/data/node/nodeinfo
