@@ -27,8 +27,6 @@ spec:
       containers:
       - name: nodeinfo
         image: measurementlab/nodeinfo:v0.2
-        ports:
-        - containerPort: 9990
         args:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
@@ -55,11 +53,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        ports:
+        - containerPort: 9990
+          hostPort: 9990
 
       - name: pusher
         image: measurementlab/pusher:v1.8
-        ports:
-        - containerPort: 9991
         args:
         - -prometheusx.listen-address=127.0.0.1:9991
         - -sigterm_wait_time=20s
@@ -102,6 +101,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        ports:
+        - containerPort: 9991
+          hostPort: 9991
 
       volumes:
       - name: nodeinfo-data
