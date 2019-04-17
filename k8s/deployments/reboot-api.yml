@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reboot-api
+  labels:
+    app: reboot-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: reboot-api
+  template:
+    metadata:
+      labels:
+        name: reboot-api
+    spec:
+      containers:
+      - name: reboot-api
+        image: measurementlab/reboot-api:latest
+        args:
+          - "-datastore.project=mlab-sandbox"
+          - "-reboot.key=/var/secrets/ssh/reboot-api"
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/reboot-api.json
+        volumeMounts:
+          - name: google-credentials
+            mountPath: /var/secrets/google
+          - name: ssh-key
+            mountPath: /var/secrets/ssh
+        resources:
+          limits:
+            cpu: 200m
+            memory: 100Mi
+          requests:
+            cpu: 200m
+            memory: 100Mi
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+      volumes:
+        # Google credentials to connect to Datastore and the SSH key to log
+        # into the nodes are provided through Kubernetes secrets.
+        - name: google-credentials
+          secret:
+            secretName: reboot-api-credentials
+        - name: ssh-key
+          secret:
+            secretName: reboot-api-ssh-key
