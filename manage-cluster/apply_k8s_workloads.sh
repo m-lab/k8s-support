@@ -47,7 +47,7 @@ if [[ ! -d "./etcd-tls" ]]; then
   gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* ./etcd-tls/
 fi
 if [[ ! -d "./reboot-api" ]]; then
-  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api .
+  gsutil cp -R gs://${!GCS_BUCKET_K8S}/reboot-api .
 fi
 
 # Evaluate template files.
