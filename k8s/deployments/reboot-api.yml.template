@@ -18,7 +18,7 @@ spec:
       - name: reboot-api
         image: measurementlab/reboot-api:latest
         args:
-          - "-datastore.project={{PROJECT}}"
+          - "-datastore.project={{PROJECT_ID}}"
           - "-reboot.key=/var/secrets/ssh/reboot-api"
         env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
