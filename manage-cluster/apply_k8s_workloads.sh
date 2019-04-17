@@ -46,6 +46,12 @@ if [[ ! -d "./etcd-tls" ]]; then
   mkdir -p ./etcd-tls
   gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* ./etcd-tls/
 fi
+if [[ ! -d "./reboot-api.json" ]]; then
+  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api-credentials.json ./reboot-api.json
+fi
+if [[ ! -d "./reboot-api" ]]; then
+  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api.key ./reboot-api
+fi
 
 # Evaluate template files.
 sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
@@ -57,6 +63,9 @@ sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
 sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
     ../k8s/daemonsets/core/flannel-platform.yml.template > \
     ../k8s/daemonsets/core/flannel-platform.yml
+sed -e "s|{{PROJECT_ID}}|${PROJECT}|g" \
+    ../k8s/deployments/reboot-api.yml.template > \
+    ../k8s/deployments/reboot-api.yml
 
 # Apply Namespaces
 kubectl apply -f ../k8s/namespaces/
@@ -71,6 +80,10 @@ kubectl create secret generic pusher-credentials --from-file pusher.json \
 kubectl create secret generic ndt-tls --from-file ndt-tls/ \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic etcd-tls --from-file etcd-tls/ \
+    --dry-run -o json | kubectl apply -f -
+kubectl create secret generic reboot-api-credentials --from-file reboot-api.json \
+    --dry-run -o json | kubectl apply -f -
+kubectl create secret generic reboot-api-ssh-key --from-file reboot-api \
     --dry-run -o json | kubectl apply -f -
 
 # Apply RBAC configs.
