@@ -46,11 +46,8 @@ if [[ ! -d "./etcd-tls" ]]; then
   mkdir -p ./etcd-tls
   gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* ./etcd-tls/
 fi
-if [[ ! -d "./reboot-api.json" ]]; then
-  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api-credentials.json ./reboot-api.json
-fi
 if [[ ! -d "./reboot-api" ]]; then
-  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api.key ./reboot-api
+  gsutil cp gs://${!GCS_BUCKET_K8S}/reboot-api .
 fi
 
 # Evaluate template files.
@@ -81,9 +78,7 @@ kubectl create secret generic ndt-tls --from-file ndt-tls/ \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic etcd-tls --from-file etcd-tls/ \
     --dry-run -o json | kubectl apply -f -
-kubectl create secret generic reboot-api-credentials --from-file reboot-api.json \
-    --dry-run -o json | kubectl apply -f -
-kubectl create secret generic reboot-api-ssh-key --from-file reboot-api \
+kubectl create secret generic reboot-api-credentials --from-file reboot-api/ \
     --dry-run -o json | kubectl apply -f -
 
 # Apply RBAC configs.

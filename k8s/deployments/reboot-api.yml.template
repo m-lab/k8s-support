@@ -19,15 +19,13 @@ spec:
         image: measurementlab/reboot-api:latest
         args:
           - "-datastore.project={{PROJECT_ID}}"
-          - "-reboot.key=/var/secrets/ssh/reboot-api"
+          - "-reboot.key=/var/secrets/reboot-api-ssh.key"
         env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /var/secrets/google/reboot-api.json
+            value: /var/secrets/reboot-api-credentials.json
         volumeMounts:
-          - name: google-credentials
-            mountPath: /var/secrets/google
-          - name: ssh-key
-            mountPath: /var/secrets/ssh
+          - name: credentials
+            mountPath: /var/secrets/
         resources:
           limits:
             cpu: 200m
@@ -42,10 +40,7 @@ spec:
           key: node-role.kubernetes.io/master
       volumes:
         # Google credentials to connect to Datastore and the SSH key to log
-        # into the nodes are provided through Kubernetes secrets.
-        - name: google-credentials
+        # into the nodes are provided through a single Kubernetes secret.
+        - name: credentials
           secret:
             secretName: reboot-api-credentials
-        - name: ssh-key
-          secret:
-            secretName: reboot-api-ssh-key
