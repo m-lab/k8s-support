@@ -90,7 +90,6 @@ spec:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
         - -prometheusx.listen-address=127.0.0.1:9990
-        - -reload-address=127.0.0.1:9981
         - -config=/etc/nodeinfo/config.json
         volumeMounts:
         - name: nodeinfo-config
@@ -112,17 +111,6 @@ spec:
         ports:
         - containerPort: 9990
           hostPort: 9990
-
-      # Check https://hub.docker.com/r/jimmidyson/configmap-reload/tags/ for
-      # the current stable version.
-      - name: configmap-reload
-        image: jimmidyson/configmap-reload:v0.2.2
-        args: ["-webhook-url", "http://localhost:9981/-/reload",
-               "-volume-dir", "/etc/nodeinfo"]
-        volumeMounts:
-        # Mount the config volume so we can watch it for changes.
-        - mountPath: /etc/nodeinfo
-          name: nodeinfo-config
 
       - name: pusher
         image: measurementlab/pusher:v1.8
