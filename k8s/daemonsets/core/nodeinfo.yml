@@ -120,12 +120,16 @@ spec:
         - -experiment=nodeinfo
         - -archive_size_threshold=50MB
         - -directory=/var/spool/nodeinfo
+        - -datatype=lshw
         - -datatype=lspci
         - -datatype=lsusb
-        - -datatype=ifconfig
-        - -datatype=route
+        - -datatype=ip-address
+        - -datatype=ip-route-4
+        - -datatype=ip-route-6
         - -datatype=uname
-        - -datatype=lshw
+        - -datatype=os-release
+        - -datatype=bios_version
+        - -datatype=chassis_serial
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
