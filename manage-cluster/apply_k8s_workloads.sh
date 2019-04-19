@@ -94,6 +94,7 @@ kubectl create secret generic reboot-api-credentials --from-file reboot-api/ \
 kubectl apply -f ../k8s/roles/
 
 # Apply ConfigMaps
+kubectl apply -f ../config/nodeinfo/nodeinfo.yml
 kubectl create configmap prometheus-config --from-file ../config/flannel/flannel.yml \
     --dry-run -o json | kubectl apply -f -
 kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" \

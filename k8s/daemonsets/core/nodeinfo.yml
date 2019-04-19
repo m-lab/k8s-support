@@ -26,19 +26,15 @@ spec:
       hostPID: true
       containers:
       - name: nodeinfo
-        image: measurementlab/nodeinfo:v0.2
+        image: measurementlab/nodeinfo:v1.2
         args:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
         - -prometheusx.listen-address=127.0.0.1:9990
-        - -datatype=lspci
-        - -datatype=lsusb
-        - -datatype=ifconfig
-        - -datatype=route-v4
-        - -datatype=route-v6
-        - -datatype=uname
-        - -datatype=lshw
+        - -config=/etc/nodeinfo/config.json
         volumeMounts:
+        - name: nodeinfo-config
+          mountPath: /etc/nodeinfo
         - name: nodeinfo-data
           mountPath: /var/spool/nodeinfo
 
@@ -65,12 +61,16 @@ spec:
         - -experiment=nodeinfo
         - -archive_size_threshold=50MB
         - -directory=/var/spool/nodeinfo
+        - -datatype=lshw
         - -datatype=lspci
         - -datatype=lsusb
-        - -datatype=ifconfig
-        - -datatype=route
+        - -datatype=ipaddress
+        - -datatype=iproute4
+        - -datatype=iproute6
         - -datatype=uname
-        - -datatype=lshw
+        - -datatype=osrelease
+        - -datatype=biosversion
+        - -datatype=chassisserial
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
@@ -106,6 +106,9 @@ spec:
           hostPort: 9991
 
       volumes:
+      - name: nodeinfo-config
+        configMap:
+          name: nodeinfo-config
       - name: nodeinfo-data
         hostPath:
           path: /cache/data/node/nodeinfo
