@@ -26,7 +26,7 @@ spec:
       hostPID: true
       containers:
       - name: nodeinfo
-        image: measurementlab/nodeinfo:v1.0
+        image: measurementlab/nodeinfo:v1.2
         args:
         - -datadir=/var/spool/nodeinfo
         - -wait=1h
