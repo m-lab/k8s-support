@@ -64,13 +64,13 @@ spec:
         - -datatype=lshw
         - -datatype=lspci
         - -datatype=lsusb
-        - -datatype=ip-address
-        - -datatype=ip-route-4
-        - -datatype=ip-route-6
+        - -datatype=ipaddress
+        - -datatype=iproute4
+        - -datatype=iproute6
         - -datatype=uname
-        - -datatype=os-release
-        - -datatype=bios_version
-        - -datatype=chassis_serial
+        - -datatype=osrelease
+        - -datatype=biosversion
+        - -datatype=chassisserial
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/credentials/pusher.json
