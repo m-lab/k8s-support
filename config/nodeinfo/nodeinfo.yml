@@ -21,17 +21,17 @@ data:
         "Cmd":      ["lsusb", "-v"]
       },
       {
-        "Datatype": "ip-address",
+        "Datatype": "ipaddress",
         "Filename": "ip-address.txt",
         "Cmd":      ["ip", "address", "show"]
       },
       {
-        "Datatype": "ip-route-4",
+        "Datatype": "iproute4",
         "Filename": "ip-route-4.txt",
         "Cmd":      ["ip", "-4", "route", "show"]
       },
       {
-        "Datatype": "ip-route-6",
+        "Datatype": "iproute6",
         "Filename": "ip-route-6.txt",
         "Cmd":      ["ip", "-6", "route", "show"]
       },
@@ -41,17 +41,17 @@ data:
         "Cmd":      ["uname", "-a"]
       },
       {
-        "Datatype": "os-release",
+        "Datatype": "osrelease",
         "Filename": "os-release.txt",
         "Cmd":      ["cat", "/etc/os-release"]
       },
       {
-        "Datatype": "bios_version",
+        "Datatype": "biosversion",
         "Filename": "bios_version.txt",
         "Cmd":      ["cat", "/sys/class/dmi/id/bios_version"]
       },
       {
-        "Datatype": "chassis_serial",
+        "Datatype": "chassisserial",
         "Filename": "chassis_serial.txt",
         "Cmd":      ["cat", "/sys/class/dmi/id/chassis_serial"]
       }
