@@ -42,6 +42,9 @@ fi
 if [[ ! -f "./pusher.json" ]]; then
   gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json ./pusher.json
 fi
+if [[ ! -f "./fluentd.json" ]]; then
+  gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json ./fluentd.json
+fi
 if [[ ! -d "./etcd-tls" ]]; then
   mkdir -p ./etcd-tls
   gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* ./etcd-tls/
@@ -61,6 +64,10 @@ sed -e "s|{{K8S_FLANNEL_VERSION}}|${K8S_FLANNEL_VERSION}|g" \
     ../k8s/daemonsets/core/flannel-platform.yml.template > \
     ../k8s/daemonsets/core/flannel-platform.yml
 sed -e "s|{{PROJECT_ID}}|${PROJECT}|g" \
+    -e "s|{{GCE_ZONE}}|${GCE_ZONE}|g" \
+    ../config/fluentd/output.conf.template > \
+    ../config/fluentd/output.conf
+sed -e "s|{{PROJECT_ID}}|${PROJECT}|g" \
     ../k8s/deployments/reboot-api.yml.template > \
     ../k8s/deployments/reboot-api.yml
 
@@ -75,6 +82,8 @@ kubectl apply -f ../k8s/custom-resource-definitions/
 kubectl create secret generic pusher-credentials --from-file pusher.json \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic ndt-tls --from-file ndt-tls/ \
+    --dry-run -o json | kubectl apply -f -
+kubectl create secret generic fluentd-credentials --from-file fluentd.json \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic etcd-tls --from-file etcd-tls/ \
     --dry-run -o json | kubectl apply -f -
@@ -93,6 +102,8 @@ kubectl create configmap prometheus-config --from-file ../config/prometheus/prom
     --dry-run -o json | kubectl apply -f -
 kubectl create configmap prometheus-synthetic-textfile-metrics \
     --from-file ../config/prometheus-synthetic-textfile-metrics \
+    --dry-run -o json | kubectl apply -f -
+kubectl create configmap fluentd-config --from-file ../config/fluentd \
     --dry-run -o json | kubectl apply -f -
 
 # Apply DaemonSets
