@@ -6,52 +6,52 @@ data:
   config.json: |
     [
       {
-        "Dataype": "lshw",
+        "Datatype": "lshw",
         "Filename": "lshw.json",
         "Cmd":      ["lshw", "-json"]
       },
       {
-        "Dataype": "lspci",
+        "Datatype": "lspci",
         "Filename": "lspci.txt",
         "Cmd":      ["lspci", "-mm", "-vv", "-k", "-nn"]
       },
       {
-        "Dataype": "lsusb",
+        "Datatype": "lsusb",
         "Filename": "lsusb.txt",
         "Cmd":      ["lsusb", "-v"]
       },
       {
-        "Dataype": "ip-address",
+        "Datatype": "ip-address",
         "Filename": "ip-address.txt",
         "Cmd":      ["ip", "address", "show"]
       },
       {
-        "Dataype": "ip-route-4",
+        "Datatype": "ip-route-4",
         "Filename": "ip-route-4.txt",
         "Cmd":      ["ip", "-4", "route", "show"]
       },
       {
-        "Dataype": "ip-route-6",
+        "Datatype": "ip-route-6",
         "Filename": "ip-route-6.txt",
         "Cmd":      ["ip", "-6", "route", "show"]
       },
       {
-        "Dataype": "uname",
+        "Datatype": "uname",
         "Filename": "uname.txt",
         "Cmd":      ["uname", "-a"]
       },
       {
-        "Dataype": "os-release",
+        "Datatype": "os-release",
         "Filename": "os-release.txt",
         "Cmd":      ["cat", "/etc/os-release"]
       },
       {
-        "Dataype": "bios_version",
+        "Datatype": "bios_version",
         "Filename": "bios_version.txt",
         "Cmd":      ["cat", "/sys/class/dmi/id/bios_version"]
       },
       {
-        "Dataype": "chassis_serial",
+        "Datatype": "chassis_serial",
         "Filename": "chassis_serial.txt",
         "Cmd":      ["cat", "/sys/class/dmi/id/chassis_serial"]
       }
