@@ -10,9 +10,7 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      # TODO: Find a way of ensuring that "5%" never takes an entire site down
-      # at once.
-      maxUnavailable: 5%
+      maxUnavailable: 2
   template:
     metadata:
       labels:
@@ -75,13 +73,13 @@ spec:
           readOnly: true
 
       - name: traceroute
-        image: measurementlab/traceroute-caller:v0.0.3
+        image: measurementlab/traceroute-caller:v0.0.4
         args:
-        #- -prom=:9092  # TODO: add monitoring for scamper
+        - -prometheusx.listen-address=:9092
         - -outputPath=/var/spool/ndt/traceroute
         - -uuid-prefix-file=/var/local/uuid/prefix
-        #ports:  # TODO: add monitoring for scamper
-        #- containerPort: 9092
+        ports:
+        - containerPort: 9092
         volumeMounts:
         - name: traceroute-data
           mountPath: /var/spool/ndt/traceroute/
