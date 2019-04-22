@@ -1,19 +1,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  labels:
-    app: node-exporter
   name: node-exporter
 spec:
   selector:
     matchLabels:
-      app: node-exporter
+      workload: node-exporter
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: node-exporter
+        workload: node-exporter
       annotations:
         prometheus.io/scrape: 'true'
     spec:

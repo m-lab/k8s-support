@@ -3,14 +3,13 @@ kind: DaemonSet
 metadata:
   name: fluentd
   labels:
-    app: fluentd
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
     version: v2.0
 spec:
   selector:
     matchLabels:
-      app: fluentd
+      workload: fluentd
       kubernetes.io/cluster-service: "true"
       version: v2.0
   updateStrategy:
@@ -18,7 +17,7 @@ spec:
   template:
     metadata:
       labels:
-        app: fluentd
+        workload: fluentd
         kubernetes.io/cluster-service: "true"
         version: v2.0
       # This annotation ensures that fluentd does not get evicted if the node

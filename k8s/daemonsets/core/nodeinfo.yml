@@ -1,20 +1,18 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  labels:
-    app: nodeinfo
   name: nodeinfo
 spec:
   selector:
     matchLabels:
-      app: nodeinfo
+      workload: nodeinfo
   updateStrategy:
     type: RollingUpdate
 
   template:
     metadata:
       labels:
-        app: nodeinfo
+        workload: nodeinfo
       annotations:
         prometheus.io/scrape: 'true'
     spec:

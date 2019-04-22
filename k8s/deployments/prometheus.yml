@@ -6,7 +6,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus-server
+      workload: prometheus-server
   strategy:
     # This must be Recreate, because you can't do a RollingUpdate on a
     # single-replica ReplicaSet that can only deploy to one very specific node.
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        app: prometheus-server
+        workload: prometheus-server
       annotations:
         # Tell prometheus service discovery to scrape the pod containers.
         prometheus.io/scrape: 'true'

@@ -18,15 +18,17 @@ metadata:
   namespace: kube-system
   labels:
     tier: node
-    app: flannel
 spec:
+  selector:
+    matchLabels:
+      workload: flannel-cloud
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
         tier: node
-        app: flannel
+        workload: flannel-cloud
     spec:
       hostNetwork: true
       nodeSelector:
