@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       labels:
-        workload: container-linux-update-agent
+        workload: update-agent
     spec:
       nodeSelector:
         node-role.kubernetes.io/master: ""
