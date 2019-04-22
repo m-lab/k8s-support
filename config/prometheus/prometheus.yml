@@ -96,8 +96,8 @@ scrape_configs:
 
     relabel_configs:
       # node-exporter is scraped in a separate job.
-      - source_labels: [__meta_kubernetes_pod_label_app]
-        regex: node-exporter
+      - source_labels: [__meta_kubernetes_pod_label_workload]
+        regex: (node-exporter|nodeinfo)
         action: drop
 
       # For inventory, record whether a pod is ready. This helps distinguish
@@ -213,7 +213,11 @@ scrape_configs:
         target_label: kubernetes_name
 
 
-  - job_name: 'node-exporter'
+  # This job will scrape workloads that are being proxies by kube-rbac-proxy.
+  # These are workloads that use hostNetwork=True and therefore export metrics on
+  # the public interface. For this reason we put them behind kube-rbac-proxy to
+  # prevent the general public from scraping or abusing these pods.
+  - job_name: 'proxied-workloads'
     kubernetes_sd_configs:
       - role: pod
 
@@ -224,8 +228,8 @@ scrape_configs:
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
 
     relabel_configs:
-      - source_labels: [__meta_kubernetes_pod_label_app]
-        regex: node-exporter
+      - source_labels: [__meta_kubernetes_pod_label_workload]
+        regex: (node-exporter|nodeinfo)
         action: keep
 
       # For inventory, record whether a pod is ready. This helps distinguish
