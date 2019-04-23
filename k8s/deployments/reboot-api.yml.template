@@ -2,17 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: reboot-api
-  labels:
-    app: reboot-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: reboot-api
+      workload: reboot-api
   template:
     metadata:
       labels:
-        name: reboot-api
+        workload: reboot-api
     spec:
       containers:
       - name: reboot-api

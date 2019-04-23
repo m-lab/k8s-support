@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: ndt
+      workload: ndt
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        run: ndt
+        workload: ndt
       annotations:
         prometheus.io/scrape: 'true'
         k8s.v1.cni.cncf.io/networks: '[{ "name": "index2ip-index-2-conf" }]'

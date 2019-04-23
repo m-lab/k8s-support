@@ -6,13 +6,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: cadvisor
+      workload: cadvisor
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        run: cadvisor
+        workload: cadvisor
       annotations:
         prometheus.io/scrape: 'true'
     spec:
