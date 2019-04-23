@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: container-linux-update-agent
+  name: update-agent
   namespace: reboot-coordinator
 spec:
   selector:
