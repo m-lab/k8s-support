@@ -1,8 +1,15 @@
 *.swp
+etcd-tls/
 ndt-tls/
 flannel.yml
 flannel-cloud.yml
 flannel-platform.yml
+fluentd.json
 kube-config
+output.conf
 pusher.json
+reboot-api/
+reboot-api.yml
 setup_k8s.sh
+
+
