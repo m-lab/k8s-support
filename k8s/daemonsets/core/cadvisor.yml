@@ -28,7 +28,6 @@ spec:
         - --docker_only
         ports:
         - containerPort: 8080
-          hostPort: 8080
           name: scrape
         volumeMounts:
         - name: rootfs
