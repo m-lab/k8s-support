@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: container-linux-update-operator
+  name: update-operator
   namespace: reboot-coordinator
 spec:
   replicas: 1
