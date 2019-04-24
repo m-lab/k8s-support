@@ -180,11 +180,7 @@ gcloud compute ssh "${PROM_BASE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
-  # We set bash options again inside the sudo shell. If we don't, then any
-  # failed command below will simply exit the sudo shell and all subsequent
-  # commands will will be run a non-root user, and will fail.  Setting bash
-  # options before and after sudo should ensure that the entire process fails
-  # if something inside the sudo shell fails.
+  # Shell options are not inherted by subprocesses.
   set -euxo pipefail
 
   if [[ ! -d ${DISK_MOUNT_POINT} ]]; then
@@ -194,11 +190,13 @@ gcloud compute ssh "${PROM_BASE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   # TODO: find a better way to discovery the device-name.
   # TODO: make formatting conditional on a hard reset.
-  if ! mount /dev/sdb ${DISK_MOUNT_POINT} ; then
+  if ! blkid /dev/sdb ; then
     mkfs.ext4 /dev/sdb
+  fi
 
-    # Create a systemd service that will remount this disk on future reboots.
-    systemd_service_name="mount_gce_disk.service"
+  # Create a systemd service that will remount this disk on future reboots.
+  systemd_service_name="mount_gce_disk.service"
+  if [[ ! -f "/etcd/systemd/systemd/\${systemd_service_name}" ]]; then
     sudo bash -c "(cat <<-EOF2
 		[Unit]
 		Description = Mount GCE disk ${DISK_NAME}
