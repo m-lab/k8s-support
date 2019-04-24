@@ -20,10 +20,11 @@ spec:
         workload: fluentd
         kubernetes.io/cluster-service: "true"
         version: v2.0
-      # This annotation ensures that fluentd does not get evicted if the node
-      # supports critical pod annotation based priority scheme.
-      # Note that this does not guarantee admission on the nodes (#40573).
       annotations:
+        prometheus.io/scrape: "true"
+        # This annotation ensures that fluentd does not get evicted if the node
+        # supports critical pod annotation based priority scheme.
+        # Note that this does not guarantee admission on the nodes (#40573).
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       dnsPolicy: Default
@@ -54,6 +55,10 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        ports:
+        - containerPort: 9900
+          name: scrape
+          protocol: TCP
         volumeMounts:
         - name: varlog
           mountPath: /var/log
