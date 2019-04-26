@@ -95,11 +95,11 @@ kubectl apply -f ../k8s/roles/
 
 # Apply ConfigMaps
 kubectl apply -f ../config/nodeinfo/nodeinfo.yml
-kubectl create configmap prometheus-config --from-file ../config/flannel/flannel.yml \
+kubectl create configmap prometheus-config --from-file ../config/flannel \
     --dry-run -o json | kubectl apply -f -
 kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" \
     --dry-run -o json | kubectl apply -f -
-kubectl create configmap prometheus-config --from-file ../config/prometheus/prometheus.yml \
+kubectl create configmap prometheus-config --from-file ../config/prometheus \
     --dry-run -o json | kubectl apply -f -
 kubectl create configmap prometheus-synthetic-textfile-metrics \
     --from-file ../config/prometheus-synthetic-textfile-metrics \
