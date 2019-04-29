@@ -8,7 +8,15 @@
       name: 'flannel-conf',
     },
     spec: {
-      config: '{ "cniVersion": "0.3.0", "type": "flannel", "delegate": { "hairpinMode": true, "isDefaultGateway": true } }',
+      local cniConfig = {
+        cniVersion: '0.3.0',
+        type: 'flannel',
+        delegate: {
+          hairpinMode: true,
+          isDefaultGateway: true,
+        },
+      },
+      config: std.toString(cniConfig),
     },
   },
   // The flannel configuration that gets applied to experiment pods. Only pods
@@ -21,7 +29,15 @@
       name: 'flannel-experiment-conf',
     },
     spec: {
-      config: '{ "cniVersion": "0.3.0", "type": "flannel", "delegate": { "hairpinMode": true, "isDefaultGateway": false } }',
+      local cniConfig = {
+        cniVersion: '0.3.0',
+        type: 'flannel',
+        delegate: {
+          hairpinMode: true,
+          isDefaultGateway: false,
+        },
+      },
+      config: std.toString(cniConfig),
     },
   },
 ] + [
@@ -36,7 +52,17 @@
       name: 'index2ip-index-' + index + '-conf',
     },
     spec: {
-      config: '{ "cniVersion": "0.2.0", "name": "ipvlan-index-' + index + '", "type": "ipvlan", "master": "eth0", "ipam": { "type": "index2ip", "index": ' + index + '" } }',
+      local cniConfig = {
+        cniVersion: '0.2.0',
+        name: "ipvlan-index-" + index,
+        type: "ipvlan",
+        master: "eth0",
+        ipam: {
+          type: "index2ip",
+          index: index
+        },
+      },
+      config: std.toString(cniConfig),
     },
   }
   for index in std.range(1, 12)
