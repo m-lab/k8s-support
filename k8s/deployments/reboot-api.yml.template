@@ -7,6 +7,8 @@ spec:
   selector:
     matchLabels:
       workload: reboot-api
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
