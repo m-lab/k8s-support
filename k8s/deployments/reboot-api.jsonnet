@@ -6,6 +6,9 @@
   },
   spec: {
     replicas: 1,
+    strategy: {
+      type: 'Recreate',
+    },
     selector: {
       matchLabels: {
         workload: 'reboot-api',
