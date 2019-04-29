@@ -1,3 +1,3 @@
 [
-	import 'namespaces/reboot-operator.jsonnet',
+  import 'namespaces/reboot-operator.jsonnet',
 ]

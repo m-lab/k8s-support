@@ -1,1 +1,1 @@
-[ import 'custom-resource-definitions/network-attachment-definitions.jsonnet' ]
+[import 'custom-resource-definitions/network-attachment-definitions.jsonnet']
