@@ -5,27 +5,27 @@ groups:
 ## PlatformCluster
 
   #  Optimize aggregation of container CPU and memory utilization by containter_name.
-  - record: container_name:container_cpu_usage_seconds_total:sum_rate5m
+  - record: container_name:container_cpu_usage_seconds:sum_rate5m
     expr: |
       sum by (container_label_io_kubernetes_container_name) (
         rate (container_cpu_usage_seconds_total{
           container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "", 
-          image != ""} 
+          container_label_io_kubernetes_container_name != "",
+          image != ""}
         [5m])
-      )   
+      )
   - record: container_name:container_memory_working_set_bytes:sum_rate5m
     expr: |
       sum by (container_label_io_kubernetes_container_name) (
         rate (container_memory_working_set_bytes{
           container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "", 
-          image != ""} 
+          container_label_io_kubernetes_container_name != "",
+          image != ""}
         [5m])
-      )   
+      )
 
   # Optimize aggregation of container CPU and memory utilization by containter_name.
-  - record: node_containername:container_cpu_usage_seconds_total:sum_rate5m
+  - record: node_container_name:container_cpu_usage_seconds:sum_rate5m
     expr: |
       sum by (node, container_label_io_kubernetes_container_name) (
         rate (container_cpu_usage_seconds_total{
@@ -34,7 +34,7 @@ groups:
           image != ""}
         [5m])
       )
-  - record: node_containername:container_memory_working_set_bytes:sum_rate5m
+  - record: node_container_name:container_memory_working_set_bytes:sum_rate5m
     expr: |
       sum by (node, container_label_io_kubernetes_container_name) (
         rate (container_memory_working_set_bytes{
