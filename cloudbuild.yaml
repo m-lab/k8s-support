@@ -39,10 +39,9 @@ steps:
   args:
   - '-c'
   - |
-    head system.json
-    kubectl apply -f system.json || true
-    kubectl apply -f system.json || true
-    kubectl apply -f system.json
+    kubectl --kubeconfig=./manage-cluster/admin.conf apply -f system.json || true
+    kubectl --kubeconfig=./manage-cluster/admin.conf apply -f system.json || true
+    kubectl --kubeconfig=./manage-cluster/admin.conf apply -f system.json
     mv admin.conf ./manage-cluster/
     mv ndt-tls ./manage-cluster/
     mv pusher.json ./manage-cluster/
