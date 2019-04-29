@@ -23,7 +23,7 @@ steps:
     go get github.com/google/go-jsonnet/cmd/jsonnet
     source manage-cluster/k8s_deploy.conf
     export K8S_FLANNEL_VERSION
-    jsonnet system.jsonnet -o system.json --ext-str PROJECT_ID=$PROJECT_ID --ext-str K8S_FLANNEL_VERSION
+    jsonnet system.jsonnet -o ./system.json --ext-str PROJECT_ID=$PROJECT_ID --ext-str K8S_FLANNEL_VERSION
 
 
 # Push the configs.
@@ -39,6 +39,7 @@ steps:
   args:
   - '-c'
   - |
+    head system.json
     kubectl apply -f system.json || true
     kubectl apply -f system.json || true
     kubectl apply -f system.json
