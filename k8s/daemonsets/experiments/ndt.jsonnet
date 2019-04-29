@@ -14,7 +14,7 @@
         "template": {
             "metadata": {
                 "annotations": {
-                    "k8s.v1.cni.cncf.io/networks": "[{ \"name\": \"index2ip-index-2-conf\" }]",
+                    "k8s.v1.cni.cncf.io/networks": '[{ "name": "index2ip-index-2-conf" }]',
                     "prometheus.io/scrape": "true",
                     "v1.multus-cni.io/default-network": "flannel-experiment-conf"
                 },
@@ -158,6 +158,8 @@
                     }
                 ],
                 "initContainers": [
+                    // TODO: this is a hack. Remove the hack by fixing the
+                    // contents of resolv.conf
                     {
                         "command": [
                             "sh",
@@ -167,7 +169,11 @@
                         "image": "busybox",
                         "name": "fix-resolv-conf"
                     },
+                    // Write out the UUID prefix to a well-known location. For
+                    // more on this, see DESIGN.md in
+                    // https://github.com/m-lab/uuid/
                     {
+
                         "args": [
                             "-filename=/var/local/uuid/prefix"
                         ],
@@ -184,6 +190,22 @@
                 "nodeSelector": {
                     "mlab/type": "platform"
                 },
+                // The default grace period after k8s sends SIGTERM is 30s. We
+                // extend the grace period to give time for the following
+                // shutdown sequence. After the grace period, kubernetes sends
+                // SIGKILL.
+                // 
+                // NDT pod shutdown sequence:
+                //
+                //  * k8s sends SIGTERM to NDT server
+                //  * NDT server enables lame duck status
+                //  * monitoring reads lame duck status (60s max)
+                //  * mlab-ns updates server status (60s max)
+                //  * all currently running tests complete. (30s max)
+                //
+                // Feel free to change this to a smaller value for speedy
+                // sandbox deployments to enable faster compile-run-debug loops,
+                // but 60+60+30=150 is what it needs to be for staging and prod.
                 "terminationGracePeriodSeconds": 150,
                 "volumes": [
                     {

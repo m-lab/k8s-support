@@ -1,3 +1,4 @@
+// kubernetes versions before 1.8.0 should use rbac.authorization.k8s.io/v1beta1 instead of rbac.authorization.k8s.io/v1
 [
     {
         "apiVersion": "rbac.authorization.k8s.io/v1",
