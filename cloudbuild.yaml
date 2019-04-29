@@ -15,7 +15,7 @@ steps:
 # Build the config.
 #
 # All the shell variables are stored in manage-cluster/k8s_deploy.conf or defined by the cloud environment.
-- name: gcr.io/cloud-builders/go
+- name: golang:1.12
   entrypoint: 'bash'
   args:
   - '-c'
