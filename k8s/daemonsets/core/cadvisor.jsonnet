@@ -26,7 +26,9 @@
                         "args": [
                             "--housekeeping_interval=60s",
                             "--max_housekeeping_interval=75s",
+                            // Note: tcp,udp stats are expensive and are disabled by default.
                             "--disable_metrics=percpu,process,sched,tcp,udp",
+                            // Only show stats for docker containers.
                             "--docker_only"
                         ],
                         "image": "k8s.gcr.io/cadvisor:v0.32.0",

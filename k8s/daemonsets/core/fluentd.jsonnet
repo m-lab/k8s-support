@@ -21,6 +21,10 @@
             "metadata": {
                 "annotations": {
                     "prometheus.io/scrape": "true",
+                    // This annotation ensures that fluentd does not get evicted
+                    // if the node supports critical pod annotation based
+                    // priority scheme. Note that this does not guarantee
+                    // admission on the nodes (#40573).
                     "scheduler.alpha.kubernetes.io/critical-pod": ""
                 },
                 "labels": {
@@ -32,6 +36,13 @@
             "spec": {
                 "containers": [
                     {
+                        // If fluentd consumes its own logs, the following
+                        // situation may happen: fluentd fails to send a chunk
+                        // to the server => writes it to the log => tries to
+                        // send this message to the server => fails to send a
+                        // chunk and so on. Writing to a file, which is not
+                        // exported to the back-end prevents it. It also allows
+                        // to increase the fluentd verbosity by default.
                         "command": [
                             "/bin/sh",
                             "-c",

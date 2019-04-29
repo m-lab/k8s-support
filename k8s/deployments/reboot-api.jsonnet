@@ -60,6 +60,9 @@
                     }
                 ],
                 "volumes": [
+                    // Google credentials to connect to Datastore and the SSH
+                    // key to log into the nodes are provided through a single
+                    // Kubernetes secret.
                     {
                         "name": "credentials",
                         "secret": {

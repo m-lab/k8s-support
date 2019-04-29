@@ -1,4 +1,5 @@
 [
+    // TODO: Remove the - networks and - kubernetes.com lines
     {
         "apiVersion": "rbac.authorization.k8s.io/v1",
         "kind": "ClusterRole",
