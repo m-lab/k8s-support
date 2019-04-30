@@ -11,12 +11,37 @@ steps:
 # Fetch the Pusher JSON credentials from GCS.
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/pusher-credentials.json', './pusher.json']
- 
+
+# Build the config.
+#
+# All the shell variables are stored in manage-cluster/k8s_deploy.conf or defined by the cloud environment.
+- name: golang:1.12
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    go get github.com/google/go-jsonnet/cmd/jsonnet
+    source manage-cluster/k8s_deploy.conf
+    export K8S_FLANNEL_VERSION
+    jsonnet system.jsonnet -o ./system.json --ext-str PROJECT_ID=$PROJECT_ID --ext-str K8S_FLANNEL_VERSION
+
+
+# Push the configs.
+#
+# TODO: eliminate the need for the apply_k8s_workloads script by converting all
+#       remaining pieces to jsonnet.
+#
+# We call 'kubectl apply -f system.json' three times because kubectl doesn't
+# support defining and declaring certain objects in the same file. This is a
+# bug in kubectl, and so we call it three times as a workaround for the bug.
 - name: 'gcr.io/cloud-builders/kubectl'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
+    kubectl --kubeconfig=./admin.conf apply -f system.json || true
+    kubectl --kubeconfig=./admin.conf apply -f system.json || true
+    kubectl --kubeconfig=./admin.conf apply -f system.json
     mv admin.conf ./manage-cluster/
     mv ndt-tls ./manage-cluster/
     mv pusher.json ./manage-cluster/
