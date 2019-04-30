@@ -1,5 +1,14 @@
 steps:
 
+# Create the configs
+- name: 'sparkprime/jsonnet'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    cd ./manage-cluster
+    ./create_k8s_configs.sh $PROJECT_ID
+
 # Fetch the KUBECONFIG file from GCS.
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/admin.conf', './admin.conf' ]
@@ -13,8 +22,5 @@ steps:
   args:
   - '-c'
   - |
-    mv admin.conf ./manage-cluster/
-    mv ndt-tls ./manage-cluster/
-    mv pusher.json ./manage-cluster/
     cd ./manage-cluster
-    ./apply_k8s_workloads.sh $PROJECT_ID ./admin.conf
+    ./apply_k8s_configs.sh $PROJECT_ID ../admin.conf
