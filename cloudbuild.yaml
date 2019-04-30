@@ -2,7 +2,7 @@ steps:
 
 # Create the configs
 - name: 'sparkprime/jsonnet'
-  entrypoint: 'bash'
+  entrypoint: 'sh'
   args:
   - '-c'
   - |
