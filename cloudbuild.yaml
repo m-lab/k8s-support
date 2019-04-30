@@ -1,8 +1,14 @@
 steps:
 
+# Create the image builder for later steps.
+- name: gcr.io/cloud-builders/docker
+  args: [
+    'build', '-t', 'create_k8s_configs', '-f', 'manage-cluster/Dockerfile.create_k8s_configs', '.'
+  ]
+
 # Create the configs
-- name: 'sparkprime/jsonnet'
-  entrypoint: 'sh'
+- name: create_k8s_configs
+  entrypoint: 'bash'
   args:
   - '-c'
   - |
