@@ -14,6 +14,7 @@
       kind: 'NetworkAttachmentDefinition',
       plural: 'network-attachment-definitions',
       shortNames: [
+        'network',
         'net-attach-def',
         'net',
       ],
