@@ -27,6 +27,16 @@ GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
+# Create the json configuration for the entire cluster (without secrets)
+docker run -it -v $(cd ..; pwd):$(cd ..; pwd) -w $(pwd) sparkprime/jsonnet \
+   --ext-str GCE_ZONE=$GCE_ZONE \
+   --ext-str K8S_CLUSTER_CIDR=$K8S_CLUSTER_CIDR \
+   --ext-str K8S_FLANNEL_VERSION=$K8S_FLANNEL_VERSION \
+   --ext-str PROJECT_ID=$PROJECT \
+   ../system.jsonnet > system.json
+
+exit
+
 # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
 # fetch it from the first master node in the cluster.
 if [[ -z "${KUBECONFIG}" ]]; then
@@ -35,6 +45,17 @@ if [[ -z "${KUBECONFIG}" ]]; then
   export KUBECONFIG=./kube-config
 fi
 
+# Apply the configuration
+
+# We call 'kubectl apply -f system.json' three times because kubectl doesn't
+# support defining and declaring certain objects in the same file. This is a
+# bug in kubectl, and so we call it three times as a workaround for the bug.
+kubectl apply -f system.json || true
+kubectl apply -f system.json || true
+kubectl apply -f system.json
+
+
+# Fetch and configure all the secrets.
 # Fetch Secrets from GCS, if they don't already exist locally.
 if [[ ! -d "./ndt-tls" ]]; then
   gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls .
@@ -53,15 +74,6 @@ if [[ ! -d "./reboot-api" ]]; then
   gsutil cp -R gs://${!GCS_BUCKET_K8S}/reboot-api .
 fi
 
-# Evaluate template files.
-sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
-     ../config/flannel/flannel.yml.template > \
-     ../config/flannel/flannel.yml
-sed -e "s|{{PROJECT_ID}}|${PROJECT}|g" \
-    -e "s|{{GCE_ZONE}}|${GCE_ZONE}|g" \
-    ../config/fluentd/output.conf.template > \
-    ../config/fluentd/output.conf
-
 # Apply Secrets.
 kubectl create secret generic pusher-credentials --from-file pusher.json \
     --dry-run -o json | kubectl apply -f -
@@ -72,18 +84,4 @@ kubectl create secret generic fluentd-credentials --from-file fluentd.json \
 kubectl create secret generic etcd-tls --from-file etcd-tls/ \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic reboot-api-credentials --from-file reboot-api/ \
-    --dry-run -o json | kubectl apply -f -
-
-# Apply ConfigMaps
-kubectl apply -f ../config/nodeinfo/nodeinfo.yml
-kubectl create configmap prometheus-config --from-file ../config/flannel \
-    --dry-run -o json | kubectl apply -f -
-kubectl create configmap pusher-dropbox --from-literal "bucket=pusher-${PROJECT}" \
-    --dry-run -o json | kubectl apply -f -
-kubectl create configmap prometheus-config --from-file ../config/prometheus \
-    --dry-run -o json | kubectl apply -f -
-kubectl create configmap prometheus-synthetic-textfile-metrics \
-    --from-file ../config/prometheus-synthetic-textfile-metrics \
-    --dry-run -o json | kubectl apply -f -
-kubectl create configmap fluentd-config --from-file ../config/fluentd \
     --dry-run -o json | kubectl apply -f -
