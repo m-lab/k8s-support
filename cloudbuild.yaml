@@ -8,25 +8,19 @@ steps:
 
 # Create the configs
 - name: create_k8s_configs
-  entrypoint: 'bash'
+  dir: '/workspace/manage-cluster'
+  entrypoint: '/workspace/manage-cluster/create_k8s_configs.sh'
   args:
-  - '-c'
-  - |
-    cd ./manage-cluster
-    ./create_k8s_configs.sh $PROJECT_ID
+    - $PROJECT_ID
 
 # Fetch the KUBECONFIG file from GCS.
 - name: gcr.io/cloud-builders/gsutil
   args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/admin.conf', './admin.conf' ]
 
 # Push the configs.
-#
-# TODO: eliminate the need for the apply_k8s_workloads script by converting all
-#       remaining pieces to jsonnet.
 - name: 'gcr.io/cloud-builders/kubectl'
-  entrypoint: 'bash'
+  entrypoint: '/workspace/manage-cluster/apply_k8s_configs.sh'
+  dir: '/workspace/manage-cluster'
   args:
-  - '-c'
-  - |
-    cd ./manage-cluster
-    ./apply_k8s_configs.sh $PROJECT_ID ../admin.conf
+  - $PROJECT_ID 
+  - ../admin.conf

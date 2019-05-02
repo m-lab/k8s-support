@@ -8,7 +8,7 @@ KUBECONFIG=${2:-}
 
 if [[ -n "${KUBECONFIG}" ]]; then
   export KUBECONFIG="${KUBECONFIG}"
-else 
+else
   # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
   # fetch it from the first master node in the cluster.
 
@@ -36,14 +36,14 @@ fi
 
 # Apply the configuration
 
+# The configurations of the secrets for the cluster happen in a separate
+# directory. We might publicly aechive system.json. We should never make any
+# part of secret-configs public.  They are our passwords and private keys!
+kubectl apply -f secret-configs/
+
 # We call 'kubectl apply -f system.json' three times because kubectl doesn't
 # support defining and declaring certain objects in the same file. This is a
 # bug in kubectl, and so we call it three times as a workaround for the bug.
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
 kubectl apply -f system.json
-
-# The configurations of the secrets for the cluster happen in a separate
-# directory. We might publicly aechive system.json. We should never make any
-# part of secret-configs public.  They are our passwords and private keys!
-kubectl apply -f secret-configs/
