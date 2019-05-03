@@ -19,8 +19,8 @@ steps:
 
 # Push the configs.
 - name: 'gcr.io/cloud-builders/kubectl'
-  entrypoint: '/workspace/manage-cluster/apply_k8s_configs.sh'
   dir: '/workspace/manage-cluster'
+  entrypoint: '/workspace/manage-cluster/apply_k8s_configs.sh'
   args:
-  - $PROJECT_ID 
+  - $PROJECT_ID
   - ../admin.conf
