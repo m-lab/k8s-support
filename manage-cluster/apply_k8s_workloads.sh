@@ -49,9 +49,6 @@ if [[ ! -d "./etcd-tls" ]]; then
   mkdir -p ./etcd-tls
   gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* ./etcd-tls/
 fi
-if [[ ! -d "./reboot-api" ]]; then
-  gsutil cp -R gs://${!GCS_BUCKET_K8S}/reboot-api .
-fi
 
 # Evaluate template files.
 sed -e "s|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g" \
@@ -70,8 +67,6 @@ kubectl create secret generic ndt-tls --from-file ndt-tls/ \
 kubectl create secret generic fluentd-credentials --from-file fluentd.json \
     --dry-run -o json | kubectl apply -f -
 kubectl create secret generic etcd-tls --from-file etcd-tls/ \
-    --dry-run -o json | kubectl apply -f -
-kubectl create secret generic reboot-api-credentials --from-file reboot-api/ \
     --dry-run -o json | kubectl apply -f -
 
 # Apply ConfigMaps
