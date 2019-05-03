@@ -1,0 +1,7 @@
+FROM golang:1.12 as jsonnet-builder
+ENV CGO_ENABLED=0
+RUN go get github.com/google/go-jsonnet/cmd/jsonnet
+
+FROM gcr.io/cloud-builders/gsutil
+COPY --from=jsonnet-builder /go/bin/jsonnet /bin
+RUN yes | /builder/google-cloud-sdk/bin/gcloud components install kubectl
