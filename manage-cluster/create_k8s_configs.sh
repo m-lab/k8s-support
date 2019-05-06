@@ -40,7 +40,6 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
 mkdir -p secrets/etcd-tls
 gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* secrets/etcd-tls/
-gsutil cp -R gs://${!GCS_BUCKET_K8S}/reboot-api secrets/.
 
 # Convert secret data into configs.
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
@@ -51,5 +50,3 @@ kubectl create secret generic fluentd-credentials --from-file secrets/fluentd.js
     --dry-run -o json > secret-configs/fluentd-credentials.json
 kubectl create secret generic etcd-tls --from-file secrets/etcd-tls/ \
     --dry-run -o json > secret-configs/etcd-tls.json
-kubectl create secret generic reboot-api-credentials --from-file secrets/reboot-api/ \
-    --dry-run -o json > secret-configs/reboot-api-credentials.json
