@@ -51,8 +51,12 @@
                 readOnly: true,
               },
               {
-                mountPath: '/var/spool/ndt',
-                name: 'ndt-data',
+                mountPath: '/var/spool/ndt/legacy',
+                name: 'legacy-data',
+              },
+              {
+                mountPath: '/var/spool/ndt/ndt7',
+                name: 'ndt7-data',
               },
             ],
           },
@@ -71,8 +75,8 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt',
-                name: 'ndt-data',
+                mountPath: '/var/spool/ndt/tcpinfo',
+                name: 'tcpinfo-data',
               },
               {
                 mountPath: '/var/local/uuid',
@@ -96,8 +100,8 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt',
-                name: 'ndt-data',
+                mountPath: '/var/spool/ndt/traceroute',
+                name: 'traceroute-data',
               },
               {
                 mountPath: '/var/local/uuid',
@@ -149,8 +153,20 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt',
-                name: 'ndt-data',
+                mountPath: '/var/spool/ndt/traceroute',
+                name: 'traceroute-data',
+              },
+              {
+                mountPath: '/var/spool/ndt/tcpinfo',
+                name: 'tcpinfo-data',
+              },
+              {
+                mountPath: '/var/spool/ndt/legacy',
+                name: 'legacy-data',
+              },
+              {
+                mountPath: '/var/spool/ndt/ndt7',
+                name: 'ndt7-data',
               },
               {
                 mountPath: '/etc/credentials',
@@ -213,10 +229,31 @@
         volumes: [
           {
             hostPath: {
-              path: '/cache/data/ndt',
+              path: '/cache/data/ndt/traceroute',
               type: 'DirectoryOrCreate',
             },
-            name: 'ndt-data',
+            name: 'traceroute-data',
+          },
+          {
+            hostPath: {
+              path: '/cache/data/ndt/tcpinfo',
+              type: 'DirectoryOrCreate',
+            },
+            name: 'tcpinfo-data',
+          },
+          {
+            hostPath: {
+              path: '/cache/data/ndt/legacy',
+              type: 'DirectoryOrCreate',
+            },
+            name: 'legacy-data',
+          },
+          {
+            hostPath: {
+              path: '/cache/data/ndt/ndt7',
+              type: 'DirectoryOrCreate',
+            },
+            name: 'ndt7-data',
           },
           {
             name: 'pusher-credentials',
