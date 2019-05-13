@@ -83,7 +83,7 @@
           },
           {
             name: 'traceroute',
-            image: 'measurementlab/traceroute-caller:v0.0.4',
+            image: 'measurementlab/traceroute-caller:v0.0.5',
             args: [
               '-prometheusx.listen-address=:9092',
               '-outputPath=/var/spool/ndt/traceroute',
@@ -108,7 +108,7 @@
           },
           {
             name: 'pusher',
-            image: 'measurementlab/pusher:v1.7',
+            image: 'measurementlab/pusher:v1.8',
             args: [
               '-monitoring_address=:9093',
               '-experiment=ndt',
