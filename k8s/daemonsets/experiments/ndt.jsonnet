@@ -110,7 +110,7 @@
             name: 'pusher',
             image: 'measurementlab/pusher:v1.8',
             args: [
-              '-monitoring_address=:9093',
+              '-prometheusx.listen-address=:9093',
               '-experiment=ndt',
               '-archive_size_threshold=50MB',
               '-directory=/var/spool/ndt',
