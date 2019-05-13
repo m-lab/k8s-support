@@ -25,14 +25,15 @@
       spec: {
         containers: [
           {
+            name: 'ndt-server',
+            image: 'measurementlab/ndt-server:v0.8.1',
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=/var/local/uuid/prefix',
               '-prometheusx.listen-address=:9090',
+              '-datadir=/var/spool/ndt',
             ],
-            image: 'measurementlab/ndt-server:v0.7.0',
-            name: 'ndt-server',
             ports: [
               {
                 containerPort: 9090,
@@ -49,16 +50,20 @@
                 name: 'uuid-prefix',
                 readOnly: true,
               },
+              {
+                mountPath: '/var/spool/ndt',
+                name: 'ndt-data',
+              },
             ],
           },
           {
+            name: 'tcpinfo',
+            image: 'measurementlab/tcp-info:v0.0.8',
             args: [
               '-prometheusx.listen-address=:9091',
               '-output=/var/spool/ndt/tcpinfo',
               '-uuid-prefix-file=/var/local/uuid/prefix',
             ],
-            image: 'measurementlab/tcp-info:v0.0.8',
-            name: 'tcpinfo',
             ports: [
               {
                 containerPort: 9091,
@@ -66,8 +71,8 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt/tcpinfo',
-                name: 'tcpinfo-data',
+                mountPath: '/var/spool/ndt',
+                name: 'ndt-data',
               },
               {
                 mountPath: '/var/local/uuid',
@@ -77,13 +82,13 @@
             ],
           },
           {
+            name: 'traceroute',
+            image: 'measurementlab/traceroute-caller:v0.0.4',
             args: [
               '-prometheusx.listen-address=:9092',
               '-outputPath=/var/spool/ndt/traceroute',
               '-uuid-prefix-file=/var/local/uuid/prefix',
             ],
-            image: 'measurementlab/traceroute-caller:v0.0.4',
-            name: 'traceroute',
             ports: [
               {
                 containerPort: 9092,
@@ -91,8 +96,8 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt/traceroute/',
-                name: 'traceroute-data',
+                mountPath: '/var/spool/ndt',
+                name: 'ndt-data',
               },
               {
                 mountPath: '/var/local/uuid',
@@ -102,6 +107,8 @@
             ],
           },
           {
+            name: 'pusher',
+            image: 'measurementlab/pusher:v1.7',
             args: [
               '-monitoring_address=:9093',
               '-experiment=ndt',
@@ -109,6 +116,8 @@
               '-directory=/var/spool/ndt',
               '-datatype=tcpinfo',
               '-datatype=traceroute',
+              '-datatype=legacy',
+              '-datatype=ndt7',
             ],
             env: [
               {
@@ -133,8 +142,6 @@
                 },
               },
             ],
-            image: 'measurementlab/pusher:v1.7',
-            name: 'pusher',
             ports: [
               {
                 containerPort: 9093,
@@ -142,12 +149,8 @@
             ],
             volumeMounts: [
               {
-                mountPath: '/var/spool/ndt/tcpinfo',
-                name: 'tcpinfo-data',
-              },
-              {
-                mountPath: '/var/spool/ndt/traceroute/',
-                name: 'traceroute-data',
+                mountPath: '/var/spool/ndt',
+                name: 'ndt-data',
               },
               {
                 mountPath: '/etc/credentials',
@@ -161,24 +164,24 @@
           // TODO: this is a hack. Remove the hack by fixing the
           // contents of resolv.conf
           {
+            name: 'fix-resolv-conf',
+            image: 'busybox',
             command: [
               'sh',
               '-c',
               'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
             ],
-            image: 'busybox',
-            name: 'fix-resolv-conf',
           },
           // Write out the UUID prefix to a well-known location. For
           // more on this, see DESIGN.md in
           // https://github.com/m-lab/uuid/
           {
 
+            name: 'set-up-uuid-prefix-file',
+            image: 'measurementlab/uuid:v0.1',
             args: [
               '-filename=/var/local/uuid/prefix',
             ],
-            image: 'measurementlab/uuid:v0.1',
-            name: 'set-up-uuid-prefix-file',
             volumeMounts: [
               {
                 mountPath: '/var/local/uuid',
@@ -210,17 +213,10 @@
         volumes: [
           {
             hostPath: {
-              path: '/cache/data/ndt/tcpinfo',
+              path: '/cache/data/ndt',
               type: 'DirectoryOrCreate',
             },
-            name: 'tcpinfo-data',
-          },
-          {
-            hostPath: {
-              path: '/cache/data/ndt/traceroute',
-              type: 'DirectoryOrCreate',
-            },
-            name: 'traceroute-data',
+            name: 'ndt-data',
           },
           {
             name: 'pusher-credentials',
