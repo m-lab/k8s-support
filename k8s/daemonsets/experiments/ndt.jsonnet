@@ -26,7 +26,7 @@
         containers: [
           {
             name: 'ndt-server',
-            image: 'pboothe/ndt-server:fixgoroutineleak9',
+            image: 'pboothe/ndt-server:fixgoroutineleak10',
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
