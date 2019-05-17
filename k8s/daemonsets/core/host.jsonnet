@@ -165,11 +165,6 @@
               '-output=/var/spool/host/tcpinfo',
               '-uuid-prefix-file=/var/local/uuid/prefix',
             ],
-            ports: [
-              {
-                containerPort: 9091,
-              },
-            ],
             volumeMounts: [
               {
                 mountPath: '/var/spool/host/tcpinfo',
@@ -214,11 +209,6 @@
               '-prometheusx.listen-address=127.0.0.1:9092',
               '-outputPath=/var/spool/host/traceroute',
               '-uuid-prefix-file=/var/local/uuid/prefix',
-            ],
-            ports: [
-              {
-                containerPort: 9092,
-              },
             ],
             volumeMounts: [
               {
