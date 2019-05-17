@@ -248,6 +248,24 @@
             ],
           },
         ],
+        initContainers: [
+          // Write out the UUID prefix to a well-known location. For
+          // more on this, see DESIGN.md in
+          // https://github.com/m-lab/uuid/
+          {
+            name: 'set-up-uuid-prefix-file',
+            image: 'measurementlab/uuid:v0.1',
+            args: [
+              '-filename=/var/local/uuid/prefix',
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/var/local/uuid',
+                name: 'uuid-prefix',
+              },
+            ],
+          },
+        ],
         hostNetwork: true,
         hostPID: true,
         nodeSelector: {
