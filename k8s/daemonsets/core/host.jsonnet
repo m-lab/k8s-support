@@ -81,7 +81,6 @@
               '-datatype=lshw',
               '-datatype=lspci',
               '-datatype=lsusb',
-              '-datatype=nodeinfo',
               '-datatype=osrelease',
               '-datatype=tcpinfo',
               '-datatype=traceroute',
