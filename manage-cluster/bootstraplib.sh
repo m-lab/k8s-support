@@ -375,12 +375,26 @@ EOF
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     cache_control="Cache-Control:private, max-age=0, no-transform"
     gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
-  fi
 
-  # Apply all configs and workloads to the cluster. This only needs to happen
-  # on the first master that is created.
-  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    ./apply_k8s_workloads.sh "${PROJECT}"
+    # Copy the etcd peer cert and key from the first node to the local machine,
+    # and then push them to GCS. They will be used to create a k8s secret that
+    # Prometheus uses to authenticate with etcd so that it can scrape it.  Even
+    # though this certificate is only technically valid for this master node,
+    # it will work to authenticate to all master nodes because etcd only cares
+    # that the client certificate is signed by the right CA.
+    gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
+      "${GCE_ARGS[@]}" > ./prometheus-etcd.crt
+    gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
+      "${GCE_ARGS[@]}" > ./prometheus-etcd.key
+    gsutil -h "$cache_control" cp prometheus-etcd.crt \
+        gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.crt
+    gsutil -h "$cache_control" cp prometheus-etcd.key \
+        gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.key
+
+    # Apply all configs and workloads to the cluster. This only needs to happen
+    # on the first master that is created.
+    ./create_k8s_configs.sh "${PROJECT}"
+    ./apply_k8s_configs.sh "${PROJECT}"
   fi
 
   # Annotate and label the master node.
@@ -463,3 +477,31 @@ function delete_token_server_backend {
   fi
 }
 
+# Find the lowest network number available for a new epoxy subnet.
+# Stolen from https://github.com/m-lab/epoxy/blob/master/deploy_epoxy_container.sh#L54
+function find_lowest_network_number() {
+  local current_sequence=$( mktemp )
+  local natural_sequence=$( mktemp )
+  local available=$( mktemp )
+
+  # List current network subnets, and extract the second octet from each.
+  gcloud compute networks subnets list \
+    --network "${GCE_NETWORK}" --format "value(ipCidrRange)" "${ARGS[@]}" \
+    | cut -d. -f2 | sort -n > "${current_sequence}"
+
+  # Generate a natural sequence from 0 to 255.
+  seq 0 255 > "${natural_sequence}"
+
+  # Find values present in $natural_sequence but missing from $current_sequence.
+  # -1 = suppress lines unique to file 1
+  # -3 = suppress lines that appear in both files
+  # As a result, only report lines that are unique to "${natural_sequence}".
+  comm -1 -3 --nocheck-order \
+    "${current_sequence}" "${natural_sequence}" > "${available}"
+
+  # "Return" the first $available value: the lowest available network number.
+  head -n 1 "${available}"
+
+  # Clean up temporary files.
+  rm -f "${current_sequence}" "${natural_sequence}" "${available}"
+}
