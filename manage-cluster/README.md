@@ -5,15 +5,24 @@ The scripts need to be run from this directory.
 To set up a high availability k8s cloud master and etcd, run the following
 command, replacing <gcp-project-name> with the name of your GCP project (e.g.,
 mlab-sandbox). NOTE: be sure look at and modify the global variables in the
-script appropriately, else the results will not be what you want or expect.
+file ./k8s\_deploy.conf appropriately, else the results will not be what you
+want or expect.
+
+**Manual prerequisite steps**
+These steps must be done manually before running the cluster bootstrap script.
+* You must manually create the VPC network that the k8s cluster will live in.
+  The name of this network can be found in the ./k8s\_deploy.conf file in the
+  variable `GCE_NETWORK`. Subnetting should be of type "Custom", and no subnets
+  should be defined.
+* You must manually create the GCS bucket where k8s configs are stored. The
+  name of the GCS bucket can be found in ./k8s\_deploy.conf in one of the
+  variables named like `GCS\_BUCKET\_K8S\_<project>`.
+* ePoxy must be deployed before the k8s cluster is deployed, as the k8s cluster
+  depends on some things configured by ePoxy.
+
 ```bash
-./bootstrap_k8s_master_cluster.sh <gcp-project-name>
+$ ./bootstrap_k8s_master_cluster.sh <gcp-project-name>
 ```
-
-# Master node setup
-We use `kubeadm` to set everything up.  It's alpha, but it works pretty well.
-
-All the kubernetes configs for the master are stored under [./network/](./network/).
 
 # The ./bootstrap\_k8s\_master\_cluster.sh script
 This is a ridiculously long bash script, but it is not complicated; there are
