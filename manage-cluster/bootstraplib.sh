@@ -382,14 +382,13 @@ EOF
     # though this certificate is only technically valid for this master node,
     # it will work to authenticate to all master nodes because etcd only cares
     # that the client certificate is signed by the right CA.
+    mkdir -p ./prometheus-etcd-tls
     gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd.crt
+      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.crt
     gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd.key
-    gsutil -h "$cache_control" cp prometheus-etcd.crt \
-        gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.crt
-    gsutil -h "$cache_control" cp prometheus-etcd.key \
-        gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.key
+      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.key
+    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
+    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
 
     # Apply all configs and workloads to the cluster. This only needs to happen
     # on the first master that is created.
