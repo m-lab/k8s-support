@@ -56,7 +56,7 @@
               },
               {
                 mountPath: '/etc/prometheus/tls/',
-                name: 'etcd-tls',
+                name: 'prometheus-etcd-tls',
               },
             ],
           },
@@ -114,9 +114,9 @@
             name: 'prometheus-storage',
           },
           {
-            name: 'etcd-tls',
+            name: 'prometheus-etcd-tls',
             secret: {
-              secretName: 'etcd-tls',
+              secretName: 'prometheus-etcd-tls',
             },
           },
         ],
