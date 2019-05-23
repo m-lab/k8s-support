@@ -79,7 +79,7 @@ if ! which gsutil; then
   exit 1
 fi
 
-# Error out if josonnet is unavailable.
+# Error out if jsonnet is unavailable.
 if ! which jsonnet; then
   echo "The jsonnet utility must be installed and in your path."
   exit 1
