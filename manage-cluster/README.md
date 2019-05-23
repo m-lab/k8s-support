@@ -13,12 +13,21 @@ These steps must be done manually before running the cluster bootstrap script.
 * You must manually create the VPC network that the k8s cluster will live in.
   The name of this network can be found in the ./k8s\_deploy.conf file in the
   variable `GCE_NETWORK`. Subnetting should be of type "Custom", and no subnets
-  should be defined.
+  should be defined. For example:
+  ```
+  $ gcloud compute networks create mlab-platform-network --subnet-mode custom \
+       --project mlab-sandbox
+  ```
 * You must manually create the GCS bucket where k8s configs are stored. The
   name of the GCS bucket can be found in ./k8s\_deploy.conf in one of the
-  variables named like `GCS\_BUCKET\_K8S\_<project>`.
+  variables named like `GCS\_BUCKET\_K8S\_<project>`. For example:
+  ```
+  $ gsutil mb gs://k8s-platform-master-mlab-sandbox/
+  ```
 * ePoxy must be deployed before the k8s cluster is deployed, as the k8s cluster
-  depends on some things configured by ePoxy.
+  depends on being able to determine the ePoxy subnet so that it can
+  appropriately set up firewall rules to allow communication between ePoxy
+  and the token server.
 
 ```bash
 $ ./bootstrap_k8s_master_cluster.sh <gcp-project-name>
