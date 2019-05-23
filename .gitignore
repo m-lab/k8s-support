@@ -1,5 +1,5 @@
 *.swp
-etcd-tls/
+prometheus-etcd-tls/
 ndt-tls/
 flannel.yml
 flannel-cloud.yml
