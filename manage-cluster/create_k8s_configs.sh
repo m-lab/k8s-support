@@ -38,8 +38,8 @@ mkdir -p secret-configs
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls secrets/.
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
-mkdir -p secrets/etcd-tls
-gsutil cp gs://${!GCS_BUCKET_K8S}/pki/etcd/peer.* secrets/etcd-tls/
+mkdir -p secrets/prometheus-etcd-tls
+gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.* secrets/prometheus-etcd-tls/
 
 # Convert secret data into configs.
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
@@ -48,5 +48,5 @@ kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
 kubectl create secret generic fluentd-credentials --from-file secrets/fluentd.json \
     --dry-run -o json > secret-configs/fluentd-credentials.json
-kubectl create secret generic etcd-tls --from-file secrets/etcd-tls/ \
-    --dry-run -o json > secret-configs/etcd-tls.json
+kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus-etcd-tls/ \
+    --dry-run -o json > secret-configs/prometheus-etcd-tls.json

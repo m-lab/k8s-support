@@ -79,10 +79,43 @@ if ! which gsutil; then
   exit 1
 fi
 
+# Error out if jsonnet is unavailable.
+if ! which jsonnet; then
+  echo "The jsonnet utility must be installed and in your path."
+  exit 1
+fi
+
 # Arrays of arguments are slightly cumbersome but using them ensures that if a
 # space ever appears in an arg, then later usage of these values should not
 # break in strange ways.
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
+
+
+# VERIFY EXISTENCE OF REQUIRED RESOURCES
+#
+# Don't proceed if any required resources are missing.
+EXISTING_VPC_NETWORK=$(gcloud compute networks describe "${GCE_NETWORK}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -z "${EXISTING_VPC_NETWORK}" ]]; then
+  echo "VPC network ${GCE_NETWORK} does not exist. Please create it manually."
+  exit 1
+fi
+
+EXISTING_EPOXY_SUBNET=$(gcloud compute networks subnets describe \
+    "${GCE_EPOXY_SUBNET}" \
+    --region "${GCE_REGION}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}")
+if [[ -z "${EXISTING_EPOXY_SUBNET}" ]]; then
+  echo "ePoxy subnet does not exist. Please deploy ePoxy before the cluster."
+  exit 1
+fi
+
+if ! gsutil ls "gs://${!GCS_BUCKET_K8S}"; then
+  echo "GCS bucket gs://${!GCS_BUCKET_K8S} does not exist. Please creat it."
+  exit 1
+fi
 
 
 # DELETE ANY EXISTING GCP OBJECTS
@@ -244,13 +277,11 @@ fi
 # CREATE NEW CLUSTER
 #
 
-# Create the VPC network, if it doesn't already exist, and subnets.
-gcloud compute networks create "${GCE_NETWORK}" \
-    --subnet-mode custom \
-    "${GCP_ARGS[@]}" || true
+# CREATE THE K8S VPC SUBNETWORK
+N=$( find_lowest_network_number )
 gcloud compute networks subnets create "${GCE_K8S_SUBNET}" \
     --network "${GCE_NETWORK}" \
-    --range "${GCE_K8S_SUBNET_RANGE}" \
+    --range "10.${N}.0.0/16" \
     --region "${GCE_REGION}" \
     "${GCP_ARGS[@]}"
 
