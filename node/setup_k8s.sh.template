@@ -58,10 +58,7 @@ pushd /opt/shimcni/bin
 popd
 
 # Add node tags to the kubelet so that node metadata is there right at the very
-# beginning, and make sure that the kubelet has the right directory for the cni
-# plugins.
-#
-# TODO: Don't make running the CNI plugins via the shim be the default.
+# beginning.
 #
 # TODO: Add annotations to the node as well as labels. The annotations should
 #       contain most of /proc/cmdline as well as the args to this script.
@@ -70,7 +67,6 @@ DYNAMIC_CONFIG_DIR="/var/lib/kubelet/dynamic-configs"
 mkdir -p /etc/systemd/system/kubelet.service.d
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
   | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS --dynamic-config-dir=$DYNAMIC_CONFIG_DIR |g" \
-  | sed -e 's|--cni-bin-dir=[^ "]*|--cni-bin-dir=/opt/shimcni/bin|' \
   > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 # Make the directory /etc/kubernetes/manifests. The declaration staticPodPath in
