@@ -383,9 +383,9 @@ EOF
     # it will work to authenticate to all master nodes because etcd only cares
     # that the client certificate is signed by the right CA.
     mkdir -p ./prometheus-etcd-tls
-    gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
+    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
       "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.crt
-    gcloud compute ssh ${GCE_NAME} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
+    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
       "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.key
     gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
     gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
@@ -485,7 +485,7 @@ function find_lowest_network_number() {
 
   # List current network subnets, and extract the second octet from each.
   gcloud compute networks subnets list \
-    --network "${GCE_NETWORK}" --format "value(ipCidrRange)" "${ARGS[@]}" \
+    --network "${GCE_NETWORK}" --format "value(ipCidrRange)" "${GCP_ARGS[@]}" \
     | cut -d. -f2 | sort -n > "${current_sequence}"
 
   # Generate a natural sequence from 0 to 255.
