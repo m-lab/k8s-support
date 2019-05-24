@@ -38,25 +38,6 @@ RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
 mkdir -p /etc/systemd/system
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
-# TODO: Once all CNI plugins are built into the image, stop copying things into
-# /opt/cni/bin and make shim.sh call the read-only binaries in /usr/cni/bin.
-
-# Install all cni plugins into /opt/cni/bin so they can be edited
-mkdir -p /opt/cni/bin
-pushd /opt/cni/bin
-  cp /usr/cni/bin/* .
-popd
-
-# Make all the shims so that network plugins can be debugged
-mkdir -p /opt/shimcni/bin
-pushd /opt/shimcni/bin
-  wget "https://storage.googleapis.com/k8s-platform-${GCP_PROJECT}/bin/shim.sh"
-  chmod +x shim.sh
-  for i in /opt/cni/bin/*; do
-    ln -s /opt/shimcni/bin/shim.sh /opt/shimcni/bin/$(basename "$i")
-  done
-popd
-
 # Add node tags to the kubelet so that node metadata is there right at the very
 # beginning.
 #
