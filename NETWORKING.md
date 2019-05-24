@@ -31,3 +31,17 @@ with the label `mlab/type=cloud` run flannel in the standard way, and all nodes
 with the label `mlab/type=platform` run multus+flannel+ipvlan+index2ip in our
 custom way. If a node has no value for the `mlab/type` label, the network will
 likely not work at all.
+
+## Debugging CNI plugins
+
+To debug CNI plugins, modify the variable `KUBELET_KUBECONFIG_ARGS` in the file
+`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` and add
+`--cni-bin-dir=/usr/shimcni/bin/shim.sh`. Then `systemctl daemon-reload`, then
+`systemctl restart kubelet`.
+
+The directory `/usr/shimcni/bin` contains a set of symlinks named after all the
+actual CNI plugins located in `/opt/bin/cni`, and they all point to `shim.sh`.
+`shim.sh` is a fairly simple bash script that notes what name it was called as
+(via the symlink), calls the real CNI plugin, and logs a bunch input and output
+to a directory in `/tmp`. This allows you to see the data that was received by
+any given CNI plugin, and also the data returned by that same CNI plugin.
