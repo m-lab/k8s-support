@@ -100,8 +100,7 @@
               '-directory=/var/spool/bismark',
               '-datatype=tcpinfo',
               '-datatype=traceroute',
-              '-datatype=legacy',
-              '-datatype=bismark',
+              '-datatype=legacy'
             ],
             env: [
               {
