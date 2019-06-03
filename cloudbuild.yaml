@@ -19,8 +19,7 @@ steps:
 
 # Generate a hash of the CA cert, and evaluate the setup_k8s.sh template.
 - name: alpine
-  entrypoint: sh
-  args: ['-c', './node/create_setup_k8s.sh']
+  entrypoint: ./node/create_setup_k8s.sh
 
 # Upload setup_k8s.sh to GCS
 - name: gcr.io/cloud-builders/gsutil
