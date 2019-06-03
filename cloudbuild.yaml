@@ -3,7 +3,8 @@ steps:
 # Create the image builder for later steps.
 - name: gcr.io/cloud-builders/docker
   args: [
-    'build', '-t', 'create_k8s_configs', '-f', 'manage-cluster/Dockerfile.create_k8s_configs', '.'
+    'build', '-t', 'create_k8s_configs', '-f',
+    '/workspace/manage-cluster/Dockerfile.create_k8s_configs', '/workspace/'
   ]
 
 # Create the configs
@@ -15,23 +16,23 @@ steps:
 
 # Fetch the platform master CA cert
 - name: gcr.io/cloud-builders/gsutil
-  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/pki/ca.crt/', './ca.crt']
+  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/pki/ca.crt/', '/workspace/ca.crt']
 
 # Generate a hash of the CA cert, and evaluate the setup_k8s.sh template.
 - name: alpine
-  entrypoint: ./node/create_setup_k8s.sh
+  entrypoint: /workspace/node/create_setup_k8s.sh
 
 # Upload setup_k8s.sh to GCS
 - name: gcr.io/cloud-builders/gsutil
   args: [
     'cp', '-h', 'Cache-Control:private, max-age=0, no-transform',
-    './setup_k8s.sh', 'gs://epoxy-$PROJECT_ID/stage3_coreos/'
+    '/workspace/setup_k8s.sh', 'gs://epoxy-$PROJECT_ID/stage3_coreos/'
   ]
 
 # Fetch the KUBECONFIG file from GCS.
 - name: gcr.io/cloud-builders/gsutil
   dir: '/workspace/manage-cluster'
-  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/admin.conf', './admin.conf' ]
+  args: ['cp', 'gs://k8s-platform-master-$PROJECT_ID/admin.conf', '/workspace/admin.conf' ]
 
 # Push the configs.
 - name: 'gcr.io/cloud-builders/kubectl'
