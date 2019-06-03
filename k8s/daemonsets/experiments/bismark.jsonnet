@@ -26,7 +26,7 @@
         containers: [
           {
             name: 'bismark',
-            image: 'measurementlab/bismark-test:v1.0.0',
+            image: 'measurementlab/bismark-test:v1.0.1',
             ports: [
               {
                 containerPort: 9090,
