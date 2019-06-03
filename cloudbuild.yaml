@@ -25,8 +25,8 @@ steps:
 # Upload setup_k8s.sh to GCS
 - name: gcr.io/cloud-builders/gsutil
   args: [
-    'cp', '-h', 'Cache-Control:private, max-age=0, no-transform',
-    '/workspace/setup_k8s.sh', 'gs://epoxy-$PROJECT_ID/stage3_coreos/'
+    '-h', 'Cache-Control:private, max-age=0, no-transform',
+    'cp', '/workspace/setup_k8s.sh', 'gs://epoxy-$PROJECT_ID/stage3_coreos/'
   ]
 
 # Fetch the KUBECONFIG file from GCS.
