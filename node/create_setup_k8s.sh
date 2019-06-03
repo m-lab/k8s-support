@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # A small script meant to be run with an alpine Docker image in Google Cloud
 # Build which determines the hash of the k8s platform cluster CA cert, and then
