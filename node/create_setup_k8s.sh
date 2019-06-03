@@ -14,5 +14,5 @@ ca_cert_hash=$(openssl x509 -pubkey -in ./ca.crt | \
     openssl rsa -pubin -outform der 2>/dev/null | \
     openssl dgst -sha256 -hex | sed 's/^.* //')
 
-sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
-    > ./setup_k8s.sh
+sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" /workspace/node/setup_k8s.sh.template \
+    > /workspace/setup_k8s.sh
