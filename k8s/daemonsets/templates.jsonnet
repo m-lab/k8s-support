@@ -218,7 +218,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
           RBACProxy('traceroute', 9992),
           RBACProxy('pusher', 9993),
         ] else [],
-        serviceAccountName: if hostNetworking then 'kube-rbac-proxy',
+        [if hostNetworking then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
         ],
