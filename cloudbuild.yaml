@@ -3,8 +3,8 @@ steps:
 # Create the image builder for later steps.
 - name: gcr.io/cloud-builders/docker
   args: [
-    'build', '-t', 'create_k8s_configs', '-f',
-    '/workspace/manage-cluster/Dockerfile.create_k8s_configs', '/workspace/'
+    'build', '-t', 'k8s_support_builder', '-f',
+    '/workspace/manage-cluster/Dockerfile.k8s_support_builder', '/workspace/'
   ]
 
 # Create the configs
