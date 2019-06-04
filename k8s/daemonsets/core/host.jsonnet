@@ -1,4 +1,4 @@
-local exp = import '../experiments/library.jsonnet';
+local exp = import '../templates.jsonnet';
 
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
 local nodeinfo_datatypes = [d.Datatype for d in nodeinfoconfig];

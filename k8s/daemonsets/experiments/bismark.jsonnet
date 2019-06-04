@@ -1,4 +1,4 @@
-local exp = import 'library.jsonnet';
+local exp = import '../templates.jsonnet';
 
 exp.Experiment('bismark', 9, []) + {
   spec+: {

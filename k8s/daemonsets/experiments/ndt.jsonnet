@@ -1,4 +1,4 @@
-local exp = import 'library.jsonnet';
+local exp = import '../templates.jsonnet';
 
 exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
   spec+: {
