@@ -100,7 +100,6 @@
               '-directory=/var/spool/bismark',
               '-datatype=tcpinfo',
               '-datatype=traceroute',
-              '-datatype=legacy'
             ],
             env: [
               {
@@ -138,10 +137,6 @@
               {
                 mountPath: '/var/spool/bismark/tcpinfo',
                 name: 'tcpinfo-data',
-              },
-              {
-                mountPath: '/var/spool/bismark/legacy',
-                name: 'legacy-data',
               },
               {
                 mountPath: '/etc/credentials',
@@ -198,13 +193,6 @@
               type: 'DirectoryOrCreate',
             },
             name: 'tcpinfo-data',
-          },
-          {
-            hostPath: {
-              path: '/cache/data/bismark/legacy',
-              type: 'DirectoryOrCreate',
-            },
-            name: 'legacy-data',
           },
           {
             name: 'pusher-credentials',
