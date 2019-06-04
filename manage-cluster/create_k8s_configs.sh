@@ -61,7 +61,7 @@ ca_cert_hash=$(openssl x509 -pubkey -in ./ca.crt | \
     openssl dgst -sha256 -hex | sed 's/^.* //')
 
 # Evaluate the setup_k8s.sh.template using the generated hash of the CA cert.
-sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" node/setup_k8s.sh.template \
+sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
     > ./setup_k8s.sh
 
 # Upload the evaluated template to GCS.
