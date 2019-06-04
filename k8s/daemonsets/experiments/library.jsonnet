@@ -137,8 +137,8 @@ local Experiment(name, index, datatypes=[]) = {
           },
         ],
         initContainers+: [
-          // TODO: this is a hack. Remove the hack by fixing the
-          // contents of resolv.conf
+          // TODO: this is a hack. Remove the hack by fixing 
+          // contents of resolv.
           {
             name: 'fix-resolv-conf',
             image: 'busybox',
@@ -148,8 +148,8 @@ local Experiment(name, index, datatypes=[]) = {
               'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
             ],
           },
-          // Write out the UUID prefix to a well-known location. For
-          // more on this, see DESIGN.md in
+          // Write out the UUID prefix to a well-known location. 
+          // more on this, see DESIGN.md 
           // https://github.com/m-lab/uuid/
           {
 
@@ -191,12 +191,12 @@ local Experiment(name, index, datatypes=[]) = {
 };
 
 {
-  // Returns all the trappings for a new experiment. New experiments should only
+  // Returns all the trappings for a new experiment. New experiments should 
   // need to add one new container.
   Experiment(name, index, datatypes):: Experiment(name, index, datatypes),
 
-  // Returns a volumemount for a given datatype. All produced volume mounts are
-  // in /var/spool/name/datatype
+  // Returns a volumemount for a given datatype. All produced volume mounts 
+  // in /var/spool/name/
   VolumeMount(name, datatype):: VolumeMount(name, datatype),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
