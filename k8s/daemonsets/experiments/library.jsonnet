@@ -174,6 +174,8 @@ local Experiment(name, index, datatypes=[]) = {
             },
           },
           uuid.volume,
+          Volume(name, 'traceroute'),
+          Volume(name, 'tcpinfo'),
         ] + [Volume(name, d) for d in datatypes],
       },
     },
