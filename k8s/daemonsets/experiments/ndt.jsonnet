@@ -49,6 +49,14 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
         // sandbox deployments to enable faster compile-run-debug loops,
         // but 60+60+30=150 is what it needs to be for staging and prod.
         terminationGracePeriodSeconds: 150,
+        volumes+: [
+          {		
+            name: 'ndt-tls',		
+            secret: {		
+              secretName: 'ndt-tls',		
+            },
+          },
+        ],
       },
     },
   },
