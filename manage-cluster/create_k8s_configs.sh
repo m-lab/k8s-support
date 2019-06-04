@@ -50,3 +50,19 @@ kubectl create secret generic fluentd-credentials --from-file secrets/fluentd.js
     --dry-run -o json > secret-configs/fluentd-credentials.json
 kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus-etcd-tls/ \
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
+
+# Download the platform cluster CA cert.
+gsutil cp gs://k8s-platform-master-${PROJECT}/pki/ca.crt .
+
+# Generate a hash of the CA cert.
+# https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning
+ca_cert_hash=$(openssl x509 -pubkey -in ./ca.crt | \
+    openssl rsa -pubin -outform der 2>/dev/null | \
+    openssl dgst -sha256 -hex | sed 's/^.* //')
+
+# Evaluate the setup_k8s.sh.template using the generated hash of the CA cert.
+sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
+    > ./setup_k8s.sh
+
+# Upload the evaluated template to GCS.
+gsutil cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/
