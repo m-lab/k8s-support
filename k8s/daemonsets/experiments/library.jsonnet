@@ -159,7 +159,9 @@ local Experiment(name, index, datatypes=[]) = {
               '-filename=' + uuid.prefixfile,
             ],
             volumeMounts: [
-              uuid.volumemount,
+              uuid.volumemount + {
+                readOnly: false,
+              },
             ],
           },
         ],
