@@ -91,7 +91,7 @@ local Experiment(name, index, datatypes=[]) = {
             image: 'measurementlab/pusher:v1.8',
             args: [
               '-prometheusx.listen-address=:9093',
-              '-experiment=ndt',
+              '-experiment=' + name,
               '-archive_size_threshold=50MB',
               '-directory=/var/spool/' + name,
               '-datatype=tcpinfo',
@@ -137,7 +137,7 @@ local Experiment(name, index, datatypes=[]) = {
           },
         ],
         initContainers+: [
-          // TODO: this is a hack. Remove the hack by fixing 
+          // TODO: this is a hack. Remove the hack by fixing
           // contents of resolv.
           {
             name: 'fix-resolv-conf',
@@ -148,8 +148,8 @@ local Experiment(name, index, datatypes=[]) = {
               'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
             ],
           },
-          // Write out the UUID prefix to a well-known location. 
-          // more on this, see DESIGN.md 
+          // Write out the UUID prefix to a well-known location.
+          // more on this, see DESIGN.md
           // https://github.com/m-lab/uuid/
           {
 
@@ -159,7 +159,7 @@ local Experiment(name, index, datatypes=[]) = {
               '-filename=' + uuid.prefixfile,
             ],
             volumeMounts: [
-              uuid.volumemount + {
+              uuid.volumemount {
                 readOnly: false,
               },
             ],
@@ -191,11 +191,11 @@ local Experiment(name, index, datatypes=[]) = {
 };
 
 {
-  // Returns all the trappings for a new experiment. New experiments should 
+  // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
   Experiment(name, index, datatypes):: Experiment(name, index, datatypes),
 
-  // Returns a volumemount for a given datatype. All produced volume mounts 
+  // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
   VolumeMount(name, datatype):: VolumeMount(name, datatype),
 
