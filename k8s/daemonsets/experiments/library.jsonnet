@@ -55,7 +55,7 @@ local Experiment(name, index, datatypes=[]) = {
             image: 'measurementlab/tcp-info:v0.0.8',
             args: [
               '-prometheusx.listen-address=:9091',
-              '-outputPath=' + VolumeMount(name, 'tcpinfo').mountPath,
+              '-output=' + VolumeMount(name, 'tcpinfo').mountPath,
               '-uuid-prefix-file=' + uuid.prefixfile,
             ],
             ports: [
