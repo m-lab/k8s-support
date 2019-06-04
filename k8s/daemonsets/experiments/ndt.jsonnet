@@ -32,20 +32,20 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
             ],
           },
         ],
-        // The default grace period after k8s sends SIGTERM is 30s. 
-        // extend the grace period to give time for the 
-        // shutdown sequence. After the grace period, kubernetes 
+        // The default grace period after k8s sends SIGTERM is 30s. We
+        // extend the grace period to give time for the following
+        // shutdown sequence. After the grace period, kubernetes sends
         // SIGKILL.
         //
         // NDT pod shutdown sequence:
         //
-        //  * k8s sends SIGTERM to NDT 
-        //  * NDT server enables lame duck 
+        //  * k8s sends SIGTERM to NDT server
+        //  * NDT server enables lame duck status
         //  * monitoring reads lame duck status (60s max)
         //  * mlab-ns updates server status (60s max)
         //  * all currently running tests complete. (30s max)
         //
-        // Feel free to change this to a smaller value for 
+        // Feel free to change this to a smaller value for speedy
         // sandbox deployments to enable faster compile-run-debug loops,
         // but 60+60+30=150 is what it needs to be for staging and prod.
         terminationGracePeriodSeconds: 150,
