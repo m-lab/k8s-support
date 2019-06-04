@@ -3,7 +3,7 @@ local exp = import '../experiments/library.jsonnet';
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
 local nodeinfo_datatypes = [d.Datatype for d in nodeinfoconfig];
 
-exp.ExperimentNoNetwork('host', nodeinfo_datatypes) + {
+exp.ExperimentNoNetwork('host', nodeinfo_datatypes, true) + {
   spec+: {
     template+: {
       spec+: {
@@ -21,6 +21,7 @@ exp.ExperimentNoNetwork('host', nodeinfo_datatypes) + {
               {
                 mountPath: '/etc/nodeinfo',
                 name: 'nodeinfo-config',
+                readOnly: true,
               },
             ] + [exp.VolumeMount('nodeinfo', d) for d in nodeinfo_datatypes],
           },

@@ -12,8 +12,18 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=127.0.0.1:9990',
+              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/ndt',
+            ],
+            env: [
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
             ],
             volumeMounts: [
               {
@@ -25,8 +35,13 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
               exp.VolumeMount('ndt', 'legacy'),
               exp.VolumeMount('ndt', 'ndt7'),
             ],
+            ports: [
+              {
+                containerPort: 9990,
+              },
+            ],
+
           },
-          exp.RBACProxy('ndt', 9990),
         ],
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following

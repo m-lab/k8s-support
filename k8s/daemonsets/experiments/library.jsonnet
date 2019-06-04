@@ -64,7 +64,7 @@ local RBACProxy(name, port) = {
   ],
 };
 
-local ExperimentNoNetwork(name, datatypes) = {
+local ExperimentNoNetwork(name, datatypes, host) = {
   apiVersion: 'extensions/v1beta1',
   kind: 'DaemonSet',
   metadata: {
@@ -81,7 +81,7 @@ local ExperimentNoNetwork(name, datatypes) = {
       metadata+: {
         annotations+: {
           'prometheus.io/scrape': 'true',
-          'prometheus.io/scheme': 'https',
+          'prometheus.io/scheme': if host then 'https' else 'http',
         },
         labels+: {
           workload: name,
@@ -93,35 +93,73 @@ local ExperimentNoNetwork(name, datatypes) = {
             name: 'tcpinfo',
             image: 'measurementlab/tcp-info:v0.0.8',
             args: [
-              '-prometheusx.listen-address=127.0.0.1:9991',
+              if host then
+                '-prometheusx.listen-address=127.0.0.1:9991'
+              else
+                '-prometheusx.listen-address=$(PRIVATE_IP):9991'
+              ,
               '-output=' + VolumeMount(name, 'tcpinfo').mountPath,
               '-uuid-prefix-file=' + uuid.prefixfile,
+            ],
+            env: if host then [] else [
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
+            ],
+            ports: if host then [] else [
+              {
+                containerPort: 9991,
+              },
             ],
             volumeMounts: [
               VolumeMount(name, 'tcpinfo'),
               uuid.volumemount,
             ],
           },
-          RBACProxy('tcpinfo', 9991),
           {
             name: 'traceroute',
             image: 'measurementlab/traceroute-caller:v0.0.5',
             args: [
-              '-prometheusx.listen-address=127.0.0.1:9992',
+              if host then
+                '-prometheusx.listen-address=127.0.0.1:9992'
+              else
+                '-prometheusx.listen-address=$(PRIVATE_IP):9992',
               '-outputPath=' + VolumeMount(name, 'traceroute').mountPath,
               '-uuid-prefix-file=' + uuid.prefixfile,
+            ],
+            env: if host then [] else [
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
+            ],
+            ports: if host then [] else [
+              {
+                containerPort: 9992,
+              },
             ],
             volumeMounts: [
               VolumeMount(name, 'traceroute'),
               uuid.volumemount,
             ],
           },
-          RBACProxy('traceroute', 9992),
           {
             name: 'pusher',
             image: 'measurementlab/pusher:v1.8',
             args: [
-              '-prometheusx.listen-address=127.0.0.1:9993',
+              if host then
+                '-prometheusx.listen-address=127.0.0.1:9993'
+              else
+                '-prometheusx.listen-address=$(PRIVATE_IP):9993',
               '-experiment=' + name,
               '-archive_size_threshold=50MB',
               '-directory=/var/spool/' + name,
@@ -150,10 +188,19 @@ local ExperimentNoNetwork(name, datatypes) = {
                   },
                 },
               },
-            ],
-            ports: [
+            ] + if host then [] else [
               {
-                containerPort: 9093,
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
+            ],
+            ports: if host then [] else [
+              {
+                containerPort: 9993,
               },
             ],
             volumeMounts: [
@@ -166,9 +213,12 @@ local ExperimentNoNetwork(name, datatypes) = {
               },
             ] + [VolumeMount(name, d) for d in datatypes],
           },
+        ] + if host then [
+          RBACProxy('tcpinfo', 9991),
+          RBACProxy('traceroute', 9992),
           RBACProxy('pusher', 9993),
-        ],
-        serviceAccountName: 'kube-rbac-proxy',
+        ] else [],
+        serviceAccountName: if host then 'kube-rbac-proxy',
         initContainers+: [
           uuid.initContainer,
         ],
@@ -197,7 +247,7 @@ local ExperimentNoNetwork(name, datatypes) = {
   },
 };
 
-local Experiment(name, index, datatypes=[]) = ExperimentNoNetwork(name, datatypes) + {
+local Experiment(name, index, datatypes=[]) = ExperimentNoNetwork(name, datatypes, false) + {
   spec+: {
     template+: {
       metadata+: {
@@ -229,7 +279,7 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoNetwork(name, datatype
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoNetwork(name, datatypes):: ExperimentNoNetwork(name, datatypes),
+  ExperimentNoNetwork(name, datatypes, hostNetworking):: ExperimentNoNetwork(name, datatypes, hostNetworking),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
