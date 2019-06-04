@@ -14,6 +14,7 @@
       metadata: {
         annotations: {
           'prometheus.io/scrape': 'true',
+          'prometheus.io/scheme': 'https',
         },
         labels: {
           workload: 'node-exporter',
