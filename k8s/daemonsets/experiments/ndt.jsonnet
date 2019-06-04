@@ -12,13 +12,8 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=:9090',
+              '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/ndt',
-            ],
-            ports: [
-              {
-                containerPort: 9090,
-              },
             ],
             volumeMounts: [
               {
@@ -31,6 +26,7 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
               exp.VolumeMount('ndt', 'ndt7'),
             ],
           },
+          exp.RBACProxy('ndt', 9990),
         ],
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following

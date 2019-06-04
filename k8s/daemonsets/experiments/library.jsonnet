@@ -1,4 +1,19 @@
 local uuid = {
+  initContainer: {
+    // Write out the UUID prefix to a well-known location.
+    // more on this, see DESIGN.md
+    // https://github.com/m-lab/uuid/
+    name: 'set-up-uuid-prefix-file',
+    image: 'measurementlab/uuid:v0.1',
+    args: [
+      '-filename=' + uuid.prefixfile,
+    ],
+    volumeMounts: [
+      uuid.volumemount {
+        readOnly: false,
+      },
+    ],
+  },
   prefixfile: '/var/local/uuid/prefix',
   volumemount: {
     mountPath: '/var/local/uuid',
@@ -24,7 +39,32 @@ local VolumeMount(name, datatype) = {
   name: datatype + '-data',
 };
 
-local Experiment(name, index, datatypes=[]) = {
+local RBACProxy(name, port) = {
+  name: 'kube-rbac-proxy-' + name,
+  image: 'quay.io/coreos/kube-rbac-proxy:v0.4.1',
+  args: [
+    '--logtostderr',
+    '--secure-listen-address=$(IP):' + port,
+    '--upstream=http://127.0.0.1:' + port + '/',
+  ],
+  env: [
+    {
+      name: 'IP',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'status.podIP',
+        },
+      },
+    },
+  ],
+  ports: [
+    {
+      containerPort: port,
+    },
+  ],
+};
+
+local ExperimentNoNetwork(name, datatypes) = {
   apiVersion: 'extensions/v1beta1',
   kind: 'DaemonSet',
   metadata: {
@@ -40,9 +80,8 @@ local Experiment(name, index, datatypes=[]) = {
     template+: {
       metadata+: {
         annotations+: {
-          'k8s.v1.cni.cncf.io/networks': '[{ "name": "index2ip-index-' + index + '-conf" }]',
           'prometheus.io/scrape': 'true',
-          'v1.multus-cni.io/default-network': 'flannel-experiment-conf',
+          'prometheus.io/scheme': 'https',
         },
         labels+: {
           workload: name,
@@ -54,43 +93,35 @@ local Experiment(name, index, datatypes=[]) = {
             name: 'tcpinfo',
             image: 'measurementlab/tcp-info:v0.0.8',
             args: [
-              '-prometheusx.listen-address=:9091',
+              '-prometheusx.listen-address=127.0.0.1:9991',
               '-output=' + VolumeMount(name, 'tcpinfo').mountPath,
               '-uuid-prefix-file=' + uuid.prefixfile,
-            ],
-            ports: [
-              {
-                containerPort: 9091,
-              },
             ],
             volumeMounts: [
               VolumeMount(name, 'tcpinfo'),
               uuid.volumemount,
             ],
           },
+          RBACProxy('tcpinfo', 9991),
           {
             name: 'traceroute',
             image: 'measurementlab/traceroute-caller:v0.0.5',
             args: [
-              '-prometheusx.listen-address=:9092',
+              '-prometheusx.listen-address=127.0.0.1:9992',
               '-outputPath=' + VolumeMount(name, 'traceroute').mountPath,
               '-uuid-prefix-file=' + uuid.prefixfile,
-            ],
-            ports: [
-              {
-                containerPort: 9092,
-              },
             ],
             volumeMounts: [
               VolumeMount(name, 'traceroute'),
               uuid.volumemount,
             ],
           },
+          RBACProxy('traceroute', 9992),
           {
             name: 'pusher',
             image: 'measurementlab/pusher:v1.8',
             args: [
-              '-prometheusx.listen-address=:9093',
+              '-prometheusx.listen-address=127.0.0.1:9993',
               '-experiment=' + name,
               '-archive_size_threshold=50MB',
               '-directory=/var/spool/' + name,
@@ -135,35 +166,11 @@ local Experiment(name, index, datatypes=[]) = {
               },
             ] + [VolumeMount(name, d) for d in datatypes],
           },
+          RBACProxy('pusher', 9993),
         ],
+        serviceAccountName: 'kube-rbac-proxy',
         initContainers+: [
-          // TODO: this is a hack. Remove the hack by fixing
-          // contents of resolv.
-          {
-            name: 'fix-resolv-conf',
-            image: 'busybox',
-            command: [
-              'sh',
-              '-c',
-              'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
-            ],
-          },
-          // Write out the UUID prefix to a well-known location.
-          // more on this, see DESIGN.md
-          // https://github.com/m-lab/uuid/
-          {
-
-            name: 'set-up-uuid-prefix-file',
-            image: 'measurementlab/uuid:v0.1',
-            args: [
-              '-filename=' + uuid.prefixfile,
-            ],
-            volumeMounts: [
-              uuid.volumemount {
-                readOnly: false,
-              },
-            ],
-          },
+          uuid.initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'platform',
@@ -190,7 +197,45 @@ local Experiment(name, index, datatypes=[]) = {
   },
 };
 
+local Experiment(name, index, datatypes=[]) = ExperimentNoNetwork(name, datatypes) + {
+  spec+: {
+    template+: {
+      metadata+: {
+        annotations+: {
+          'k8s.v1.cni.cncf.io/networks': '[{ "name": "index2ip-index-' + index + '-conf" }]',
+          'v1.multus-cni.io/default-network': 'flannel-experiment-conf',
+        },
+      },
+      spec+: {
+        initContainers+: [
+          // TODO: this is a hack. Remove the hack by fixing
+          // contents of resolv.
+          {
+            name: 'fix-resolv-conf',
+            image: 'busybox',
+            command: [
+              'sh',
+              '-c',
+              'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
+            ],
+          },
+        ],
+      },
+    },
+  },
+};
+
 {
+  // Returns a minimal experiment, suitable for adding a unique network config
+  // before deployment. It is expected that most users of this library will use
+  // Experiment().
+  ExperimentNoNetwork(name, datatypes):: ExperimentNoNetwork(name, datatypes),
+
+  // RBACProxy creates a https proxy for an http port. This allows us to serve
+  // metrics securely over https, andto https-authenticate to only serve them to
+  // ourselves.
+  RBACProxy(name, port):: RBACProxy(name, port),
+
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
   Experiment(name, index, datatypes):: Experiment(name, index, datatypes),

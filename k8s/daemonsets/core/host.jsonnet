@@ -1,45 +1,28 @@
-{
-  apiVersion: 'apps/v1',
-  kind: 'DaemonSet',
-  metadata: {
-    name: 'host',
-  },
-  spec: {
-    selector: {
-      matchLabels: {
-        workload: 'host',
-      },
-    },
-    template: {
-      metadata: {
-        annotations: {
-          'prometheus.io/scrape': 'true',
-        },
-        labels: {
-          workload: 'host',
-        },
-      },
+local exp = import '../experiments/library.jsonnet';
+
+local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
+local nodeinfo_datatypes = [d.Datatype for d in nodeinfoconfig];
+
+exp.ExperimentNoNetwork('host', nodeinfo_datatypes) + {
+  spec+: {
+    template+: {
       spec: {
         containers: [
           {
+            name: 'nodeinfo',
+            image: 'measurementlab/nodeinfo:v1.2',
             args: [
               '-datadir=/var/spool/nodeinfo',
               '-wait=1h',
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-config=/etc/nodeinfo/config.json',
             ],
-            image: 'measurementlab/nodeinfo:v1.2',
-            name: 'nodeinfo',
             volumeMounts: [
               {
                 mountPath: '/etc/nodeinfo',
                 name: 'nodeinfo-config',
               },
-              {
-                mountPath: '/var/spool/nodeinfo',
-                name: 'nodeinfo-data',
-              },
-            ],
+            ] + [exp.VolumeMount('nodeinfo', d) for d in nodeinfo_datatypes],
           },
           {
             args: [
@@ -248,72 +231,20 @@
           },
         ],
         initContainers: [
-          // Write out the UUID prefix to a well-known location. For
-          // more on this, see DESIGN.md in
-          // https://github.com/m-lab/uuid/
-          {
-            name: 'set-up-uuid-prefix-file',
-            image: 'measurementlab/uuid:v0.1',
-            args: [
-              '-filename=/var/local/uuid/prefix',
-            ],
-            volumeMounts: [
-              {
-                mountPath: '/var/local/uuid',
-                name: 'uuid-prefix',
-              },
-            ],
-          },
+          exp.uuid.initContainer,
         ],
         hostNetwork: true,
         hostPID: true,
-        nodeSelector: {
-          'mlab/type': 'platform',
-        },
         serviceAccountName: 'kube-rbac-proxy',
-        volumes: [
+        volumes+: [
           {
             configMap: {
               name: 'nodeinfo-config',
             },
             name: 'nodeinfo-config',
           },
-          {
-            hostPath: {
-              path: '/cache/data/host/nodeinfo',
-              type: 'DirectoryOrCreate',
-            },
-            name: 'nodeinfo-data',
-          },
-          {
-            hostPath: {
-              path: '/cache/data/host/tcpinfo',
-              type: 'DirectoryOrCreate',
-            },
-            name: 'tcpinfo-data',
-          },
-          {
-            hostPath: {
-              path: '/cache/data/host/traceroute',
-              type: 'DirectoryOrCreate',
-            },
-            name: 'traceroute-data',
-          },
-          {
-            name: 'pusher-credentials',
-            secret: {
-              secretName: 'pusher-credentials',
-            },
-          },
-          {
-            emptyDir: {},
-            name: 'uuid-prefix',
-          },
         ],
       },
-    },
-    updateStrategy: {
-      type: 'RollingUpdate',
     },
   },
 }
