@@ -56,6 +56,12 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 # it doesn't exist, polluting the logs terribly.
 mkdir -p /etc/kubernetes/manifests
 
+# CNI binaries are baked into the boot images at /usr/cni/bin, however, the
+# kubelet expects to find them in /opt/cni/bin by default. Rather than muck
+# with default settings, we just create a symlink here.
+mkdir -p /opt
+ln -s /usr/cni /opt/cni
+
 systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
