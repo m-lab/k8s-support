@@ -26,7 +26,7 @@ local uuid = {
   },
 };
 
-local Volume(name, datatype) = {
+local volume(name, datatype) = {
   hostPath: {
     path: '/cache/data/' + name + '/' + datatype,
     type: 'DirectoryOrCreate',
@@ -71,24 +71,24 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
     name: name,
     namespace: 'default',
   },
-  spec+: {
+  spec: {
     selector: {
       matchLabels: {
         workload: name,
       },
     },
-    template+: {
-      metadata+: {
-        annotations+: {
+    template: {
+      metadata: {
+        annotations: {
           'prometheus.io/scrape': 'true',
           'prometheus.io/scheme': if hostNetworking then 'https' else 'http',
         },
-        labels+: {
+        labels: {
           workload: name,
         },
       },
-      spec+: {
-        containers+: [
+      spec: {
+        containers: [
           {
             name: 'tcpinfo',
             image: 'measurementlab/tcp-info:v0.0.8',
@@ -219,13 +219,13 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
           RBACProxy('pusher', 9993),
         ] else [],
         serviceAccountName: if hostNetworking then 'kube-rbac-proxy',
-        initContainers+: [
+        initContainers: [
           uuid.initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'platform',
         },
-        volumes+: [
+        volumes: [
           {
             name: 'pusher-credentials',
             secret: {
@@ -233,9 +233,9 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
             },
           },
           uuid.volume,
-          Volume(name, 'traceroute'),
-          Volume(name, 'tcpinfo'),
-        ] + [Volume(name, d) for d in datatypes],
+          volume(name, 'traceroute'),
+          volume(name, 'tcpinfo'),
+        ] + [volume(name, d) for d in datatypes],
       },
     },
     updateStrategy: {
