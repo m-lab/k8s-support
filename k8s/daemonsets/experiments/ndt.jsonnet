@@ -7,7 +7,7 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
         containers+: [
           {
             name: 'ndt-server',
-            image: 'measurementlab/ndt-server:v0.9.0',
+            image: 'measurementlab/ndt-server:v0.9.1',
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
