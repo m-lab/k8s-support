@@ -18,7 +18,7 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 
 GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
 GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
-GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
+GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
