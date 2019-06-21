@@ -52,7 +52,7 @@ kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
 
 # Download the platform cluster CA cert.
-gsutil cp gs://k8s-platform-master-${PROJECT}/pki/ca.crt .
+gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
 
 # Generate a hash of the CA cert.
 # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning
