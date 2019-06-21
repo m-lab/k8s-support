@@ -56,7 +56,7 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 # Use the first k8s master from the region to contact to join this cloud node to
 # the cluster.
-K8S_MASTER="api-${GCE_BASE_NAME}-${GCE_ZONE}"
+K8S_MASTER="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 if [[ -z "$NODE_NAME" ]]; then
   # Get a list of all VMs in the desired project that have a name in the right
