@@ -47,7 +47,7 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__meta_kubernetes_node_name]
         action: keep
-        regex: api-platform-cluster-.*
+        regex: master-platform-cluster-.*
 
       - source_labels: [__meta_kubernetes_node_address_InternalIP]
         regex: (.*)
