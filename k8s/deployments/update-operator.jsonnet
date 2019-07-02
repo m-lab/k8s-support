@@ -3,14 +3,14 @@
   apiVersion: 'apps/v1',
   kind: 'Deployment',
   metadata: {
-    name: 'update-operator',
+    name: 'update-operator-master',
     namespace: 'reboot-coordinator',
   },
   spec: {
     replicas: 1,
     selector: {
       matchLabels: {
-        workload: 'update-operator',
+        workload: 'update-operator-master',
       },
     },
     strategy: {
@@ -19,7 +19,7 @@
     template: {
       metadata: {
         labels: {
-          workload: 'update-operator',
+          workload: 'update-operator-master',
         },
       },
       spec: {
