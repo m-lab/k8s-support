@@ -18,7 +18,7 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 
 GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
 GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
-GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
+GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
@@ -52,7 +52,7 @@ kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
 
 # Download the platform cluster CA cert.
-gsutil cp gs://k8s-platform-master-${PROJECT}/pki/ca.crt .
+gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
 
 # Generate a hash of the CA cert.
 # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning

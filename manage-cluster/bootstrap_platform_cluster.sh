@@ -232,7 +232,7 @@ fi
 # Delete each GCE instance, along with any instance-groups it was a member of.
 for zone in $GCE_ZONES; do
   gce_zone="${GCE_REGION}-${zone}"
-  gce_name="${GCE_BASE_NAME}-${gce_zone}"
+  gce_name="master-${GCE_BASE_NAME}-${gce_zone}"
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
   EXISTING_INSTANCE=$(gcloud compute instances list \
@@ -246,7 +246,7 @@ for zone in $GCE_ZONES; do
   delete_instance_group "${gce_name}" "${gce_zone}"
 
   EXISTING_CLUSTER_NODES=$(gcloud compute instances list \
-      --filter "name:k8s-platform-cluster-node AND zone:($gce_zone)" \
+      --filter "name:${K8S_CLOUD_NODE_BASE_NAME} AND zone:($gce_zone)" \
       --format "value(name)" \
       "${GCP_ARGS[@]}" || true)
   if [[ -n "${EXISTING_CLUSTER_NODES}" ]]; then
@@ -307,9 +307,10 @@ fi
 # Check the value of the existing IP address associated with the external load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
+API_DOMAIN_NAME="api-${GCE_BASE_NAME}"
 EXISTING_EXTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
     --zone "${PROJECT}-measurementlab-net" \
-    --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+    --name "${API_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
     --format "value(rrdatas[0])" \
     "${GCP_ARGS[@]}" || true)
 if [[ -z "${EXISTING_EXTERNAL_LB_DNS_IP}" ]]; then
@@ -319,7 +320,7 @@ if [[ -z "${EXISTING_EXTERNAL_LB_DNS_IP}" ]]; then
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${API_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${EXTERNAL_LB_IP}" \
@@ -333,14 +334,14 @@ elif [[ "${EXISTING_EXTERNAL_LB_DNS_IP}" != "${EXTERNAL_LB_IP}" ]]; then
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction remove \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${API_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${EXISTING_EXTERNAL_LB_DNS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${API_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${EXTERNAL_LB_IP}" \
@@ -430,9 +431,10 @@ INTERNAL_LB_IP=$(gcloud compute addresses list \
 # Check the value of the existing IP address associated with the internal load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
+TS_DOMAIN_NAME="token-server-${GCE_BASE_NAME}"
 EXISTING_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
     --zone "${PROJECT}-measurementlab-net" \
-    --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+    --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
     --format "value(rrdatas[0])" \
     "${GCP_ARGS[@]}" || true)
 if [[ -z "${EXISTING_INTERNAL_LB_DNS_IP}" ]]; then
@@ -442,7 +444,7 @@ if [[ -z "${EXISTING_INTERNAL_LB_DNS_IP}" ]]; then
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${INTERNAL_LB_IP}" \
@@ -456,14 +458,14 @@ elif [[ "${EXISTING_INTERNAL_LB_DNS_IP}" != "${INTERNAL_LB_IP}" ]]; then
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction remove \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${EXISTING_INTERNAL_LB_DNS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
       "${INTERNAL_LB_IP}" \

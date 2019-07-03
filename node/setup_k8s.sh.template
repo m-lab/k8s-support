@@ -27,7 +27,7 @@ METRO="${SITE/[0-9]*/}"
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-MASTER_NODE="k8s-platform-master.${GCP_PROJECT}.measurementlab.net"
+MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
 # things into etc should be done as part of cloud-config.yml or ignition or just

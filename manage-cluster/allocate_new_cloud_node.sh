@@ -1,9 +1,10 @@
 #!/bin/bash
 #
 # Creates a new cloud VM and joins it to the cluster for which
-# k8s-platform-master is the master node.  This script is intended to be run
-# (infrequently) by a human as we add more monitoring services to the platform
-# k8s cluster and start needing more and higher capacity compute nodes running
+# master-platform-master-<zone> is the master node.  This script is intended to
+# be run (infrequently) by a human as we add more monitoring services to the
+# platform k8s cluster and start needing more and higher capacity compute nodes
+# running
 # in cloud.
 
 set -euxo pipefail
@@ -56,7 +57,7 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 # Use the first k8s master from the region to contact to join this cloud node to
 # the cluster.
-K8S_MASTER="${GCE_BASE_NAME}-${GCE_ZONE}"
+K8S_MASTER="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 if [[ -z "$NODE_NAME" ]]; then
   # Get a list of all VMs in the desired project that have a name in the right
@@ -163,13 +164,13 @@ gcloud compute ssh "${NODE_NAME}" "${GCE_ARGS[@]}" <<EOF
   systemctl restart kubelet
 EOF
 
-# Ssh to k8s-platform-master and create a new token for login.
+# Ssh to master-platform-master-<zone> and create a new token for login.
 #
 # TODO: This approach feels weird and brittle or unsafe or just architecturally
 # wrong.  It works, but we would prefer some strategy where the node registers
 # itself instead of requiring that the user running this script also have root
-# on k8s-platform-master.  We should figure out how that should work and do that
-# instead of the below.
+# on master-platform-master-<zone>.  We should figure out how that should work
+# and do that instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
