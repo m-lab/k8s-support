@@ -123,7 +123,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
           },
           {
             name: 'traceroute',
-            image: 'measurementlab/traceroute-caller:v0.0.5',
+            image: 'measurementlab/traceroute-caller:v0.0.6',
             args: [
               if hostNetworking then
                 '-prometheusx.listen-address=127.0.0.1:9992'
