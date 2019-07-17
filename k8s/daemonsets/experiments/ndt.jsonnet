@@ -1,13 +1,13 @@
 local exp = import '../templates.jsonnet';
 
-exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
+exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
   spec+: {
     template+: {
       spec+: {
         containers+: [
           {
             name: 'ndt-server',
-            image: 'measurementlab/ndt-server:v0.9.1',
+            image: 'measurementlab/ndt-server:v0.10.0',
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
@@ -32,7 +32,7 @@ exp.Experiment('ndt', 2, ['legacy', 'ndt7']) + {
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount('ndt', 'legacy'),
+              exp.VolumeMount('ndt', 'ndt5'),
               exp.VolumeMount('ndt', 'ndt7'),
             ],
             ports: [
