@@ -23,6 +23,7 @@ exp.ExperimentNoIndex('host', nodeinfo_datatypes, true) + {
                 name: 'nodeinfo-config',
                 readOnly: true,
               },
+              exp.VolumeMount('host'),
             ],
           },
           exp.RBACProxy('nodeinfo', 9990),
