@@ -129,7 +129,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
                 '-prometheusx.listen-address=127.0.0.1:9992'
               else
                 '-prometheusx.listen-address=$(PRIVATE_IP):9992',
-              '-outputPath=' + VolumeMount(name).mountPath + '/traceroute,
+              '-outputPath=' + VolumeMount(name).mountPath + '/traceroute',
               '-uuid-prefix-file=' + uuid.prefixfile,
             ],
             env: if hostNetworking then [] else [
