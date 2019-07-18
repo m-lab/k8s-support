@@ -77,11 +77,11 @@
             ],
             resources: {
               limits: {
-                memory: '800Mi',
+                memory: '200Mi',
               },
               requests: {
                 cpu: '100m',
-                memory: '200Mi',
+                memory: '50Mi',
               },
             },
             volumeMounts: [
