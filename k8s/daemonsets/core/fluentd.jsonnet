@@ -46,7 +46,7 @@
             command: [
               '/bin/sh',
               '-c',
-              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS',
+              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS 2>&1 >>/var/log/fluentd.log',
             ],
             env: [
               {
@@ -77,11 +77,11 @@
             ],
             resources: {
               limits: {
-                memory: '200Mi',
+                memory: '500Mi',
               },
               requests: {
                 cpu: '100m',
-                memory: '50Mi',
+                memory: '100Mi',
               },
             },
             volumeMounts: [
