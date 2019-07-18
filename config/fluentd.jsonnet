@@ -12,6 +12,5 @@ local outputConf = std.strReplace(outputConfMissingZone, '{{GCE_ZONE}}', std.ext
     'containers.input.conf': importstr 'fluentd/containers.input.conf',
     'monitoring.conf': importstr 'fluentd/monitoring.conf',
     'output.conf': outputConf,
-    'system.input.conf': importstr 'fluentd/system.input.conf',
   },
 }
