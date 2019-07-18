@@ -66,7 +66,7 @@
                 },
               },
             ],
-            image: 'k8s.gcr.io/fluentd-gcp:2.0.2',
+            image: 'k8s.gcr.io/fluentd-gcp:2.1.1',
             name: 'fluentd',
             ports: [
               {
