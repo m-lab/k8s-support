@@ -12,7 +12,7 @@ exp.ExperimentNoIndex('host', nodeinfo_datatypes, true) + {
             name: 'nodeinfo',
             image: 'measurementlab/nodeinfo:v1.2',
             args: [
-              '-datadir=/var/spool/' + name,
+              '-datadir=/var/spool/host',
               '-wait=1h',
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-config=/etc/nodeinfo/config.json',
