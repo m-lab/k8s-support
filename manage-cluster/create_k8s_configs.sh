@@ -65,4 +65,5 @@ sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
     > ./setup_k8s.sh
 
 # Upload the evaluated template to GCS.
-gsutil cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/
+cache_control="Cache-Control:private, max-age=0, no-transform"
+gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
