@@ -32,8 +32,7 @@ exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount('ndt', 'ndt5'),
-              exp.VolumeMount('ndt', 'ndt7'),
+              exp.VolumeMount('ndt'),
             ],
             ports: [
               {

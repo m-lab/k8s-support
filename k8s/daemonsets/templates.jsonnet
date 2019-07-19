@@ -26,17 +26,17 @@ local uuid = {
   },
 };
 
-local volume(name, datatype) = {
+local volume(name) = {
   hostPath: {
-    path: '/cache/data/' + name + '/' + datatype,
+    path: '/cache/data/' + name,
     type: 'DirectoryOrCreate',
   },
-  name: datatype + '-data',
+  name: name + '-data',
 };
 
-local VolumeMount(name, datatype) = {
-  mountPath: '/var/spool/' + name + '/' + datatype,
-  name: datatype + '-data',
+local VolumeMount(name) = {
+  mountPath: '/var/spool/' + name,
+  name: name + '-data',
 };
 
 local RBACProxy(name, port) = {
@@ -98,7 +98,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
               else
                 '-prometheusx.listen-address=$(PRIVATE_IP):9991'
               ,
-              '-output=' + VolumeMount(name, 'tcpinfo').mountPath,
+              '-output=' + VolumeMount(name).mountPath + '/tcpinfo',
               '-uuid-prefix-file=' + uuid.prefixfile,
             ],
             env: if hostNetworking then [] else [
@@ -117,7 +117,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
               },
             ],
             volumeMounts: [
-              VolumeMount(name, 'tcpinfo'),
+              VolumeMount(name),
               uuid.volumemount,
             ],
           },
@@ -129,7 +129,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
                 '-prometheusx.listen-address=127.0.0.1:9992'
               else
                 '-prometheusx.listen-address=$(PRIVATE_IP):9992',
-              '-outputPath=' + VolumeMount(name, 'traceroute').mountPath,
+              '-outputPath=' + VolumeMount(name).mountPath + '/traceroute',
               '-uuid-prefix-file=' + uuid.prefixfile,
             ],
             env: if hostNetworking then [] else [
@@ -148,7 +148,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
               },
             ],
             volumeMounts: [
-              VolumeMount(name, 'traceroute'),
+              VolumeMount(name),
               uuid.volumemount,
             ],
           },
@@ -204,14 +204,13 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
               },
             ],
             volumeMounts: [
-              VolumeMount(name, 'tcpinfo'),
-              VolumeMount(name, 'traceroute'),
+              VolumeMount(name),
               {
                 mountPath: '/etc/credentials',
                 name: 'pusher-credentials',
                 readOnly: true,
               },
-            ] + [VolumeMount(name, d) for d in datatypes],
+            ],
           },
         ] + if hostNetworking then [
           RBACProxy('tcpinfo', 9991),
@@ -233,9 +232,8 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
             },
           },
           uuid.volume,
-          volume(name, 'traceroute'),
-          volume(name, 'tcpinfo'),
-        ] + [volume(name, d) for d in datatypes],
+          volume(name),
+        ],
       },
     },
     updateStrategy: {
@@ -292,7 +290,7 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
-  VolumeMount(name, datatype):: VolumeMount(name, datatype),
+  VolumeMount(name):: VolumeMount(name),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
