@@ -46,7 +46,7 @@
             command: [
               '/bin/sh',
               '-c',
-              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS',
+              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS 2>&1 >>/var/log/fluentd.log',
             ],
             env: [
               {
@@ -66,7 +66,7 @@
                 },
               },
             ],
-            image: 'k8s.gcr.io/fluentd-gcp:2.0.2',
+            image: 'k8s.gcr.io/fluentd-gcp:2.1.1',
             name: 'fluentd',
             ports: [
               {
