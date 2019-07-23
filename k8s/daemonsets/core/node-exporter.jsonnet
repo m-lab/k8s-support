@@ -77,11 +77,6 @@
                 name: 'root',
                 readOnly: true,
               },
-              {
-                mountPath: '/host/textfile',
-                name: 'textfile',
-                readOnly: true,
-              },
             ],
           },
           {
@@ -147,12 +142,6 @@
               path: '/',
             },
             name: 'root',
-          },
-          {
-            configMap: {
-              name: 'prometheus-synthetic-textfile-metrics',
-            },
-            name: 'textfile',
           },
         ],
       },
