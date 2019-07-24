@@ -7,7 +7,6 @@
     import 'config/fluentd.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
-    import 'config/prometheus-synthetic-textfile-metrics.jsonnet',
     import 'config/pusher.jsonnet',
     // Custom resource definitions
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
