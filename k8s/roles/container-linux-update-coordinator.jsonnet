@@ -25,6 +25,7 @@
         verbs: [
           'get',
           'list',
+          'patch',
           'watch',
           'update',
         ],
