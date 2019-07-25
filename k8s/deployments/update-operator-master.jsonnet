@@ -28,6 +28,7 @@
             args: [
               '-reboot-window-start=Tue 15:00',
               '-reboot-window-length=2h',
+              '-before-reboot-annotations=mlab-master-node',
             ],
             command: [
               '/bin/update-operator',
