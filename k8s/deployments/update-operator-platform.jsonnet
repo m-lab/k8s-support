@@ -43,12 +43,11 @@
           },
         ],
         nodeSelector: {
-          'node-role.kubernetes.io/master': '',
+          'mlab/type': 'cloud',
+          run: 'prometheus-server',
         },
         tolerations: [
           {
-            effect: 'NoSchedule',
-            key: 'node-role.kubernetes.io/master',
             operator: 'Exists',
           },
         ],
