@@ -154,7 +154,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
           },
           {
             name: 'pusher',
-            image: 'measurementlab/pusher:v1.8',
+            image: 'measurementlab/pusher:v1.9',
             args: [
               if hostNetworking then
                 '-prometheusx.listen-address=127.0.0.1:9993'
