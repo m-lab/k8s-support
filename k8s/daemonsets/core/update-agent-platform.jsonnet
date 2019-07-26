@@ -1,3 +1,5 @@
+local exp = import '../templates.jsonnet';
+
 // From: https://github.com/coreos/container-linux-update-operator/tree/master/examples/deploy
 {
   apiVersion: 'apps/v1',
@@ -19,6 +21,9 @@
         },
       },
       spec: {
+        initContainers: [
+          exp.CluoAnnotation('mlab-type-platform')
+        ]
         containers: [
           {
             command: [

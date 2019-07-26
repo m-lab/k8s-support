@@ -1,24 +1,29 @@
+local exp = import '../templates.jsonnet';
+
 // From: https://github.com/coreos/container-linux-update-operator/tree/master/examples/deploy
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'update-agent',
+    name: 'update-agent-master',
     namespace: 'reboot-coordinator',
   },
   spec: {
     selector: {
       matchLabels: {
-        workload: 'update-agent',
+        workload: 'update-agent-master',
       },
     },
     template: {
       metadata: {
         labels: {
-          workload: 'update-agent',
+          workload: 'update-agent-master',
         },
       },
       spec: {
+        initContainers: [
+          exp.CluoAnnotation('mlab-type-master'),
+        ],
         containers: [
           {
             command: [
