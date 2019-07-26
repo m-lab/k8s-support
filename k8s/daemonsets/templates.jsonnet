@@ -4,15 +4,16 @@ local CluoAnnotation(annotation) = {
   command: ['/bin/sh', '-c'],
   args: [
     |||
-      apk update && apk add curl && \
+      echo -e '#!/bin/bash\n\napk update && apk add curl && \
       KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
       curl -k \
       -H "Accept: application/json" \
       -H "Authorization: Bearer $KUBE_TOKEN" \
       -H "Content-Type: application/merge-patch+json" \
       -X PATCH \
-      -d '{"metadata":{"annotations":{"%(annotation)s":"true"}}}' \
-      https://kubernetes.default.svc.cluster.local:443/api/v1/nodes/$NODE
+      -d \'{"metadata":{"annotations":{"%(annotation)s":"true"}}}\' \
+      https://kubernetes.default.svc.cluster.local:443/api/v1/nodes/$NODE' \
+      > /config/annotate_node.sh && chmod +x /config/annotate_node.sh
     ||| % annotation,
   ],
   env: [
@@ -25,6 +26,10 @@ local CluoAnnotation(annotation) = {
       },
     },
   ],
+  volumeMount: {
+    mountPath: '/scripts',
+    name: 'annotate-node',
+  },
 };
 
 local uuid = {

@@ -27,7 +27,7 @@ local exp = import '../templates.jsonnet';
         containers: [
           {
             command: [
-              '/bin/update-agent',
+              '/scripts/annotate_node.sh && /bin/update-agent',
             ],
             env: [
               {
@@ -65,6 +65,10 @@ local exp = import '../templates.jsonnet';
               {
                 mountPath: '/etc/os-release',
                 name: 'etc-os-release',
+              },
+              {
+                mountPath: '/scripts',
+                name: 'annotate-node',
               },
             ],
           },
@@ -104,12 +108,16 @@ local exp = import '../templates.jsonnet';
             },
             name: 'etc-os-release',
           },
+          {
+            emptyDir: {},
+            name: 'annotate-node',
+          },
         ],
       },
     },
     updateStrategy: {
       rollingUpdate: {
-        maxUnavailable: 1,
+        maxUnavailable: 2,
       },
       type: 'RollingUpdate',
     },
