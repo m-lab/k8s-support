@@ -4,13 +4,14 @@ local CluoAnnotation(annotation) = {
   command: ['/bin/sh', '-c'],
   args: [
     |||
-      KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-      curl -k
-      -H "Accept: application/json"
-      -H "Authorization: Bearer $KUBE_TOKEN"
-      -H "Content-Type: application/merge-patch+json"
-      -X PATCH
-      -d '{"metadata":{"annotations":{"%(annotation)s":"true"}}}'
+      KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
+      apk update && apk add curl && \
+      curl -k \
+      -H "Accept: application/json" \
+      -H "Authorization: Bearer $KUBE_TOKEN" \
+      -H "Content-Type: application/merge-patch+json" \
+      -X PATCH \
+      -d '{"metadata":{"annotations":{"%(annotation)s":"true"}}}' \
       https://kubernetes.default.svc.cluster.local:443/api/v1/nodes/$NODE
     ||| % annotation,
   ],
