@@ -1,6 +1,6 @@
 local CluoAnnotation(annotation) = {
   name: 'add-cluo-annotation',
-  image: 'alpine:lastest',
+  image: 'alpine:latest',
   command: ['/bin/sh', '-c'],
   args: [
     |||
