@@ -10,6 +10,7 @@
 // because flannel pods were not getting scheduled on the master nodes due to a
 // new taint being added to the master because of this issue:
 // https://github.com/kubernetes/kubernetes/issues/44254
+local flannelConfig = import '../../../config/flannel.jsonnet';
 
 {
   apiVersion: 'extensions/v1beta1',
@@ -136,7 +137,7 @@
           },
           {
             configMap: {
-              name: 'kube-flannel-cfg',
+              name: flannelConfig.metadata.name,
             },
             name: 'flannel-cfg',
           },

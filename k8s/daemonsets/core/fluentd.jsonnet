@@ -1,3 +1,5 @@
+local fluentdConfig = import '../../../config/fluentd.jsonnet';
+
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -154,7 +156,7 @@
           },
           {
             configMap: {
-              name: 'fluentd-config',
+              name: fluentdConfig.metadata.name,
             },
             name: 'config-volume',
           },

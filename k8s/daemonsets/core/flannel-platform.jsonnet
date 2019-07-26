@@ -7,6 +7,8 @@
 // Platform nodes have their cluster-internal networking done by Flannel and
 // their external networking run done by ipvlan with a custom IPAM plugin. The
 // ability to have multus network interfaces in a pod is provided by multus.
+local flannelConfig = import '../../../config/flannel.jsonnet';
+
 {
   apiVersion: 'extensions/v1beta1',
   kind: 'DaemonSet',
@@ -132,7 +134,7 @@
           },
           {
             configMap: {
-              name: 'kube-flannel-cfg',
+              name: flannelConfig.metadata.name,
             },
             name: 'flannel-cfg',
           },

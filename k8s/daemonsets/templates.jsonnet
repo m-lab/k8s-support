@@ -176,7 +176,8 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
                 valueFrom: {
                   configMapKeyRef: {
                     key: 'bucket',
-                    name: 'pusher-dropbox',
+                    local pusherConfig = import '../../config/pusher.jsonnet',
+                    name: pusherConfig.metadata.name,
                   },
                 },
               },

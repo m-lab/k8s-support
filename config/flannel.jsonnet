@@ -1,3 +1,5 @@
+local cmutil = import 'cloudmap-utils.jsonnet';
+
 // This file/config is for Flannel
 local netConf = {
   Network: std.extVar('K8S_CLUSTER_CIDR'),
@@ -39,20 +41,21 @@ local platformNodeCNIConf = {
   clusterNetwork: 'flannel-conf',
 };
 
+local data = {
+  'net-conf.json': std.toString(netConf),
+  'cloud-cni-conf.json': std.toString(cloudCNIConf),
+  'platform-node-cni-conf.json': std.toString(platformNodeCNIConf),
+};
+
 {
   kind: 'ConfigMap',
   apiVersion: 'v1',
-  metadata: {
-    name: 'kube-flannel-cfg',
+  metadata: cmutil.metadata('kube-flannel-cfg', data) + {
     namespace: 'kube-system',
     labels: {
       tier: 'node',
       app: 'flannel',
     },
   },
-  data: {
-    'net-conf.json': std.toString(netConf),
-    'cloud-cni-conf.json': std.toString(cloudCNIConf),
-    'platform-node-cni-conf.json': std.toString(platformNodeCNIConf),
-  },
+  data: data,
 }

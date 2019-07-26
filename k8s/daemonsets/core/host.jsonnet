@@ -1,3 +1,5 @@
+local nodeinfoConfig = import '../../../config/nodeinfo.jsonnet';
+
 local exp = import '../templates.jsonnet';
 
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
@@ -33,7 +35,7 @@ exp.ExperimentNoIndex('host', nodeinfo_datatypes, true) + {
         volumes+: [
           {
             configMap: {
-              name: 'nodeinfo-config',
+              name: nodeinfoConfig.metadata.name,
             },
             name: 'nodeinfo-config',
           },
