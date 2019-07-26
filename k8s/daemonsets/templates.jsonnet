@@ -4,8 +4,8 @@ local CluoAnnotation(annotation) = {
   command: ['/bin/sh', '-c'],
   args: [
     |||
-      KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
       apk update && apk add curl && \
+      KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
       curl -k \
       -H "Accept: application/json" \
       -H "Authorization: Bearer $KUBE_TOKEN" \
