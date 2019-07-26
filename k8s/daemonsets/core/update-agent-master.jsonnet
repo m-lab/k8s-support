@@ -110,7 +110,7 @@ local exp = import '../templates.jsonnet';
             name: 'etc-os-release',
           },
           {
-            emptyDir: {}
+            emptyDir: {},
             name: 'annotate-node',
           },
         ],
