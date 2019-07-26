@@ -26,10 +26,12 @@ local CluoAnnotation(annotation) = {
       },
     },
   ],
-  volumeMount: {
-    mountPath: '/scripts',
-    name: 'annotate-node',
-  },
+  volumeMounts: [
+    {
+      mountPath: '/scripts',
+      name: 'annotate-node',
+    },
+  ],
 };
 
 local uuid = {
