@@ -22,8 +22,8 @@ local exp = import '../templates.jsonnet';
       },
       spec: {
         initContainers: [
-          exp.CluoAnnotation('mlab-type-platform')
-        ]
+          exp.CluoAnnotation('mlab-type-platform'),
+        ],
         containers: [
           {
             command: [

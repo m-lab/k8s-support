@@ -1,19 +1,19 @@
 local CluoAnnotation(annotation) = {
   name: 'add-cluo-annotation',
   image: 'alpine:lastest',
-  command: ['/bin/sh, '-c'],
+  command: ['/bin/sh', '-c'],
   args: [
-    -|||
+    |||
       KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
       curl -k
       -H "Accept: application/json"
       -H "Authorization: Bearer $KUBE_TOKEN"
       -H "Content-Type: application/merge-patch+json"
       -X PATCH
-      -d '{"metadata":{"annotations":{"%(annotation)":"true"}}}'
+      -d '{"metadata":{"annotations":{"%(annotation)s":"true"}}}'
       https://kubernetes.default.svc.cluster.local:443/api/v1/nodes/$NODE
-    ||| % annotation
-  ]
+    ||| % annotation,
+  ],
   env: [
     {
       name: 'NODE',
@@ -24,7 +24,7 @@ local CluoAnnotation(annotation) = {
       },
     },
   ],
-}
+};
 
 local uuid = {
   initContainer: {
@@ -322,4 +322,8 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
+
+  // Returns an initContainer element allowing the CLUO DaemonSets to set a
+  // particular annotation on the node on which each pod gets scheduled.
+  CluoAnnotation: CluoAnnotation,
 }
