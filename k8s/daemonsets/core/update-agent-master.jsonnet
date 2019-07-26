@@ -72,6 +72,7 @@ local exp = import '../templates.jsonnet';
         nodeSelector: {
           'node-role.kubernetes.io/master': '',
         },
+        serviceAccountName: 'reboot-coordinator',
         tolerations: [
           {
             effect: 'NoSchedule',

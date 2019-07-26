@@ -97,7 +97,7 @@
     subjects: [
       {
         kind: 'ServiceAccount',
-        name: 'default',
+        name: 'reboot-coordinator',
         namespace: 'reboot-coordinator',
       },
     ],

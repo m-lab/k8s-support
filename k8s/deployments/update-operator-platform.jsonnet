@@ -49,6 +49,7 @@
           'mlab/type': 'cloud',
           run: 'prometheus-server',
         },
+        serviceAccountName: 'reboot-coordinator',
         tolerations: [
           {
             operator: 'Exists',

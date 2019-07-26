@@ -72,6 +72,7 @@ local exp = import '../templates.jsonnet';
         nodeSelector: {
           'mlab/type': 'platform',
         },
+        serviceAccountName: 'reboot-coordinator',
         // Tolerate everything
         tolerations: [
           {
