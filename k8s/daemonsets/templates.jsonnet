@@ -1,39 +1,3 @@
-local CluoAnnotation(annotation) = {
-  name: 'add-cluo-annotation',
-  image: 'alpine:latest',
-  command: ['/bin/sh', '-c'],
-  args: [
-    |||
-      echo -e '#!/bin/bash\n\napk update && apk add curl && \
-      KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
-      curl -k \
-      -H "Accept: application/json" \
-      -H "Authorization: Bearer $KUBE_TOKEN" \
-      -H "Content-Type: application/merge-patch+json" \
-      -X PATCH \
-      -d \'{"metadata":{"annotations":{"%(annotation)s":"true"}}}\' \
-      https://kubernetes.default.svc.cluster.local:443/api/v1/nodes/$NODE' \
-      > /config/annotate_node.sh && chmod +x /config/annotate_node.sh
-    ||| % annotation,
-  ],
-  env: [
-    {
-      name: 'NODE',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'spec.nodeName',
-        },
-      },
-    },
-  ],
-  volumeMounts: [
-    {
-      mountPath: '/scripts',
-      name: 'annotate-node',
-    },
-  ],
-};
-
 local uuid = {
   initContainer: {
     // Write out the UUID prefix to a well-known location.

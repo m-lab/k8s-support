@@ -1,5 +1,3 @@
-local exp = import '../templates.jsonnet';
-
 // From: https://github.com/coreos/container-linux-update-operator/tree/master/examples/deploy
 {
   apiVersion: 'apps/v1',
@@ -21,13 +19,10 @@ local exp = import '../templates.jsonnet';
         },
       },
       spec: {
-        initContainers: [
-          exp.CluoAnnotation('mlab-type-platform'),
-        ],
         containers: [
           {
             command: [
-              '/scripts/annotate_node.sh && /bin/update-agent',
+              '/bin/sh /config/annotate-node.sh mlab-type-platform && /bin/update-agent',
             ],
             env: [
               {
@@ -67,8 +62,8 @@ local exp = import '../templates.jsonnet';
                 name: 'etc-os-release',
               },
               {
-                mountPath: '/scripts',
-                name: 'annotate-node',
+                mountPath: '/config',
+                name: 'update-operator-config',
               },
             ],
           },
@@ -109,8 +104,10 @@ local exp = import '../templates.jsonnet';
             name: 'etc-os-release',
           },
           {
-            emptyDir: {},
-            name: 'annotate-node',
+            configMap: {
+              name: 'update-operator-config',
+            },
+            name: 'update-operator-config',
           },
         ],
       },
