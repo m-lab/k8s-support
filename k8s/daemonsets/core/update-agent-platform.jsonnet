@@ -23,7 +23,7 @@
           {
             command: [
               'sh', '-c',
-              '/config/annotate-node.sh mlab-type-platform && /bin/update-agent',
+              'sh /config/annotate-node.sh mlab-type-platform && /bin/update-agent',
             ],
             env: [
               {
