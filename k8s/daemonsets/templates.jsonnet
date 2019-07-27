@@ -294,8 +294,4 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
-
-  // Returns an initContainer element allowing the CLUO DaemonSets to set a
-  // particular annotation on the node on which each pod gets scheduled.
-  CluoAnnotation: CluoAnnotation,
 }
