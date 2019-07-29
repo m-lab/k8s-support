@@ -26,7 +26,7 @@
         containers: [
           {
             args: [
-              '-before-reboot-annotations=mlab-type-platform',
+              '-before-reboot-annotations=mlab-type/platform',
             ],
             command: [
               '/bin/update-operator',
