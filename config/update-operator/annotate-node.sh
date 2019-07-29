@@ -17,5 +17,5 @@ curl -k -X PATCH \
     -H "Accept: application/json" \
     -H "Authorization: Bearer $KUBE_TOKEN" \
     -H "Content-Type: application/merge-patch+json" \
-    -d "{'metadata':{'annotations':{'${ANNOTATION}':'true'}}}" \
+    -d "'{\"metadata\":{\"annotations\":{\"${ANNOTATION}\":\"true\"}}}'" \
     "${API_URL}/${UPDATE_AGENT_NODE}" \
