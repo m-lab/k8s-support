@@ -46,8 +46,7 @@
           },
         ],
         nodeSelector: {
-          'mlab/type': 'cloud',
-          run: 'prometheus-server',
+          'node-role.kubernetes.io/master': '',
         },
         serviceAccountName: 'reboot-coordinator',
         tolerations: [
