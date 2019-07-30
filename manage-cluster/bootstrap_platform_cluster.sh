@@ -522,6 +522,8 @@ gcloud compute firewall-rules create ${GCE_BASE_NAME}-internal \
 #
 ETCD_CLUSTER_STATE="new"
 
+idx=0
 for zone in $GCE_ZONES; do
-  create_master $zone
+  create_master $zone ${REBOOT_DAYS[$idx]}
+  idx=$(( idx + 1 ))
 done
