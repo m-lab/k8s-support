@@ -133,7 +133,7 @@ write_files:
     content: |
       #!/bin/bash
       REBOOT_DAY=$(cat /etc/reboot-node-day)
-      TODAY=$(date +%A)
+      TODAY=$(date +%a)
       if [[ "${REBOOT_DAY}" == "${TODAY}" ]]; then
         echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
         /usr/sbin/reboot
