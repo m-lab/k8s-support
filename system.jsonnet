@@ -18,15 +18,13 @@
     import 'k8s/daemonsets/core/fluentd.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
-    import 'k8s/daemonsets/core/update-agent-master.jsonnet',
-    import 'k8s/daemonsets/core/update-agent-platform.jsonnet',
+    import 'k8s/daemonsets/core/update-agent.jsonnet',
     import 'k8s/daemonsets/experiments/bismark.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
     import 'k8s/deployments/prometheus.jsonnet',
-    import 'k8s/deployments/update-operator-master.jsonnet',
-    import 'k8s/deployments/update-operator-platform.jsonnet',
+    import 'k8s/deployments/update-operator.jsonnet',
     // Namespaces
     import 'k8s/namespaces/reboot-operator.jsonnet',
   ] + std.flattenArrays([
