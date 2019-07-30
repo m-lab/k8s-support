@@ -3,19 +3,19 @@
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'update-agent-platform',
+    name: 'update-agent',
     namespace: 'reboot-coordinator',
   },
   spec: {
     selector: {
       matchLabels: {
-        workload: 'update-agent-platform',
+        workload: 'update-agent',
       },
     },
     template: {
       metadata: {
         labels: {
-          workload: 'update-agent-platform',
+          workload: 'update-agent',
         },
       },
       spec: {
@@ -23,7 +23,7 @@
           {
             command: [
               'sh', '-c',
-              'sh /config/annotate-node.sh mlab-type-platform && /bin/update-agent',
+              'sh /config/annotate-node.sh mlab-reboot-ok && /bin/update-agent',
             ],
             env: [
               {

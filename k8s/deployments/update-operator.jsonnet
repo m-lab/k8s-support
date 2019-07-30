@@ -3,14 +3,14 @@
   apiVersion: 'apps/v1',
   kind: 'Deployment',
   metadata: {
-    name: 'update-operator-platform',
+    name: 'update-operator',
     namespace: 'reboot-coordinator',
   },
   spec: {
     replicas: 1,
     selector: {
       matchLabels: {
-        workload: 'update-operator-platform',
+        workload: 'update-operator',
       },
     },
     strategy: {
@@ -19,14 +19,14 @@
     template: {
       metadata: {
         labels: {
-          workload: 'update-operator-platform',
+          workload: 'update-operator',
         },
       },
       spec: {
         containers: [
           {
             args: [
-              '-before-reboot-annotations=mlab-type-platform',
+              '-before-reboot-annotations=mlab-reboot-ok',
             ],
             command: [
               '/bin/update-operator',
