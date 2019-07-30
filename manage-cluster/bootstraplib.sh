@@ -405,7 +405,6 @@ EOF
     set -euxo pipefail
 
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
-    kubectl annotate node ${gce_name} mlab-type-master=true
     kubectl label node ${gce_name} mlab/type=cloud
 EOF
 
