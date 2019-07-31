@@ -22,8 +22,7 @@
         containers: [
           {
             command: [
-              'sh', '-c',
-              'sh /config/annotate-node.sh mlab-reboot-ok && /bin/update-agent',
+              '/bin/update-agent',
             ],
             env: [
               {
@@ -62,10 +61,6 @@
                 mountPath: '/etc/os-release',
                 name: 'etc-os-release',
               },
-              {
-                mountPath: '/config',
-                name: 'update-operator-config',
-              },
             ],
           },
         ],
@@ -103,12 +98,6 @@
               path: '/etc/os-release',
             },
             name: 'etc-os-release',
-          },
-          {
-            configMap: {
-              name: 'update-operator-config',
-            },
-            name: 'update-operator-config',
           },
         ],
       },
