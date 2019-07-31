@@ -76,21 +76,20 @@ coreos:
         WantedBy=multi-user.target
 
     - name: reboot-node.service
-      command: "start"
-      enable: "true"
       content: |
         [Unit]
-        Description=Reboot this node
+        Description=reboot-node.service
 
         [Service]
         Type=oneshot
         ExecStart=/opt/bin/reboot-node
 
     - name: reboot-node.timer
+      enable: "true"
       command: "start"
       content: |
         [Unit]
-        Description=Run reboot-node.service daily.
+        Description=Run reboot-node.service daily
 
         [Timer]
         OnCalendar=Mon..Fri 15:00:00
