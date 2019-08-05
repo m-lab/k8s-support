@@ -134,15 +134,14 @@ write_files:
       REBOOT_DAY=$(cat /etc/reboot-node-day)
       TODAY=$(date +%a)
       ETCD_MEMBERS=$(/usr/bin/etcdctl member list | wc -l)
-      if [[ "${REBOOT_DAY}" == "${TODAY}" ]]; then
-        if [[ "${ETCD_MEMBERS}" -eq "3" ]]; then
-          echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
-          /usr/sbin/reboot
-        else
-          echo "There are not exactly 3 etcd cluster members. Not rebooting."
-          exit 1
-        fi
-      else
-        echo "Not rebooting. Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}"
+      if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
+        echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
+        exit 0
       fi
+      if [[ "${ETCD_MEMBERS}" -lt "3" ]]; then
+        echo "There are less than 3 etcd cluster members. Not rebooting."
+        exit 1
+      fi
+      echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
+      /usr/sbin/reboot
 
