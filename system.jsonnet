@@ -30,7 +30,7 @@
     // Networks (which are in array form already).
     import 'k8s/networks/networks.jsonnet',
     // Roles (which are in array form already).
-    import 'k8s/roles/container-linux-update-coordinator.jsonnet',
+    import 'k8s/roles/update-operator.jsonnet',
     import 'k8s/roles/flannel.jsonnet',
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',

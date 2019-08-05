@@ -25,6 +25,7 @@
         verbs: [
           'get',
           'list',
+          'patch',
           'watch',
           'update',
         ],
@@ -96,7 +97,7 @@
     subjects: [
       {
         kind: 'ServiceAccount',
-        name: 'default',
+        name: 'reboot-coordinator',
         namespace: 'reboot-coordinator',
       },
     ],

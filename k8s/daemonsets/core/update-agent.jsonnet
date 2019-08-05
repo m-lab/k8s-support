@@ -65,13 +65,14 @@
           },
         ],
         nodeSelector: {
-          'node-role.kubernetes.io/master': '',
+          'mlab/type': 'platform',
         },
+        serviceAccountName: 'reboot-coordinator',
+        // This is a pod that should be scheduled under every possible
+        // circumstance, so tolerate everything.
         tolerations: [
           {
-            effect: 'NoSchedule',
-            key: 'node-role.kubernetes.io/master',
-            operator: 'Exists',
+            operator: 'Exists'
           },
         ],
         volumes: [
@@ -104,7 +105,7 @@
     },
     updateStrategy: {
       rollingUpdate: {
-        maxUnavailable: 1,
+        maxUnavailable: 2,
       },
       type: 'RollingUpdate',
     },

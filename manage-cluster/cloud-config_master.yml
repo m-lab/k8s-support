@@ -75,6 +75,28 @@ coreos:
         [Install]
         WantedBy=multi-user.target
 
+    - name: reboot-node.service
+      content: |
+        [Unit]
+        Description=reboot-node.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/opt/bin/reboot-node
+
+    - name: reboot-node.timer
+      enable: "true"
+      command: "start"
+      content: |
+        [Unit]
+        Description=Run reboot-node.service daily
+
+        [Timer]
+        OnCalendar=Mon..Fri 15:00:00
+
+        [Install]
+        WantedBy=multi-user.target
+
 write_files:
   - path: /etc/ssh/sshd_config
     permissions: 0600
@@ -102,4 +124,24 @@ write_files:
     owner: root:root
     content: |
       fs.inotify.max_user_watches=131072
+
+  # The smallest of scripts to reboot the machine.
+  - path: /opt/bin/reboot-node
+    permissions: 0744
+    owner: root:root
+    content: |
+      #!/bin/bash
+      REBOOT_DAY=$(cat /etc/reboot-node-day)
+      TODAY=$(date +%a)
+      ETCD_MEMBERS=$(/usr/bin/etcdctl member list | wc -l)
+      if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
+        echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
+        exit 0
+      fi
+      if [[ "${ETCD_MEMBERS}" -lt "3" ]]; then
+        echo "There are less than 3 etcd cluster members. Not rebooting."
+        exit 1
+      fi
+      echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
+      /usr/sbin/reboot
 

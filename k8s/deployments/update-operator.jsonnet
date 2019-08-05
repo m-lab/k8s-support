@@ -26,8 +26,7 @@
         containers: [
           {
             args: [
-              '-reboot-window-start=Tue 15:00',
-              '-reboot-window-length=2h',
+              '-before-reboot-annotations=mlab-reboot-ok',
             ],
             command: [
               '/bin/update-operator',
@@ -49,10 +48,9 @@
         nodeSelector: {
           'node-role.kubernetes.io/master': '',
         },
+        serviceAccountName: 'reboot-coordinator',
         tolerations: [
           {
-            effect: 'NoSchedule',
-            key: 'node-role.kubernetes.io/master',
             operator: 'Exists',
           },
         ],

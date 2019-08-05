@@ -3,6 +3,7 @@
 
 function create_master {
   local zone=$1
+  local reboot_day=$2
 
   gce_zone="${GCE_REGION}-${zone}"
   gce_name="master-${GCE_BASE_NAME}-${gce_zone}"
@@ -155,6 +156,11 @@ function create_master {
 
     # Binaries will get installed in /opt/bin, put it in root's PATH
     echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
+
+    # Write out the reboot day to a file in /etc. The reboot-node.service
+    # systemd unit will read the contents of this file to determine when to
+    # reboot the node.
+    echo -n "${reboot_day}" > /etc/reboot-node-day
 
     # Install CNI plugins.
     mkdir -p /opt/cni/bin
