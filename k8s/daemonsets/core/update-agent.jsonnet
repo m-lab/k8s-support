@@ -68,7 +68,8 @@
           'mlab/type': 'platform',
         },
         serviceAccountName: 'reboot-coordinator',
-        // Tolerate everything
+        // This is a pod that should be scheduled under every possible
+        // circumstance, so tolerate everything.
         tolerations: [
           {
             operator: 'Exists'
