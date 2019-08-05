@@ -25,9 +25,6 @@
       spec: {
         containers: [
           {
-            args: [
-              '-before-reboot-annotations=mlab-reboot-ok',
-            ],
             command: [
               '/bin/update-operator',
             ],
