@@ -52,7 +52,7 @@ groups:
 
   #  Calculates aggregate container memory usage across all nodes as a ratio of
   #  all memory on all nodes.
-  - record: container_name:container_memory_working_set_bytes_per_machine_bytes:ratio_sum
+  - record: container_name:container_memory_working_set_bytes_per_total_bytes:ratio_sum
     expr: |
       container_name:container_memory_working_set_bytes:sum
       / ignoring(container_label_io_kubernetes_container_name)
@@ -60,7 +60,7 @@ groups:
 
   # Calculates container memory usage on a node as a ratio of all memory on
   # that machine.
-  - record: machine_container_name:container_memory_working_set_bytes_per_total_memory:ratio_sum
+  - record: machine_container_name:container_memory_working_set_bytes_per_machine_bytes:ratio_sum
     expr: |
       sum by (machine, container_label_io_kubernetes_container_name) (
         container_memory_working_set_bytes{
