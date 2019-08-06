@@ -4,7 +4,8 @@ groups:
 
 ## PlatformCluster
 
-  #  Sums by container_name the 5m rate of CPU usage for a container.
+  #  Calculates aggregate 5m rate of CPU usage for a container across all
+  #  nodes.
   - record: container_name:container_cpu_usage_seconds:sum_rate5m
     expr: |
       sum by (container_label_io_kubernetes_container_name) (
@@ -16,34 +17,57 @@ groups:
         [5m])
       )
 
-  # Sums by machine and container_name the 5m rate of CPU usage.
-  - record: machine_container_name:container_cpu_usage_seconds:sum_rate5m
+  #  Calculates aggregate 5m rate of CPU usage for a container across all nodes
+  #  as a ratio of all CPU cores on all nodes.
+  - record: container_name:container_cpu_usage_seconds_per_total_cpus:ratio_sum_rate5m
+    expr: |
+      container_name:container_cpu_usage_seconds:sum_rate5m
+      / ignoring(container_label_io_kubernetes_container_name)
+        group_left sum(machine_cpu_cores)
+
+  # Calculates container CPU usage on a node as a ratio of all CPU cores on
+  # that machine.
+  - record: machine_container_name:container_cpu_usage_seconds_per_machine_cpus:ratio_sum_rate5m
     expr: |
       sum by (machine, container_label_io_kubernetes_container_name) (
         rate (container_cpu_usage_seconds_total{
           container_label_io_kubernetes_container_name != "POD",
           container_label_io_kubernetes_container_name != "",
+          machine=~"mlab[1-4].*",
           image != ""}
         [5m])
+      ) / on(machine) group_left machine_cpu_cores
+
+  #  Calculates aggregate container memory usage across all nodes.
+  - record: container_name:container_memory_working_set_bytes:sum
+    expr: |
+      sum by (container_label_io_kubernetes_container_name) (
+        container_memory_working_set_bytes{
+          container_label_io_kubernetes_container_name != "POD",
+          container_label_io_kubernetes_container_name != "",
+          machine=~"mlab[1-4].*",
+          image != ""
+        }
       )
 
-  # Calculates container memory usage as a ratio of all memory on a machine.
-  - record: container:container_memory_working_set_bytes:ratio
+  #  Calculates aggregate container memory usage across all nodes as a ratio of
+  #  all memory on all nodes.
+  - record: container_name:container_memory_working_set_bytes_per_machine_bytes:ratio_sum
     expr: |
-      container_memory_working_set_bytes{
-        container_label_io_kubernetes_container_name != "POD",
-        container_label_io_kubernetes_container_name != "",
-        machine=~"mlab[1-4].*",
-        image != ""
-      } / on(machine) group_left machine_memory_bytes
+      container_name:container_memory_working_set_bytes:sum
+      / ignoring(container_label_io_kubernetes_container_name)
+          group_left sum(machine_memory_bytes)
 
-  # Calculates container memory usage (sum of all bytes).
-  - record: container:container_memory_working_set_bytes:sum
+  # Calculates container memory usage on a node as a ratio of all memory on
+  # that machine.
+  - record: machine_container_name:container_memory_working_set_bytes_per_total_memory:ratio_sum
     expr: |
-      container_memory_working_set_bytes{
-        container_label_io_kubernetes_container_name != "POD",
-        container_label_io_kubernetes_container_name != "",
-        machine=~"mlab[1-4].*",
-        image != ""
-      }
+      sum by (machine, container_label_io_kubernetes_container_name) (
+        container_memory_working_set_bytes{
+          container_label_io_kubernetes_container_name != "POD",
+          container_label_io_kubernetes_container_name != "",
+          machine=~"mlab[1-4].*",
+          image != ""
+        } / on(machine) group_left machine_memory_bytes
+      )
 
