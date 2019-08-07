@@ -10,6 +10,9 @@ exp.Experiment('bismark', 9, []) + {
             image: 'measurementlab/bismark-test:v1.0.2',
           },
         ],
+        nodeSelector+: [
+          'mlab/project': 'mlab-sandbox',
+        ],
       },
     },
   },
