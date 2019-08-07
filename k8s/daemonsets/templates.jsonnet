@@ -91,8 +91,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
         containers: [
           {
             name: 'tcpinfo',
-            
-            image: 'measurementlab/tcp-info:stats2',
+            image: 'measurementlab/tcp-info:stats3',
             args: [
               if hostNetworking then
                 '-prometheusx.listen-address=127.0.0.1:9991'
