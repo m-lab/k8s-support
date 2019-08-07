@@ -11,7 +11,9 @@ exp.Experiment('bismark', 9, []) + {
           },
         ],
         nodeSelector+: [
-          'mlab/project': 'mlab-sandbox',
+          {
+            'mlab/project': 'mlab-sandbox',
+          },
         ],
       },
     },
