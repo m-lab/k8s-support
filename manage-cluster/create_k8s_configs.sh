@@ -29,7 +29,7 @@ if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
      --ext-str GCE_ZONE=${GCE_ZONE} \
      --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \
      --ext-str K8S_FLANNEL_VERSION=${K8S_FLANNEL_VERSION} \
-     --ext-str PROJECT_ID=mlab-sandbox
+     --ext-str PROJECT_ID=mlab-sandbox \
      ../system-sandbox.jsonnet > system-sandbox.json
 fi
 
