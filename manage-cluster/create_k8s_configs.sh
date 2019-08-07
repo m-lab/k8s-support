@@ -22,7 +22,18 @@ GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
-# Create the json configuration for the entire cluster (except for secrets)
+# Create the JSON configuration for ojects that should only be deployed to
+# the sandbox platform cluster.
+if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
+  jsonnet \
+     --ext-str GCE_ZONE=${GCE_ZONE} \
+     --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \
+     --ext-str K8S_FLANNEL_VERSION=${K8S_FLANNEL_VERSION} \
+     --ext-str PROJECT_ID=mlab-sandbox
+     ../system-sandbox.jsonnet > system-sandbox.json
+fi
+
+# Create the json configuration for everything else (except for secrets).
 jsonnet \
    --ext-str GCE_ZONE=${GCE_ZONE} \
    --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \

@@ -47,3 +47,11 @@ kubectl apply -f secret-configs/
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
 kubectl apply -f system.json
+
+# Apply sandbox-only configurations. As mentioned in the comment above, to be
+# sure, run kubectl-apply three times to be sure that everything gets created.
+if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
+  kubectl apply -f system-sandbox.json || true
+  kubectl apply -f system-sandbox.json || true
+  kubectl apply -f system-sandbox.json
+fi
