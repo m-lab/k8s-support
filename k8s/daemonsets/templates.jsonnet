@@ -91,6 +91,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
         containers: [
           {
             name: 'tcpinfo',
+            
             image: 'measurementlab/tcp-info:stats2',
             args: [
               if hostNetworking then
