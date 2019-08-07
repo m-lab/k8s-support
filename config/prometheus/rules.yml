@@ -21,11 +21,10 @@ groups:
 
   #  Calculates aggregate 5m rate of CPU usage for a container across all
   #  machines as a ratio of all CPU cores on all machines.
-  - record: container_name:container_cpu_usage_seconds_per_total_cpus:ratio_sum_rate5m
+  - record: container_name:container_cpu_usage_seconds:ratio
     expr: |
       container_name:container_cpu_usage_seconds:sum_rate5m
-      / ignoring(container_label_io_kubernetes_container_name)
-        group_left sum(machine_cpu_cores)
+      / scalar(sum(machine_cpu_cores))
 
   # Calculates aggregate container CPU usage on a machine.
   - record: machine_container_name:container_cpu_usage_seconds:sum_rate5m
@@ -41,7 +40,7 @@ groups:
 
   # Calculates aggregate container CPU usage on a node as a ratio of all CPU
   # cores on that machine.
-  - record: machine_container_name:container_cpu_usage_seconds_per_machine_cpus:ratio_sum_rate5m
+  - record: machine_container_name:container_cpu_usage_seconds:ratio
     expr: |
       sum by (machine, container_label_io_kubernetes_container_name) (
         rate (container_cpu_usage_seconds_total{
@@ -69,11 +68,10 @@ groups:
 
   #  Calculates aggregate container memory usage across all machines as a ratio of
   #  all memory on all machines.
-  - record: container_name:container_memory_working_set_bytes_per_total_bytes:ratio_sum
+  - record: container_name:container_memory_working_set_bytes:ratio
     expr: |
       container_name:container_memory_working_set_bytes:sum
-      / ignoring(container_label_io_kubernetes_container_name)
-          group_left sum(machine_memory_bytes)
+      / scalar(sum(machine_memory_bytes))
 
   # Calculates aggregate container memory usage on a machine.
   - record: machine_container_name:container_memory_working_set_bytes:sum
@@ -89,7 +87,7 @@ groups:
 
   # Calculates aggregate container memory usage on a machine as a ratio of all
   # memory on that machine.
-  - record: machine_container_name:container_memory_working_set_bytes_per_machine_bytes:ratio_sum
+  - record: machine_container_name:container_memory_working_set_bytes:ratio
     expr: |
       sum by (machine, container_label_io_kubernetes_container_name) (
         container_memory_working_set_bytes{
