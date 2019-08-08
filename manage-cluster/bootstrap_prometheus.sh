@@ -35,11 +35,17 @@ GCP_ARGS=("--project=${PROJECT}" "--quiet")
 GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 # The type of GCE VM which will be deployed.
-if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
-  MACHINE_TYPE="n1-standard-2"
-else
-  MACHINE_TYPE="n1-highmem-4"
-fi
+case $PROJECT in
+  mlab-sandbox)
+    MACHINE_TYPE="n1-standard-2";;
+  mlab-staging)
+    MACHINE_TYPE="n1-standard-8";;
+  mlab-oti)
+    MACHINE_TYPE="n1-highmem-8";;
+  *)
+    echo "Unknown GCP project: ${PROJECT}"
+    exit 1
+esac
 
 # Prometheus public IP
 CURRENT_PROMETHEUS_IP=$(gcloud compute addresses list \
@@ -163,7 +169,7 @@ if [[ -z "${EXISTING_DISK}" ]]; then
   gcloud compute disks create \
       "${DISK_NAME}" \
       --size "200GB" \
-      --type "pd-standard" \
+      --type "pd-ssd" \
       --labels "${PROM_BASE_NAME}=true" \
       "${GCE_ARGS[@]}" || :
 fi
