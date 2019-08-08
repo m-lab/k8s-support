@@ -48,17 +48,8 @@ groups:
   # cores on that machine.
   - record: machine_daemonset:container_cpu_usage_seconds:ratio
     expr: |
-      sum by (machine, daemonset) (
-        label_replace(
-          rate (container_cpu_usage_seconds_total{
-            container_label_io_kubernetes_container_name != "POD",
-            container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""}
-          [5m]),
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        )
-      ) / on(machine) group_left machine_cpu_cores
+      machine_daemonset:container_cpu_usage_seconds:sum_rate5m
+      / on(machine) group_left machine_cpu_cores
 
 
   ## MEMORY METRICS
@@ -104,15 +95,6 @@ groups:
   # memory on that machine.
   - record: machine_daemonset:container_memory_working_set_bytes:ratio
     expr: |
-      sum by (machine, daemonset) (
-        label_replace(
-          container_memory_working_set_bytes{
-            container_label_io_kubernetes_container_name != "POD",
-            container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""
-          },
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        ) / on(machine) group_left machine_memory_bytes
-      )
+      machine_daemonset:container_memory_working_set_bytes:sum
+      / on(machine) group_left machine_memory_bytes
 
