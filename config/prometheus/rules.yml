@@ -27,7 +27,7 @@ groups:
   - record: daemonset:container_cpu_usage_seconds:ratio
     expr: |
       daemonset:container_cpu_usage_seconds:sum_rate5m
-      / scalar(sum(machine_cpu_cores))
+      / scalar(sum(machine_cpu_cores{machine=~"mlab[1-4].*"}))
 
   # Calculates aggregate DaemonSet CPU usage on a machine.
   - record: machine_daemonset:container_cpu_usage_seconds:sum_rate5m
@@ -83,7 +83,7 @@ groups:
   - record: daemonset:container_memory_working_set_bytes:ratio
     expr: |
       daemonset:container_memory_working_set_bytes:sum
-      / scalar(sum(machine_memory_bytes))
+      / scalar(sum(machine_memory_bytes{machine=~"mlab[1-4].*"}))
 
   # Calculates aggregate DaemonSet memory usage on a machine.
   - record: machine_daemonset:container_memory_working_set_bytes:sum
