@@ -4,43 +4,97 @@ groups:
 
 ## PlatformCluster
 
-  #  Optimize aggregation of container CPU and memory utilization by containter_name.
-  - record: container_name:container_cpu_usage_seconds:sum_rate5m
+  ## CPU METRICS
+
+  #  Calculates aggregate 5m rate of CPU usage for a DaemonSet across all
+  #  machines.
+  - record: daemonset:container_cpu_usage_seconds:sum_rate5m
     expr: |
-      sum by (container_label_io_kubernetes_container_name) (
-        rate (container_cpu_usage_seconds_total{
-          container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "",
-          image != ""}
-        [5m])
-      )
-  - record: container_name:container_memory_working_set_bytes:sum_rate5m
-    expr: |
-      sum by (container_label_io_kubernetes_container_name) (
-        rate (container_memory_working_set_bytes{
-          container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "",
-          image != ""}
-        [5m])
+      sum by (daemonset) (
+        label_replace(
+          rate (container_cpu_usage_seconds_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""}
+          [5m]),
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
       )
 
-  # Optimize aggregation of container CPU and memory utilization by containter_name.
-  - record: node_container_name:container_cpu_usage_seconds:sum_rate5m
+  #  Calculates aggregate 5m rate of CPU usage for a DaemonSet across all
+  #  machines as a ratio of all CPU cores on all machines.
+  - record: daemonset:container_cpu_usage_seconds:ratio
     expr: |
-      sum by (machine, container_label_io_kubernetes_container_name) (
-        rate (container_cpu_usage_seconds_total{
-          container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "",
-          image != ""}
-        [5m])
-      )
-  - record: node_container_name:container_memory_working_set_bytes:sum_rate5m
+      daemonset:container_cpu_usage_seconds:sum_rate5m
+      / scalar(sum(machine_cpu_cores{machine=~"mlab[1-4].*"}))
+
+  # Calculates aggregate DaemonSet CPU usage on a machine.
+  - record: machine_daemonset:container_cpu_usage_seconds:sum_rate5m
     expr: |
-      sum by (machine, container_label_io_kubernetes_container_name) (
-        rate (container_memory_working_set_bytes{
-          container_label_io_kubernetes_container_name != "POD",
-          container_label_io_kubernetes_container_name != "",
-          image != ""}
-        [5m])
+      sum by (machine, daemonset) (
+        label_replace(
+          rate (container_cpu_usage_seconds_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""}
+          [5m]),
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
       )
+
+  # Calculates aggregate DaemonSet CPU usage on a node as a ratio of all CPU
+  # cores on that machine.
+  - record: machine_daemonset:container_cpu_usage_seconds:ratio
+    expr: |
+      machine_daemonset:container_cpu_usage_seconds:sum_rate5m
+      / on(machine) group_left machine_cpu_cores
+
+
+  ## MEMORY METRICS
+
+  #  Calculates aggregate DaemonSet memory usage across all machines.
+  - record: daemonset:container_memory_working_set_bytes:sum
+    expr: |
+      sum by (daemonset) (
+        label_replace(
+          container_memory_working_set_bytes{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
+
+  #  Calculates aggregate DaemonSet memory usage across all machines as a ratio of
+  #  all memory on all machines.
+  - record: daemonset:container_memory_working_set_bytes:ratio
+    expr: |
+      daemonset:container_memory_working_set_bytes:sum
+      / scalar(sum(machine_memory_bytes{machine=~"mlab[1-4].*"}))
+
+  # Calculates aggregate DaemonSet memory usage on a machine.
+  - record: machine_daemonset:container_memory_working_set_bytes:sum
+    expr: |
+      sum by (machine, daemonset) (
+        label_replace(
+          container_memory_working_set_bytes{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
+
+  # Calculates aggregate DaemonSet memory usage on a machine as a ratio of all
+  # memory on that machine.
+  - record: machine_daemonset:container_memory_working_set_bytes:ratio
+    expr: |
+      machine_daemonset:container_memory_working_set_bytes:sum
+      / on(machine) group_left machine_memory_bytes
 
