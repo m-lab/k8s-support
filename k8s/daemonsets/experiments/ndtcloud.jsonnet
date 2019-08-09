@@ -1,6 +1,7 @@
 local exp = import '../templates.jsonnet';
+local expName = 'ndtcloud';
 
-exp.ExperimentNoIndex('ndtcloud', ['ndt5', 'ndt7'], true) + {
+exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
   spec+: {
     template+: {
       spec+: {
@@ -13,7 +14,7 @@ exp.ExperimentNoIndex('ndtcloud', ['ndt5', 'ndt7'], true) + {
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/ndt',
+              '-datadir=/var/spool/' + expName,
             ],
             env: [
               {
@@ -32,7 +33,7 @@ exp.ExperimentNoIndex('ndtcloud', ['ndt5', 'ndt7'], true) + {
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount('ndtcloud'),
+              exp.VolumeMount(expName),
             ],
             ports: [
               {
