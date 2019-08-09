@@ -107,9 +107,9 @@ groups:
       sum by (daemonset) (
         label_replace(
           container_network_transmit_bytes_total{
-            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
+            machine =~ "mlab[1-4].*",
             image != ""
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
@@ -122,9 +122,9 @@ groups:
       sum by (daemonset) (
         label_replace(
           container_network_receive_bytes_total{
-            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
+            machine =~ "mlab[1-4].*",
             image != ""
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
@@ -137,9 +137,9 @@ groups:
       sum by (machine, daemonset) (
         label_replace(
           container_network_transmit_bytes_total{
-            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
+            machine =~ "mlab[1-4].*",
             image != ""
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
@@ -152,9 +152,9 @@ groups:
       sum by (machine, daemonset) (
         label_replace(
           container_network_receive_bytes_total{
-            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
+            machine =~ "mlab[1-4].*",
             image != ""
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
