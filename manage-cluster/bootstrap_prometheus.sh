@@ -135,7 +135,7 @@ fi
 #######################################################
 
 # Create the new node
-./add_platform_cluster_cloud_node.sh -p "${PROJECT}" \
+./add_k8s_cloud_node.sh -p "${PROJECT}" \
     -m "${MACHINE_TYPE}" \
     -n "${PROM_BASE_NAME}" \
     -a "${PROM_BASE_NAME}" \
