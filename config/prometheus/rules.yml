@@ -98,3 +98,65 @@ groups:
       machine_daemonset:container_memory_working_set_bytes:sum
       / on(machine) group_left machine_memory_bytes
 
+
+  ## NETWORK METRICS
+
+  # Calculates aggregate DaemonSet network trasmit bytes on the platform.
+  - record: daemonset:container_network_transmit_bytes_total:sum
+    expr: |
+      sum by (daemonset) (
+        label_replace(
+          container_network_transmit_bytes_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
+
+  # Calculates aggregate DaemonSet network receive bytes on the platform.
+  - record: daemonset:container_network_receive_bytes_total:sum
+    expr: |
+      sum by (daemonset) (
+        label_replace(
+          container_network_receive_bytes_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
+
+  # Calculates aggregate DaemonSet network trasmit bytes on a machine.
+  - record: machine_daemonset:container_network_transmit_bytes_total:sum
+    expr: |
+      sum by (machine, daemonset) (
+        label_replace(
+          container_network_transmit_bytes_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
+
+  # Calculates aggregate DaemonSet network receive bytes on a machine.
+  - record: machine_daemonset:container_network_receive_bytes_total:sum
+    expr: |
+      sum by (machine, daemonset) (
+        label_replace(
+          container_network_receive_bytes_total{
+            container_label_io_kubernetes_container_name != "POD",
+            container_label_io_kubernetes_container_name != "",
+            machine=~"mlab[1-4].*",
+            image != ""
+          },
+          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        )
+      )
