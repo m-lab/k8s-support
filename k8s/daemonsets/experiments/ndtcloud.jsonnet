@@ -25,12 +25,7 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
               exp.uuid.volumemount,
               exp.VolumeMount(expName),
             ],
-            ports: [
-              {
-                containerPort: 9990,
-              },
-            ],
-
+            ports: [],
           },
           exp.RBACProxy('ndtcloud', 9990),
         ],
