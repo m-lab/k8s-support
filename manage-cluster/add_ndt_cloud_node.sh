@@ -7,12 +7,16 @@
 
 set -euxo pipefail
 
-USAGE="USAGE: $0 <cloud-project> <cloud-site>"
+USAGE="USAGE: $0 <cloud-project> <cloud-site> <gce-zone>"
 PROJECT=${1:? Please specify a GCP project: ${USAGE}}
 CLOUD_SITE=${2:? Please specify a cloud site (ending in 'c'): ${USAGE}}
 CLOUD_ZONE=${3:? Please specify the GCP zone for this VM: ${USAGE}}
 
-SITE_REGEX="[a-z]{3}[0-9]c"
+if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
+  SITE_REGEX="[a-z]{3}[0-9]t"
+else
+  SITE_REGEX="[a-z]{3}[0-9]c"
+fi
 
 # Source configuration variables and bootstrap functions.
 source k8s_deploy.conf
@@ -20,7 +24,7 @@ source bootstraplib.sh
 
 # Don't proceed if the site name doesn't match a standard cloud site name.
 if ! [[ "${CLOUD_SITE}" =~ $SITE_REGEX ]]; then
-  echo "Cloud sites must match the regex [a-z]{3}[0-9]c."
+  echo "Cloud sites for project ${PROJECT} must match the regex ${SITE_REGEX}."
   exit 1
 fi
 
@@ -64,6 +68,6 @@ if [[ -z "${EXISTING_SUBNET}" ]]; then
 fi
 
 ./add_k8s_cloud_node.sh -p "${PROJECT}" -z "${CLOUD_ZONE}" \
-    -n "${GCE_NAME}" -h "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
+    -n "${GCE_NAME}" -H "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
     -l "mlab/type=cloud mlab/run=ndtcloud mlab/machine=mlab1 mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
 

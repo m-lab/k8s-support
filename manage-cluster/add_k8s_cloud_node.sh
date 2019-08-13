@@ -18,7 +18,7 @@
 set -euxo pipefail
 
 usage() {
-  echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-h <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
+  echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-H <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
 ADDRESS=""
@@ -30,10 +30,10 @@ GCE_ZONE=""
 PROJECT=""
 TAGS=""
 
-while getopts ':a:h:l:m:n:p:t:z:' opt; do
+while getopts ':a:H:l:m:n:p:t:z:' opt; do
   case $opt in
     a) ADDRESS=$OPTARG ;;
-    h) HOST_NAME=$OPTARG ;;
+    H) HOST_NAME=$OPTARG ;;
     l) LABELS="$LABELS $OPTARG" ;;
     m) MACHINE_TYPE=$OPTARG ;;
     n) GCE_NAME=$OPTARG ;;
