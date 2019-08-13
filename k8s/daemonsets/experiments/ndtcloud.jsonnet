@@ -13,18 +13,8 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
+              '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/' + expName,
-            ],
-            env: [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
             ],
             volumeMounts: [
               {
@@ -42,7 +32,9 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
             ],
 
           },
+          exp.RBACProxy('ndtcloud', 9990),
         ],
+
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following
         // shutdown sequence. After the grace period, kubernetes sends
