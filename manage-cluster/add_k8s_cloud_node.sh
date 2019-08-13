@@ -18,7 +18,7 @@
 set -euxo pipefail
 
 usage() {
-  echo "USAGE: $0 -p <project> [-m <machine-type>] [-n <gce-name>] [-h <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
+  echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-h <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
 ADDRESS=""
@@ -26,10 +26,11 @@ HOST_NAME=""
 LABELS=""
 MACHINE_TYPE=""
 GCE_NAME=""
+GCE_ZONE=""
 PROJECT=""
 TAGS=""
 
-while getopts ':a:h:l:m:n:p:t:' opt; do
+while getopts ':a:h:l:m:n:p:t:z:' opt; do
   case $opt in
     a) ADDRESS=$OPTARG ;;
     h) HOST_NAME=$OPTARG ;;
@@ -44,6 +45,7 @@ while getopts ':a:h:l:m:n:p:t:' opt; do
         TAGS="$TAGS,$OPTARG"
       fi
       ;;
+    z) GCE_ZONE=$OPTARG ;;
     \?) echo "Invalid option: -$OPTARG"; usage; exit 1 ;;
     :) echo "Options -$OPTARG requires a argument."; usage; exit 1 ;;
   esac
@@ -61,13 +63,18 @@ source k8s_deploy.conf
 GCE_REGION="GCE_REGION_${PROJECT//-/_}"
 GCE_ZONES="GCE_ZONES_${PROJECT//-/_}"
 
-GCE_ZONE="${!GCE_REGION}-$(echo ${!GCE_ZONES} | awk '{print $1}')"
+MASTER_ZONE="${!GCE_REGION}-$(echo ${!GCE_ZONES} | awk '{print $1}')"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
-GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
+
+if [[ -z "${GCE_ZONE}" ]]; then
+  GCE_ARGS=("--zone=${MASTER_ZONE}" "${GCP_ARGS[@]}")
+else
+  GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
+fi
 
 # Use the first k8s master from the region to contact to join this cloud node to
 # the cluster.
-K8S_MASTER="master-${GCE_BASE_NAME}-${GCE_ZONE}"
+K8S_MASTER="master-${GCE_BASE_NAME}-${MASTER_ZONE}"
 
 if [[ -z "$GCE_NAME" ]]; then
   # Get a list of all VMs in the desired project that have a name in the right
@@ -190,7 +197,7 @@ EOF
 # itself instead of requiring that the user running this script also have root
 # on master-platform-master-<zone>.  We should figure out how that should work
 # and do that instead of the below.
-JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
+JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
@@ -223,7 +230,7 @@ EXTERNAL_IP=$(gcloud compute instances list \
     --filter="name~'${GCE_NAME}'")
 
 # Ssh to the master and fix the network annotation for the node.
-gcloud compute ssh "${K8S_MASTER}" "${GCE_ARGS[@]}" <<EOF
+gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
   sudo -s
 
