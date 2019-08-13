@@ -8,7 +8,7 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
         containers+: [
           {
             name: 'ndt-server',
-            image: 'measurementlab/ndt-server:v0.10.2',
+            image: 'measurementlab/ndt-server:' + exp.ndtVersion,
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
