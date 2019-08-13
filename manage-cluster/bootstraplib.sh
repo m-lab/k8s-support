@@ -482,7 +482,7 @@ function delete_token_server_backend {
   fi
 }
 
-# Find the lowest network number available for a new epoxy subnet.
+# Find the lowest network number available for a new subnet.
 # Stolen from https://github.com/m-lab/epoxy/blob/master/deploy_epoxy_container.sh#L54
 function find_lowest_network_number() {
   local current_sequence=$( mktemp )

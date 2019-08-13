@@ -187,6 +187,15 @@ if [[ -n "${EXISTING_TOKEN_SERVER_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+EXISTING_NDT_CLOUD_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-ndt-cloud" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_NDT_CLOUD_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-ndt-cloud" \
+      "${GCP_ARGS[@]}"
+fi
+
+
 
 # Delete any existing forwarding rule for the internal load balancer.
 EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
@@ -411,6 +420,14 @@ gcloud compute firewall-rules create "${GCE_BASE_NAME}-token-server" \
     --action "allow" \
     --rules "tcp:8800" \
     --source-ranges "${EPOXY_SUBNET}" \
+    "${GCP_ARGS[@]}"
+
+# Create firewall rule allowing all access to ndt-cloud nodes.
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-ndt-cloud" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "all" \
+    --target-tags "ndt-cloud" \
     "${GCP_ARGS[@]}"
 
 

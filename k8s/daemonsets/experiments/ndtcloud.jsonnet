@@ -1,6 +1,7 @@
 local exp = import '../templates.jsonnet';
+local expName = 'ndtcloud';
 
-exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
+exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
   spec+: {
     template+: {
       spec+: {
@@ -12,18 +13,8 @@ exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/ndt',
-            ],
-            env: [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
+              '-prometheusx.listen-address=127.0.0.1:9990',
+              '-datadir=/var/spool/' + expName,
             ],
             volumeMounts: [
               {
@@ -32,16 +23,13 @@ exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount('ndt'),
+              exp.VolumeMount(expName),
             ],
-            ports: [
-              {
-                containerPort: 9990,
-              },
-            ],
-
+            ports: [],
           },
+          exp.RBACProxy('ndtcloud', 9990),
         ],
+
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following
         // shutdown sequence. After the grace period, kubernetes sends
@@ -67,6 +55,11 @@ exp.Experiment('ndt', 2, ['ndt5', 'ndt7']) + {
             },
           },
         ],
+        nodeSelector: {
+          'mlab/type': 'cloud',
+          'mlab/run': expName,
+        },
+        hostNetwork: true,
       },
     },
   },
