@@ -62,7 +62,7 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
         ],
         nodeSelector: {
           'mlab/type': 'cloud',
-          'mlab/machine': 'mlab1'
+          'mlab/run': expName,
         },
         hostNetwork: true,
       },

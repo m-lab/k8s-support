@@ -65,5 +65,5 @@ fi
 
 ./add_k8s_cloud_node.sh -p "${PROJECT}" -z "${CLOUD_ZONE}" \
     -n "${GCE_NAME}" -h "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
-    -l "mlab/type=cloud mlab/machine=mlab1 mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
+    -l "mlab/type=cloud mlab/run=ndtcloud mlab/machine=mlab1 mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
 
