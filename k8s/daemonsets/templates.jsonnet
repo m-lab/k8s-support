@@ -1,3 +1,5 @@
+local ndtVersion = 'v0.11.0'
+
 local uuid = {
   initContainer: {
     // Write out the UUID prefix to a well-known location.
@@ -294,4 +296,6 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
+
+  ndtVersion: ndtVersion,
 }
