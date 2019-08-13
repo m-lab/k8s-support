@@ -32,8 +32,16 @@ fi
 GCE_REGION="${CLOUD_ZONE%-*}"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
-GCE_NAME="mlab1-${CLOUD_SITE}-measurement-lab-org"
-K8S_NAME="mlab1.${CLOUD_SITE}.measurement-lab.org"
+# All mlab-staging nodes are mlab4s. For mlab-sandbox and mlab-oti just use
+# mlab1.
+if [[ "${PROJECT}" == "mlab-staging" ]]; then
+  MLAB_MACHINE="mlab4"
+else
+  MLAB_MACHINE="mlab1"
+fi
+
+GCE_NAME="${MLAB_MACHINE}-${CLOUD_SITE}-measurement-lab-org"
+K8S_NAME="${MLAB_MACHINE}.${CLOUD_SITE}.measurement-lab.org"
 
 # Create the static cloud public IP, if it doesn't already exist.
 CURRENT_CLOUD_IP=$(gcloud compute addresses list \
@@ -69,5 +77,5 @@ fi
 
 ./add_k8s_cloud_node.sh -p "${PROJECT}" -z "${CLOUD_ZONE}" \
     -n "${GCE_NAME}" -H "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
-    -l "mlab/type=cloud mlab/run=ndtcloud mlab/machine=mlab1 mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
+    -l "mlab/type=cloud mlab/run=ndtcloud mlab/machine=${MLAB_MACHINE} mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
 
