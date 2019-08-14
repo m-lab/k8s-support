@@ -66,123 +66,133 @@ local RBACProxy(name, port) = {
   ],
 };
 
-local Tcpinfo(expName, hostNetwork) = {
-  name: 'tcpinfo',
-  image: 'measurementlab/tcp-info:v1.0.1',
-  args: [
-    if hostNetwork then
-      '-prometheusx.listen-address=127.0.0.1:9991'
-    else
-      '-prometheusx.listen-address=$(PRIVATE_IP):9991'
-    ,
-    '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
-    '-uuid-prefix-file=' + uuid.prefixfile,
-  ],
-  env: if hostNetwork then [] else [
-    {
-      name: 'PRIVATE_IP',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'status.podIP',
+local Tcpinfo(expName, tcpPort, hostNetwork) = [
+  {
+    name: 'tcpinfo',
+    image: 'measurementlab/tcp-info:v1.0.1',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort
+      ,
+      '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
+      '-uuid-prefix-file=' + uuid.prefixfile,
+    ],
+    env: if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
         },
       },
-    },
-  ],
-  ports: if hostNetwork then [] else [
-    {
-      containerPort: 9991,
-    },
-  ],
-  volumeMounts: [
-    VolumeMount(expName),
-    uuid.volumemount,
-  ],
-};
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      uuid.volumemount,
+    ],
+  },
+  if hostNetwork then RBACProxy('tcpinfo', tcpPort),
+];
 
-local Traceroute(expName, hostNetwork) = {
-  name: 'traceroute',
-  image: 'measurementlab/traceroute-caller:v0.0.6',
-  args: [
-    if hostNetwork then
-      '-prometheusx.listen-address=127.0.0.1:9992'
-    else
-      '-prometheusx.listen-address=$(PRIVATE_IP):9992',
-    '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
-    '-uuid-prefix-file=' + uuid.prefixfile,
-  ],
-  env: if hostNetwork then [] else [
-    {
-      name: 'PRIVATE_IP',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'status.podIP',
-        },
-      },
-    },
-  ],
-  ports: if hostNetwork then [] else [
-    {
-      containerPort: 9992,
-    },
-  ],
-  volumeMounts: [
-    VolumeMount(expName),
-    uuid.volumemount,
-  ],
-};
 
-local Pusher(expName, datatypes, hostNetwork, bucket) = {
-  name: 'pusher',
-  image: 'measurementlab/pusher:v1.9',
-  args: [
-    if hostNetwork then
-      '-prometheusx.listen-address=127.0.0.1:9993'
-    else
-      '-prometheusx.listen-address=$(PRIVATE_IP):9993',
-    '-bucket=' + bucket,
-    '-experiment=' + expName,
-    '-archive_size_threshold=50MB',
-    '-directory=/var/spool/' + expName,
-    '-datatype=tcpinfo',
-    '-datatype=traceroute',
-  ] + ['-datatype=' + d for d in datatypes],
-  env: [
-    {
-      name: 'GOOGLE_APPLICATION_CREDENTIALS',
-      value: '/etc/credentials/pusher.json',
-    },
-    {
-      name: 'MLAB_NODE_NAME',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'spec.nodeName',
+local Traceroute(expName, tcpPort, hostNetwork) = [
+  {
+    name: 'traceroute',
+    image: 'measurementlab/traceroute-caller:v0.0.6',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+      '-uuid-prefix-file=' + uuid.prefixfile,
+    ],
+    env: if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
         },
       },
-    },
-  ] + if hostNetwork then [] else [
-    {
-      name: 'PRIVATE_IP',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'status.podIP',
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      uuid.volumemount,
+    ],
+  },
+  if hostNetwork then RBACProxy('traceroute', tcpPort),
+];
+
+local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
+  {
+    name: 'pusher',
+    image: 'measurementlab/pusher:v1.9',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-bucket=' + bucket,
+      '-experiment=' + expName,
+      '-archive_size_threshold=50MB',
+      '-directory=/var/spool/' + expName,
+      '-datatype=tcpinfo',
+      '-datatype=traceroute',
+    ] + ['-datatype=' + d for d in datatypes],
+    env: [
+      {
+        name: 'GOOGLE_APPLICATION_CREDENTIALS',
+        value: '/etc/credentials/pusher.json',
+      },
+      {
+        name: 'MLAB_NODE_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'spec.nodeName',
+          },
         },
       },
-    },
-  ],
-  ports: if hostNetwork then [] else [
-    {
-      containerPort: 9993,
-    },
-  ],
-  volumeMounts: [
-    VolumeMount(expName),
-    {
-      mountPath: '/etc/credentials',
-      name: 'pusher-credentials',
-      readOnly: true,
-    },
-  ],
-};
+    ] + if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      {
+        mountPath: '/etc/credentials',
+        name: 'pusher-credentials',
+        readOnly: true,
+      },
+    ],
+  },
+  if hostNetwork then RBACProxy('pusher', tcpPort),
+];
 
 local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   apiVersion: 'extensions/v1beta1',
@@ -208,15 +218,12 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
         },
       },
       spec: {
-        containers: [
-          Tcpinfo(name, hostNetwork),
-          Traceroute(name, hostNetwork),
-          Pusher(name, datatypes, hostNetwork, bucket),
-        ] + if hostNetwork then [
-          RBACProxy('tcpinfo', 9991),
-          RBACProxy('traceroute', 9992),
-          RBACProxy('pusher', 9993),
-        ] else [],
+        containers:
+          std.flattenArrays([
+            Tcpinfo(name, 9991, hostNetwork),
+            Traceroute(name, 9992, hostNetwork),
+            Pusher(name, 9993, datatypes, hostNetwork, bucket),
+          ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
