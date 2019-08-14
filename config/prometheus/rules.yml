@@ -100,71 +100,76 @@ groups:
 
 
   ## NETWORK METRICS
+  #
+  # These network metric expressions deliberately exclude the 'host' and
+  # 'node-exporter' which run with hostNetwork=true. Because of this they
+  # capture essentially all node network traffic, which duplicates regular
+  # experiment metrics as well as being just generally not useful.
 
   # Calculates aggregate DaemonSet network trasmit bytes on the platform.
-  - record: daemonset:container_network_transmit_bytes_total:sum
+  - record: workload:container_network_transmit_bytes_total:sum
     expr: |
-      sum by (daemonset) (
-        label_replace(
-          rate(
-            container_network_transmit_bytes_total{
-              container_label_io_kubernetes_container_name = "POD",
-              container_label_io_kubernetes_container_name != "",
-              machine =~ "mlab[1-4].*",
-              image != ""
-            }
-          [5m]) * 8,
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        )
+      sum by (container_label_workload) (
+        rate(
+          container_network_transmit_bytes_total{
+            container_label_io_kubernetes_container_name = "POD",
+            container_label_io_kubernetes_container_name != "",
+            container_label_workload != "",
+            container_label_workload !~ "(host|node-exporter)",
+            machine =~ "mlab[1-4].*",
+            image != ""
+          }
+        [1h]) * 8
       )
+    )
 
   # Calculates aggregate DaemonSet network receive bytes on the platform.
-  - record: daemonset:container_network_receive_bytes_total:sum
+  - record: workload:container_network_receive_bytes_total:sum
     expr: |
-      sum by (daemonset) (
-        label_replace(
-          rate(
-            container_network_receive_bytes_total{
-              container_label_io_kubernetes_container_name = "POD",
-              container_label_io_kubernetes_container_name != "",
-              machine =~ "mlab[1-4].*",
-              image != ""
-            }
-          [5m]) * 8,
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        )
+      sum by (container_label_workload) (
+        rate(
+          container_network_receive_bytes_total{
+            container_label_io_kubernetes_container_name = "POD",
+            container_label_io_kubernetes_container_name != "",
+            container_label_workload != "",
+            container_label_workload !~ "(host|node-exporter)",
+            machine =~ "mlab[1-4].*",
+            image != ""
+          }
+        [5m]) * 8
       )
+    )
 
   # Calculates aggregate DaemonSet network trasmit bytes on a machine.
-  - record: machine_daemonset:container_network_transmit_bytes_total:sum
+  - record: machine_workload:container_network_transmit_bytes_total:sum
     expr: |
-      sum by (machine, daemonset) (
-        label_replace(
-          rate(
-            container_network_transmit_bytes_total{
-              container_label_io_kubernetes_container_name = "POD",
-              container_label_io_kubernetes_container_name != "",
-              machine =~ "mlab[1-4].*",
-              image != ""
-            }
-          [5m]) * 8,
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        )
+      sum by (machine, container_label_workload) (
+        rate(
+          container_network_transmit_bytes_total{
+            container_label_io_kubernetes_container_name = "POD",
+            container_label_io_kubernetes_container_name != "",
+            container_label_workload != "",
+            container_label_workload !~ "(host|node-exporter)",
+            machine =~ "mlab[1-4].*",
+            image != ""
+          }
+        [5m]) * 8
       )
+    )
 
   # Calculates aggregate DaemonSet network receive bytes on a machine.
-  - record: machine_daemonset:container_network_receive_bytes_total:sum
+  - record: machine_workload:container_network_receive_bytes_total:sum
     expr: |
-      sum by (machine, daemonset) (
-        label_replace(
-          rate(
-            container_network_receive_bytes_total{
-              container_label_io_kubernetes_container_name = "POD",
-              container_label_io_kubernetes_container_name != "",
-              machine =~ "mlab[1-4].*",
-              image != ""
-            }
-          [5m]) * 8,
-          "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
-        )
+      sum by (machine, container_label_workload) (
+        rate(
+          container_network_receive_bytes_total{
+            container_label_io_kubernetes_container_name = "POD",
+            container_label_io_kubernetes_container_name != "",
+            container_label_workload != "",
+            container_label_workload !~ "(host|node-exporter)",
+            machine =~ "mlab[1-4].*",
+            image != ""
+          }
+        [5m]) * 8
       )
+    )
