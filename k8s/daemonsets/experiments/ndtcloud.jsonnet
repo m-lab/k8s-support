@@ -1,7 +1,7 @@
 local exp = import '../templates.jsonnet';
 local expName = 'ndtcloud';
 
-exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
+exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID')) + {
   spec+: {
     template+: {
       spec+: {
@@ -27,7 +27,9 @@ exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true) + {
             ],
             ports: [],
           },
-          exp.RBACProxy('ndtcloud', 9990),
+
+          exp.RBACProxy(expName, 9990),
+
         ],
 
         // The default grace period after k8s sends SIGTERM is 30s. We
