@@ -6,9 +6,9 @@ groups:
 
   ## CPU METRICS
 
-  #  Calculates aggregate 5m rate of CPU usage for a DaemonSet across all
+  #  Calculates aggregate 1h rate of CPU usage for a DaemonSet across all
   #  machines.
-  - record: daemonset:container_cpu_usage_seconds:sum_rate5m
+  - record: daemonset:container_cpu_usage_seconds:sum_rate1h
     expr: |
       sum by (daemonset) (
         label_replace(
@@ -17,20 +17,20 @@ groups:
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*",
             image != ""}
-          [5m]),
+          [1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
       )
 
-  #  Calculates aggregate 5m rate of CPU usage for a DaemonSet across all
+  #  Calculates aggregate 1h rate of CPU usage for a DaemonSet across all
   #  machines as a ratio of all CPU cores on all machines.
   - record: daemonset:container_cpu_usage_seconds:ratio
     expr: |
-      daemonset:container_cpu_usage_seconds:sum_rate5m
+      daemonset:container_cpu_usage_seconds:sum_rate1h
       / scalar(sum(machine_cpu_cores{machine=~"mlab[1-4].*"}))
 
   # Calculates aggregate DaemonSet CPU usage on a machine.
-  - record: machine_daemonset:container_cpu_usage_seconds:sum_rate5m
+  - record: machine_daemonset:container_cpu_usage_seconds:sum_rate1h
     expr: |
       sum by (machine, daemonset) (
         label_replace(
@@ -39,7 +39,7 @@ groups:
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*",
             image != ""}
-          [5m]),
+          [1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
       )
@@ -48,7 +48,7 @@ groups:
   # cores on that machine.
   - record: machine_daemonset:container_cpu_usage_seconds:ratio
     expr: |
-      machine_daemonset:container_cpu_usage_seconds:sum_rate5m
+      machine_daemonset:container_cpu_usage_seconds:sum_rate1h
       / on(machine) group_left machine_cpu_cores
 
 
@@ -136,7 +136,7 @@ groups:
             machine =~ "mlab[1-4].*",
             image != ""
           }
-        [5m]) * 8
+        [1h]) * 8
       )
     )
 
@@ -153,7 +153,7 @@ groups:
             machine =~ "mlab[1-4].*",
             image != ""
           }
-        [5m]) * 8
+        [1h]) * 8
       )
     )
 
@@ -170,6 +170,6 @@ groups:
             machine =~ "mlab[1-4].*",
             image != ""
           }
-        [5m]) * 8
+        [1h]) * 8
       )
     )
