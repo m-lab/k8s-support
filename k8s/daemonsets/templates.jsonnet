@@ -66,7 +66,125 @@ local RBACProxy(name, port) = {
   ],
 };
 
-local ExperimentNoIndex(name, datatypes, hostNetworking) = {
+local Tcpinfo(expName, hostNetwork) = {
+  name: 'tcpinfo',
+  image: 'measurementlab/tcp-info:v1.0.1',
+  args: [
+    if hostNetwork then
+      '-prometheusx.listen-address=127.0.0.1:9991'
+    else
+      '-prometheusx.listen-address=$(PRIVATE_IP):9991'
+    ,
+    '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
+    '-uuid-prefix-file=' + uuid.prefixfile,
+  ],
+  env: if hostNetwork then [] else [
+    {
+      name: 'PRIVATE_IP',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'status.podIP',
+        },
+      },
+    },
+  ],
+  ports: if hostNetwork then [] else [
+    {
+      containerPort: 9991,
+    },
+  ],
+  volumeMounts: [
+    VolumeMount(expName),
+    uuid.volumemount,
+  ],
+};
+
+local Traceroute(expName, hostNetwork) = {
+  name: 'traceroute',
+  image: 'measurementlab/traceroute-caller:v0.0.6',
+  args: [
+    if hostNetwork then
+      '-prometheusx.listen-address=127.0.0.1:9992'
+    else
+      '-prometheusx.listen-address=$(PRIVATE_IP):9992',
+    '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+    '-uuid-prefix-file=' + uuid.prefixfile,
+  ],
+  env: if hostNetwork then [] else [
+    {
+      name: 'PRIVATE_IP',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'status.podIP',
+        },
+      },
+    },
+  ],
+  ports: if hostNetwork then [] else [
+    {
+      containerPort: 9992,
+    },
+  ],
+  volumeMounts: [
+    VolumeMount(expName),
+    uuid.volumemount,
+  ],
+};
+
+local Pusher(expName, datatypes, hostNetwork, bucket) = {
+  name: 'pusher',
+  image: 'measurementlab/pusher:v1.9',
+  args: [
+    if hostNetwork then
+      '-prometheusx.listen-address=127.0.0.1:9993'
+    else
+      '-prometheusx.listen-address=$(PRIVATE_IP):9993',
+    '-bucket=' + bucket,
+    '-experiment=' + expName,
+    '-archive_size_threshold=50MB',
+    '-directory=/var/spool/' + expName,
+    '-datatype=tcpinfo',
+    '-datatype=traceroute',
+  ] + ['-datatype=' + d for d in datatypes],
+  env: [
+    {
+      name: 'GOOGLE_APPLICATION_CREDENTIALS',
+      value: '/etc/credentials/pusher.json',
+    },
+    {
+      name: 'MLAB_NODE_NAME',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'spec.nodeName',
+        },
+      },
+    },
+  ] + if hostNetwork then [] else [
+    {
+      name: 'PRIVATE_IP',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'status.podIP',
+        },
+      },
+    },
+  ],
+  ports: if hostNetwork then [] else [
+    {
+      containerPort: 9993,
+    },
+  ],
+  volumeMounts: [
+    VolumeMount(expName),
+    {
+      mountPath: '/etc/credentials',
+      name: 'pusher-credentials',
+      readOnly: true,
+    },
+  ],
+};
+
+local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   apiVersion: 'extensions/v1beta1',
   kind: 'DaemonSet',
   metadata: {
@@ -83,7 +201,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
       metadata: {
         annotations: {
           'prometheus.io/scrape': 'true',
-          'prometheus.io/scheme': if hostNetworking then 'https' else 'http',
+          'prometheus.io/scheme': if hostNetwork then 'https' else 'http',
         },
         labels: {
           workload: name,
@@ -91,135 +209,15 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
       },
       spec: {
         containers: [
-          {
-            name: 'tcpinfo',
-            image: 'measurementlab/tcp-info:v1.0.1',
-            args: [
-              if hostNetworking then
-                '-prometheusx.listen-address=127.0.0.1:9991'
-              else
-                '-prometheusx.listen-address=$(PRIVATE_IP):9991'
-              ,
-              '-output=' + VolumeMount(name).mountPath + '/tcpinfo',
-              '-uuid-prefix-file=' + uuid.prefixfile,
-            ],
-            env: if hostNetworking then [] else [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
-            ],
-            ports: if hostNetworking then [] else [
-              {
-                containerPort: 9991,
-              },
-            ],
-            volumeMounts: [
-              VolumeMount(name),
-              uuid.volumemount,
-            ],
-          },
-          {
-            name: 'traceroute',
-            image: 'measurementlab/traceroute-caller:v0.0.6',
-            args: [
-              if hostNetworking then
-                '-prometheusx.listen-address=127.0.0.1:9992'
-              else
-                '-prometheusx.listen-address=$(PRIVATE_IP):9992',
-              '-outputPath=' + VolumeMount(name).mountPath + '/traceroute',
-              '-uuid-prefix-file=' + uuid.prefixfile,
-            ],
-            env: if hostNetworking then [] else [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
-            ],
-            ports: if hostNetworking then [] else [
-              {
-                containerPort: 9992,
-              },
-            ],
-            volumeMounts: [
-              VolumeMount(name),
-              uuid.volumemount,
-            ],
-          },
-          {
-            name: 'pusher',
-            image: 'measurementlab/pusher:v1.9',
-            args: [
-              if hostNetworking then
-                '-prometheusx.listen-address=127.0.0.1:9993'
-              else
-                '-prometheusx.listen-address=$(PRIVATE_IP):9993',
-              '-experiment=' + name,
-              '-archive_size_threshold=50MB',
-              '-directory=/var/spool/' + name,
-              '-datatype=tcpinfo',
-              '-datatype=traceroute',
-            ] + ['-datatype=' + d for d in datatypes],
-            env: [
-              {
-                name: 'GOOGLE_APPLICATION_CREDENTIALS',
-                value: '/etc/credentials/pusher.json',
-              },
-              {
-                name: 'BUCKET',
-                valueFrom: {
-                  configMapKeyRef: {
-                    key: 'bucket',
-                    name: 'pusher-dropbox',
-                  },
-                },
-              },
-              {
-                name: 'MLAB_NODE_NAME',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'spec.nodeName',
-                  },
-                },
-              },
-            ] + if hostNetworking then [] else [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
-            ],
-            ports: if hostNetworking then [] else [
-              {
-                containerPort: 9993,
-              },
-            ],
-            volumeMounts: [
-              VolumeMount(name),
-              {
-                mountPath: '/etc/credentials',
-                name: 'pusher-credentials',
-                readOnly: true,
-              },
-            ],
-          },
-        ] + if hostNetworking then [
+          Tcpinfo(name, hostNetwork),
+          Traceroute(name, hostNetwork),
+          Pusher(name, datatypes, hostNetwork, bucket),
+        ] + if hostNetwork then [
           RBACProxy('tcpinfo', 9991),
           RBACProxy('traceroute', 9992),
           RBACProxy('pusher', 9993),
         ] else [],
-        [if hostNetworking then 'serviceAccountName']: 'kube-rbac-proxy',
+        [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
         ],
@@ -247,7 +245,7 @@ local ExperimentNoIndex(name, datatypes, hostNetworking) = {
   },
 };
 
-local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes, false) + {
+local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, datatypes, false, bucket) + {
   spec+: {
     template+: {
       metadata+: {
@@ -279,7 +277,7 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, datatypes, hostNetworking):: ExperimentNoIndex(name, datatypes, hostNetworking),
+  ExperimentNoIndex(name, datatypes, hostNetworking, bucket):: ExperimentNoIndex(name, datatypes, hostNetworking, bucket),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -288,7 +286,7 @@ local Experiment(name, index, datatypes=[]) = ExperimentNoIndex(name, datatypes,
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
-  Experiment(name, index, datatypes):: Experiment(name, index, datatypes),
+  Experiment(name, index, datatypes, bucket):: Experiment(name, index, datatypes, bucket),
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
