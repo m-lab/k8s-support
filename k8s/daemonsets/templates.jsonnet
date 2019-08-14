@@ -98,10 +98,12 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       VolumeMount(expName),
       uuid.volumemount,
     ],
-  },
-  if hostNetwork then RBACProxy('tcpinfo', tcpPort) else {}
-];
-
+  }] +
+  if hostNetwork then
+    [RBACProxy('tcpinfo', tcpPort)]
+  else
+    []
+;
 
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
@@ -134,9 +136,12 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       VolumeMount(expName),
       uuid.volumemount,
     ],
-  },
-  if hostNetwork then RBACProxy('traceroute', tcpPort) else {}
-];
+  }] +
+  if hostNetwork then
+    [RBACProxy('traceroute', tcpPort)]
+  else
+    []
+;
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
@@ -190,9 +195,12 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         readOnly: true,
       },
     ],
-  },
-  if hostNetwork then RBACProxy('pusher', tcpPort) else {}
-];
+  }] +
+  if hostNetwork then
+    [RBACProxy('pusher', tcpPort)]
+  else
+    []
+;
 
 local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   apiVersion: 'extensions/v1beta1',
