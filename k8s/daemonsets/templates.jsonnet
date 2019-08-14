@@ -99,7 +99,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       uuid.volumemount,
     ],
   },
-  if hostNetwork then RBACProxy('tcpinfo', tcpPort),
+  if hostNetwork then RBACProxy('tcpinfo', tcpPort) else {}
 ];
 
 
@@ -135,7 +135,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       uuid.volumemount,
     ],
   },
-  if hostNetwork then RBACProxy('traceroute', tcpPort),
+  if hostNetwork then RBACProxy('traceroute', tcpPort) else {}
 ];
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
@@ -191,7 +191,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       },
     ],
   },
-  if hostNetwork then RBACProxy('pusher', tcpPort),
+  if hostNetwork then RBACProxy('pusher', tcpPort) else {}
 ];
 
 local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
