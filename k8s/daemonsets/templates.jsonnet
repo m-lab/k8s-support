@@ -277,7 +277,7 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, datatypes, hostNetworking, bucket):: ExperimentNoIndex(name, datatypes, hostNetworking, bucket),
+  ExperimentNoIndex(name, datatypes, hostNetwork, bucket):: ExperimentNoIndex(name, datatypes, hostNetwork, bucket),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
