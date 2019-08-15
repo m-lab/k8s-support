@@ -121,7 +121,6 @@ groups:
           }
         [1h]) * 8
       )
-    )
 
   # Calculates aggregate DaemonSet network receive bytes on the platform.
   - record: workload:container_network_receive_bytes_total:sum
@@ -138,7 +137,6 @@ groups:
           }
         [1h]) * 8
       )
-    )
 
   # Calculates aggregate DaemonSet network trasmit bytes on a machine.
   - record: machine_workload:container_network_transmit_bytes_total:sum
@@ -155,7 +153,6 @@ groups:
           }
         [1h]) * 8
       )
-    )
 
   # Calculates aggregate DaemonSet network receive bytes on a machine.
   - record: machine_workload:container_network_receive_bytes_total:sum
@@ -172,4 +169,3 @@ groups:
           }
         [1h]) * 8
       )
-    )
