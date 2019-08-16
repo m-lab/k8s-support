@@ -156,8 +156,6 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-experiment=' + expName,
       '-archive_size_threshold=50MB',
       '-directory=/var/spool/' + expName,
-      '-datatype=tcpinfo',
-      '-datatype=traceroute',
     ] + ['-datatype=' + d for d in datatypes],
     env: [
       {
@@ -230,7 +228,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
-            Pusher(name, 9993, datatypes, hostNetwork, bucket),
+            Pusher(name, 9993, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
@@ -306,6 +304,10 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
   VolumeMount(name):: VolumeMount(name),
+
+  // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
+  // Users MUST declare a "pusher-credentials" volume as part of the deployment.
+  Pusher(expName, tcpPort, datatypes, hostNetwork, bucket):: Pusher(expName, tcpPort, datatypes, hostNetwork, bucket),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
