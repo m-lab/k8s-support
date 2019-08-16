@@ -77,11 +77,11 @@ local exp = import '../templates.jsonnet';
           },
           {
             name: 'utilization-data',
-		    hostPath: {
+            hostPath: {
               path: '/cache/data/utilization',
               type: 'DirectoryOrCreate',
             },
-		  },
+          },
           {
             name: 'node-exporter-data',
             hostPath: {
