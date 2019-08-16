@@ -133,6 +133,7 @@ write_files:
       #!/bin/bash
       REBOOT_DAY=$(cat /etc/reboot-node-day)
       TODAY=$(date +%a)
+      source /root/.bashrc
       ETCD_MEMBERS=$(/usr/bin/etcdctl member list | wc -l)
       if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
         echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
