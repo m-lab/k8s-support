@@ -6,9 +6,10 @@
 
 set -euxo pipefail
 
-USAGE="$0 <project> <zone>"
+USAGE="$0 <project> <zone> <reboot-day>"
 PROJECT=${1:?Please provide the GCP project (e.g., mlab-sandbox): ${USAGE}}
 ZONE=${2:?Please provide a GCE zone for the new node (e.g., c): ${USAGE}}
+REBOOT_DAY=${3:?Please provide a reboot day (Tue, Wed or Thu): ${USAGE}}
 
 # Include global configs and the bootstrap function "library".
 source k8s_deploy.conf
@@ -19,7 +20,7 @@ GCE_REGION="${!GCE_REGION_VAR}"
 GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 GCE_ZONES="${!GCE_ZONES_VAR}"
 GCE_ZONE="${GCE_REGION}-${ZONE}"
-GCE_NAME="${GCE_BASE_NAME}-${GCE_ZONE}"
+GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
@@ -32,7 +33,7 @@ ETCD_CLUSTER_STATE="existing"
 # project that is _not_ the zone of the node being added.
 for z in $GCE_ZONES; do
   if [[ "$z" != "${ZONE}" ]]; then
-    BOOTSTRAP_MASTER="${GCE_BASE_NAME}-${GCE_REGION}-${z}"
+    BOOTSTRAP_MASTER="master-${GCE_BASE_NAME}-${GCE_REGION}-${z}"
     BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${z}"
     break
   fi
@@ -101,4 +102,4 @@ delete_target_pool_instance "${GCE_NAME}" "${GCE_ZONE}"
 delete_instance_group "${GCE_NAME}" "${GCE_ZONE}"
 
 # Now add the new master.
-create_master "${ZONE}"
+create_master "${ZONE}" "${REBOOT_DAY}"
