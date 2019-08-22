@@ -1,4 +1,4 @@
-local ndtVersion = 'v0.11.0';
+local ndtVersion = 'v0.12.0';
 
 local uuid = {
   initContainer: {
