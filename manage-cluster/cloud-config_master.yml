@@ -134,13 +134,16 @@ write_files:
       REBOOT_DAY=$(cat /etc/reboot-node-day)
       TODAY=$(date +%a)
       source /root/.bashrc
-      ETCD_MEMBERS=$(/usr/bin/etcdctl member list | wc -l)
+      # Members are listed whether they are healthy or not.
+      ETCD_ENDPOINTS=$(/usr/bin/etcdctl member list | awk '{print $5}' | paste -s -d, -)
+      # Only healthy endpoints are reported on stdout.
+      ETCD_HEALTHY_COUNT=$(/usr/bin/etcdctl endpoint health --endpoints "${ETCD_ENDPOINTS}" | wc -l)
       if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
         echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
         exit 0
       fi
-      if [[ "${ETCD_MEMBERS}" -lt "3" ]]; then
-        echo "There are less than 3 etcd cluster members. Not rebooting."
+      if [[ "${ETCD_HEALTHY_COUNT}" -lt "3" ]]; then
+        echo "There are less than 3 healthy etcd cluster members. Not rebooting."
         exit 1
       fi
       echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
