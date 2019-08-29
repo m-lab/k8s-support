@@ -69,7 +69,7 @@ local RBACProxy(name, port) = {
 local Tcpinfo(expName, tcpPort, hostNetwork) = [
   {
     name: 'tcpinfo',
-    image: 'measurementlab/tcp-info:v1.0.1',
+    image: 'measurementlab/tcp-info:v1.1.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
