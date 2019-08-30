@@ -1,4 +1,4 @@
-local cmutil = import 'cloudmap-utils.jsonnet';
+local cmutil = import 'configmap.jsonnet';
 local config = import 'nodeinfo/config.jsonnet';
 
 local data = {

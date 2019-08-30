@@ -1,4 +1,4 @@
-local cmutil = import 'cloudmap-utils.jsonnet';
+local cmutil = import 'configmap.jsonnet';
 local outputConfMissingProjectAndZone = importstr 'fluentd/output.conf.template';
 local outputConfMissingZone = std.strReplace(outputConfMissingProjectAndZone, '{{PROJECT_ID}}', std.extVar('PROJECT_ID'));
 local outputConf = std.strReplace(outputConfMissingZone, '{{GCE_ZONE}}', std.extVar('GCE_ZONE'));
