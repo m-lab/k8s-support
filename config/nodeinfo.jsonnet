@@ -1,12 +1,13 @@
+local cmutil = import 'configmap.jsonnet';
 local config = import 'nodeinfo/config.jsonnet';
+
+local data = {
+  'config.json': std.toString(config),
+};
 
 {
   apiVersion: 'v1',
-  data: {
-    'config.json': std.toString(config),
-  },
+  data: data,
   kind: 'ConfigMap',
-  metadata: {
-    name: 'nodeinfo-config',
-  },
+  metadata: cmutil.metadata('nodeinfo-config', data),
 }
