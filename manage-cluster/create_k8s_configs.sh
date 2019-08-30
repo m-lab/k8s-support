@@ -28,6 +28,8 @@ jsonnet \
    --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \
    --ext-str K8S_FLANNEL_VERSION=${K8S_FLANNEL_VERSION} \
    --ext-str PROJECT_ID=${PROJECT} \
+   --ext-str PROJECT_ID=${PROJECT} \
+   --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    ../system.jsonnet > system.json
 
 # Download every secret, and turn each one into a config.
