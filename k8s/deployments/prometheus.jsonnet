@@ -1,4 +1,4 @@
-local prometheusConfig = import '../../../config/prometheus.jsonnet';
+local prometheusConfig = import '../../config/prometheus.jsonnet';
 
 {
   apiVersion: 'apps/v1',
