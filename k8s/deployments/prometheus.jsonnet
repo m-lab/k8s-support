@@ -1,3 +1,5 @@
+local prometheusConfig = import '../../../config/prometheus.jsonnet';
+
 {
   apiVersion: 'apps/v1',
   kind: 'Deployment',
@@ -60,36 +62,6 @@
               },
             ],
           },
-          {
-            args: [
-              '-webhook-url',
-              'http://localhost:9090/-/reload',
-              '-volume-dir',
-              '/etc/prometheus',
-            ],
-            // Check
-            // https://hub.docker.com/r/jimmidyson/configmap-reload/tags/
-            // for the current stable version.
-            image: 'jimmidyson/configmap-reload:v0.2.2',
-            name: 'configmap-reload',
-            resources: {
-              limits: {
-                cpu: '200m',
-                memory: '400Mi',
-              },
-              requests: {
-                cpu: '200m',
-                memory: '400Mi',
-              },
-            },
-            volumeMounts: [
-              // Mount the prometheus config volume so we can watch it for changes.
-              {
-                mountPath: '/etc/prometheus',
-                name: 'prometheus-config',
-              },
-            ],
-          },
         ],
         // TODO: use native k8s service entry points, if possible.
         hostNetwork: true,
@@ -101,7 +73,7 @@
         volumes: [
           {
             configMap: {
-              name: 'prometheus-config',
+              name: prometheusConfig.metadata.name,
             },
             name: 'prometheus-config',
           },
