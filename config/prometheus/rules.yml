@@ -101,10 +101,11 @@ groups:
 
   ## NETWORK METRICS
   #
-  # These network metric expressions deliberately exclude the 'host' and
-  # 'node-exporter' which run with hostNetwork=true. Because of this they
-  # capture essentially all node network traffic, which duplicates regular
-  # experiment metrics as well as being just generally not useful.
+  # These network metric expressions deliberately exclude the 'host',
+  # 'node-exporter' and 'utilization' experiments which run with
+  # hostNetwork=true. Because of this they capture essentially all node network
+  # traffic, which duplicates regular experiment metrics as well as being just
+  # generally not useful.
 
   # Calculates aggregate DaemonSet network trasmit bytes on the platform.
   - record: workload:container_network_transmit_bytes_total:sum
@@ -115,7 +116,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter)",
+            container_label_workload !~ "(host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -131,7 +132,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter)",
+            container_label_workload !~ "(host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -147,7 +148,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter)",
+            container_label_workload !~ "(host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -163,7 +164,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter)",
+            container_label_workload !~ "(host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
