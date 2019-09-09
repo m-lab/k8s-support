@@ -1,4 +1,5 @@
 local ndtVersion = 'v0.12.0';
+local dashVersion = 'latest';
 
 local uuid = {
   initContainer: {
@@ -314,4 +315,7 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
 
   // The NDT tag to use for containers.
   ndtVersion: ndtVersion,
+
+  // The DASH tag to use for containers.
+  dashVersion: dashVersion,
 }
