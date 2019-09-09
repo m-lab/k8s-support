@@ -30,7 +30,14 @@ exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), ['neubot']) +
                 containerPort: 80,
               },
             ],
-
+            livenessProbe: {
+              httpGet: {
+                path: '/metrics',
+                port: 9990,
+                initialDelaySeconds: 5,
+                periodSeconds: 30,
+              },
+            },
           },
         ],
       },
