@@ -19,7 +19,6 @@
     import 'k8s/daemonsets/core/update-agent.jsonnet',
     import 'k8s/daemonsets/core/utilization.jsonnet',
     import 'k8s/daemonsets/experiments/bismark.jsonnet',
-    import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',

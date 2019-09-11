@@ -1,6 +1,9 @@
 local exp = import '../templates.jsonnet';
 
 exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), ['ndt5', 'ndt7']) + {
+  metadata+: {
+    name: 'ndt-' + std.extVar('VERSION'),
+  },
   spec+: {
     template+: {
       spec+: {

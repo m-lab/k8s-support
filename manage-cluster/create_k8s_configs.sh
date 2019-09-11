@@ -32,6 +32,24 @@ jsonnet \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    ../system.jsonnet > system.json
 
+# Create versioned experiment manifests.
+RELEASES=$(git tag --list --sort -v:refname | head -n2)
+VERSION_CANARY=$(echo $RELEASES | awk '{print $1}')
+VERSION_RELEASE=$(echo $RELEASES | awk '{print $2}')
+
+git checkout tags/$VERSION_RELEASE
+jsonnet \
+   --ext-str PROJECT_ID=${PROJECT} \
+   --ext-str VERSION=$VERSION_RELEASE \
+   ../versioned-experiments.jsonnet > experiments-release.json
+
+git checkout tags/$VERSION_CANARY
+jsonnet \
+   --ext-str PROJECT_ID=${PROJECT} \
+   --ext-str VERSION=$VERSION_CANARY \
+   ../versioned-experiments.jsonnet > experiments-canary.json
+
+
 # Download every secret, and turn each one into a config.
 mkdir -p secrets
 mkdir -p secret-configs

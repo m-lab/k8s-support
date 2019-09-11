@@ -47,3 +47,7 @@ kubectl apply -f secret-configs/
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
 kubectl apply -f system.json
+
+# Apply versioned experiment manifests
+kubectl apply -f experiments-release.json
+kubectl apply -f experiments-canary.json
