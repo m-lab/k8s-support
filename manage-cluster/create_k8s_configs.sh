@@ -42,6 +42,8 @@ fi
 VERSION_CANARY=$(echo $RELEASES | awk '{print $1}')
 VERSION_RELEASE=$(echo $RELEASES | awk '{print $2}')
 
+echo "$(git status)"
+
 # Create versioned experiment manifests for production releases.
 git checkout tags/$VERSION_RELEASE
 jsonnet \
