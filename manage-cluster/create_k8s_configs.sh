@@ -35,29 +35,19 @@ jsonnet \
 # Somehow the GCB clone doesn't include refs/tags, so fetch them.
 git fetch --quiet --tags
 
-# Get two most recent repository tags.
-RELEASES=$(git tag --list --sort -v:refname | head -n2)
-RELEASE_COUNT=$(echo $RELEASES | wc -w)
-if [[ "${RELEASE_COUNT}" -ne 2 ]]; then
-  echo "Failed to get two most recent tags. Exiting..."
+# Get the most recent repository tag.
+VERSION=$(git tag --list --sort -v:refname | head -n1)
+if ! [[ "${VERSION}" =~ v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+  echo "Release version '${VERSION}' looks incorrect. Exiting..."
   exit 1
 fi
-VERSION_CANARY=$(echo $RELEASES | awk '{print $1}')
-VERSION_RELEASE=$(echo $RELEASES | awk '{print $2}')
 
-# Create versioned experiment manifests for production releases.
-git checkout tags/$VERSION_RELEASE
+# Create a versioned experiment manifest for the new version(s).
+git checkout tags/$VERSION
 jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
-   --ext-str VERSION=$VERSION_RELEASE \
-   ../versioned-experiments.jsonnet > experiments-release.json
-
-# Create versioned experiment manifests for canary releases.
-git checkout tags/$VERSION_CANARY
-jsonnet \
-   --ext-str PROJECT_ID=${PROJECT} \
-   --ext-str VERSION=$VERSION_CANARY \
-   ../versioned-experiments.jsonnet > experiments-canary.json
+   --ext-str VERSION=$VERSION \
+   ../versioned-experiments.jsonnet > versioned-experiments.json
 
 # Download every secret, and turn each one into a config.
 mkdir -p secrets
