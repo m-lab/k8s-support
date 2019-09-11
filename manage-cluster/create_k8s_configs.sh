@@ -33,7 +33,7 @@ jsonnet \
    ../system.jsonnet > system.json
 
 # Somehow the GCB clone doesn't include refs/tags, so fetch them.
-git fetch --tags
+git fetch --quiet --tags
 
 # Get two most recent repository tags.
 RELEASES=$(git tag --list --sort -v:refname | head -n2)
