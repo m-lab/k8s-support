@@ -47,7 +47,7 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), ['ndt5', 'ndt7'])
         ],
         nodeSelectors+: {
           'mlab/version': std.extVar('VERSION'),
-        }
+        },
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following
         // shutdown sequence. After the grace period, kubernetes sends
