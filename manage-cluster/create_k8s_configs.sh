@@ -32,23 +32,29 @@ jsonnet \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    ../system.jsonnet > system.json
 
-# Create versioned experiment manifests.
+# Get two most recent repository tags.
 RELEASES=$(git tag --list --sort -v:refname | head -n2)
+RELEASE_COUNT=$(echo $RELEASES | wc -w)
+if [[ "${RELEASE_COUNT}" -ne 2 ]]; then
+  echo "Failed to get two most recent tags. Exiting..."
+  exit 1
+fi
 VERSION_CANARY=$(echo $RELEASES | awk '{print $1}')
 VERSION_RELEASE=$(echo $RELEASES | awk '{print $2}')
 
+# Create versioned experiment manifests for production releases.
 git checkout tags/$VERSION_RELEASE
 jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str VERSION=$VERSION_RELEASE \
    ../versioned-experiments.jsonnet > experiments-release.json
 
+# Create versioned experiment manifests for canary releases.
 git checkout tags/$VERSION_CANARY
 jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str VERSION=$VERSION_CANARY \
    ../versioned-experiments.jsonnet > experiments-canary.json
-
 
 # Download every secret, and turn each one into a config.
 mkdir -p secrets
