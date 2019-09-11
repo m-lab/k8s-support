@@ -4,5 +4,5 @@
   items: [
     // Daemonsets
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
-  ]),
+  ],
 }
