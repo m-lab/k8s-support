@@ -32,7 +32,8 @@ jsonnet \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    ../system.jsonnet > system.json
 
-echo "$(git status)"
+# Somehow the GCB clone doesn't include refs/tags, so fetch them.
+git fetch --tags
 
 # Get two most recent repository tags.
 RELEASES=$(git tag --list --sort -v:refname | head -n2)
