@@ -32,6 +32,8 @@ jsonnet \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    ../system.jsonnet > system.json
 
+echo "$(git status)"
+
 # Get two most recent repository tags.
 RELEASES=$(git tag --list --sort -v:refname | head -n2)
 RELEASE_COUNT=$(echo $RELEASES | wc -w)
@@ -41,8 +43,6 @@ if [[ "${RELEASE_COUNT}" -ne 2 ]]; then
 fi
 VERSION_CANARY=$(echo $RELEASES | awk '{print $1}')
 VERSION_RELEASE=$(echo $RELEASES | awk '{print $2}')
-
-echo "$(git status)"
 
 # Create versioned experiment manifests for production releases.
 git checkout tags/$VERSION_RELEASE
