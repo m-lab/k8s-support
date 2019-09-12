@@ -42,8 +42,6 @@ if ! [[ "${VERSION}" =~ v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
   exit 1
 fi
 
-# Create a versioned experiment manifest for the new version(s).
-git checkout tags/$VERSION
 jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str VERSION=$VERSION \
