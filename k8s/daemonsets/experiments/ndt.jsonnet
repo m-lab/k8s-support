@@ -1,9 +1,13 @@
 local exp = import '../templates.jsonnet';
+local project = std.extVar('PROJECT_ID');
+local version = std.extVar('VERSION');
 
-exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), ['ndt5', 'ndt7']) + {
-  metadata+: {
-    name: 'ndt-' + std.extVar('VERSION'),
-  },
+exp.Experiment('ndt', 2, 'pusher-' + project, ['ndt5', 'ndt7']) + {
+  metadata+:
+    if project == 'mlab-oti' then
+      { name: 'ndt-' + version, }
+    else
+      { name: 'ndt', },
   spec+: {
     template+: {
       spec+: {
@@ -45,9 +49,11 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), ['ndt5', 'ndt7'])
 
           },
         ],
-        nodeSelector+: {
-          'mlab/version': std.extVar('VERSION'),
-        },
+        nodeSelector+:
+          if project == 'mlab-oti' then
+            { 'mlab/version': version, }
+          else
+            {},
         // The default grace period after k8s sends SIGTERM is 30s. We
         // extend the grace period to give time for the following
         // shutdown sequence. After the grace period, kubernetes sends
