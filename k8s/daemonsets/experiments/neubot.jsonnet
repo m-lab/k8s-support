@@ -49,6 +49,14 @@ exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), ['dash']) + {
             },
           },
         ],
+        volumes+: [
+          {
+            name: 'ndt-tls',
+            secret: {
+              secretName: 'ndt-tls',
+            },
+          },
+        ],
       },
     },
   },
