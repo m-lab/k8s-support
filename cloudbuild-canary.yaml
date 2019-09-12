@@ -1,0 +1,13 @@
+steps:
+
+# Fetch the KUBECONFIG file from GCS.
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'gs://k8s-support-$PROJECT_ID/admin.conf', '/workspace/admin.conf']
+
+# Push the configs.
+- name: 'gcr.io/cloud-builders/kubectl'
+  dir: '/workspace/manage-cluster'
+  entrypoint: '/workspace/manage-cluster/deploy_canary_k8s_configs.sh'
+  args:
+  - $PROJECT_ID
+  - /workspace/admin.conf

@@ -30,6 +30,7 @@ jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
+   --ext-code CANARY=false \
    ../system.jsonnet > system.json
 
 # Download every secret, and turn each one into a config.
