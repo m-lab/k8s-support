@@ -11,10 +11,10 @@ exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), ['dash']) + {
             args: [
               '-datadir=/var/spool/neubot',
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-http-listen-address :80',
-              '-https-listen-address :443',
-              '-tls-cert /certs/cert.pem',
-              '-tls-key /certs/key.pem',
+              '-http-listen-address=:80',
+              '-https-listen-address=:443',
+              '-tls-cert=/certs/cert.pem',
+              '-tls-key=/certs/key.pem',
             ],
             env: [
               {
