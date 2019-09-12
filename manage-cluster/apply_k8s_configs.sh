@@ -47,3 +47,7 @@ kubectl apply -f secret-configs/
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
 kubectl apply -f system.json
+
+# Apply the canary DaemonSets
+kubectl apply -f canaries.json
+

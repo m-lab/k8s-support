@@ -28,10 +28,15 @@ jsonnet \
    --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \
    --ext-str K8S_FLANNEL_VERSION=${K8S_FLANNEL_VERSION} \
    --ext-str PROJECT_ID=${PROJECT} \
-   --ext-str PROJECT_ID=${PROJECT} \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    --ext-code CANARY=false \
    ../system.jsonnet > system.json
+
+# Create the canary DaemonSets
+jsonnet \
+   --ext-str PROJECT_ID=${PROJECT} \
+   --ext-code CANARY=true \
+   ../canaries.jsonnet > canaries.json
 
 # Download every secret, and turn each one into a config.
 mkdir -p secrets
