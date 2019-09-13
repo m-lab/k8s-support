@@ -7,7 +7,7 @@ exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), ['dash']) + {
         containers+: [
             {
               name: 'neubot',
-              image: 'measurementlab/neubot-dash:' + exp.dashVersion,
+              image: 'measurementlab/neubot-dash:v0.4.0',
             args: [
               '-datadir=/var/spool/neubot',
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
