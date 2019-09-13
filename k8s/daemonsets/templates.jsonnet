@@ -211,7 +211,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   spec: {
     selector: {
       matchLabels: {
-        workload: name,
+        workload: if canary then name + '-canary' else name,
       },
     },
     template: {
@@ -221,7 +221,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           'prometheus.io/scheme': if hostNetwork then 'https' else 'http',
         },
         labels: {
-          workload: name,
+          workload: if canary then name + '-canary' else name,
         },
       },
       spec: {
