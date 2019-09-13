@@ -1,33 +1,10 @@
 local exp = import '../templates.jsonnet';
 local project = std.extVar('PROJECT_ID');
-local canary = std.extVar('CANARY');
 
 exp.Experiment('ndt', 2, 'pusher-' + project, ['ndt5', 'ndt7']) + {
-  metadata+: if canary then {
-    name: 'ndt-canary',
-  } else {},
   spec+: {
     template+: {
       spec+: {
-        affinity: {
-            nodeAffinity: {
-              requiredDuringSchedulingIgnoredDuringExecution: {
-                nodeSelectorTerms: [
-                  {
-                    matchExpressions: [
-                      {
-                        key: 'mlab/release',
-                        operator: if canary then 'In' else 'NotIn',
-                        values: [
-                          'canary',
-                        ],
-                      }
-                    ],
-                  },
-                ],
-              },
-            },
-          },
         containers+: [
           {
             name: 'ndt-server',

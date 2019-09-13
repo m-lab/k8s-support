@@ -1,4 +1,5 @@
 local ndtVersion = 'v0.13.0';
+local canary = std.extVar('CANARY');
 
 local uuid = {
   initContainer: {
@@ -204,7 +205,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   apiVersion: 'extensions/v1beta1',
   kind: 'DaemonSet',
   metadata: {
-    name: name,
+    name: if canary then name + '-canary' else name,
     namespace: 'default',
   },
   spec: {
@@ -224,6 +225,32 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
         },
       },
       spec: {
+        affinity: {
+          nodeAffinity: {
+            requiredDuringSchedulingIgnoredDuringExecution: {
+              nodeSelectorTerms: [
+                {
+                  matchExpressions: [
+                    {
+                      key: 'mlab/type',
+                      operator: 'In',
+                      values: [
+                        'platform',
+                      ]
+                    },
+                    {
+                      key: 'mlab/release',
+                      operator: if canary then 'In' else 'NotIn',
+                      values: [
+                        'canary',
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
         containers:
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
@@ -234,9 +261,6 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
         initContainers: [
           uuid.initContainer,
         ],
-        nodeSelector: {
-          'mlab/type': 'platform',
-        },
         volumes: [
           {
             name: 'pusher-credentials',
