@@ -1,5 +1,5 @@
 local ndtVersion = 'v0.13.0';
-local dashVersion = 'v0.4.0-20190912142217';
+local dashVersion = 'v0.4.0';
 
 local uuid = {
   initContainer: {
