@@ -14,9 +14,10 @@ scrape_configs:
   # Scrapes the Github Maintenance Exporter (GMX), so that we can use GMX
   # status in Prometheus and Grafana.
   - job_name: 'github-maintenance-exporter'
+    scheme: https
     static_configs:
       - targets:
-        - https://gmx.{{PROJECT}}.measurementlab.net
+        - gmx.{{PROJECT}}.measurementlab.net
 
   - job_name: 'kubernetes-apiservers'
     kubernetes_sd_configs:
