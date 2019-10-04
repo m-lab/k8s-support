@@ -5,6 +5,8 @@ local data = {
     'prometheus.yml': importstr 'prometheus/prometheus.yml',
 };
 
+std.strReplace(data, '{{PROJECT}}', std.extVar('PROJECT_ID');
+
 {
   kind: 'ConfigMap',
   apiVersion: 'v1',
