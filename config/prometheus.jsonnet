@@ -1,6 +1,6 @@
 local cmutil = import 'configmap.jsonnet';
 local promconfig = std.strReplace(
-    importstr 'prometheus/prometheus.yml',
+    importstr 'prometheus/prometheus.yml.template',
     '{{PROJECT}}',
     std.extVar('PROJECT_ID')
 );
