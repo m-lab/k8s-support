@@ -1,6 +1,9 @@
 #!/bin/bash
 
-exec 2> /var/log/setup_k8s.log-$(date +%FT%TZ) 1>&2
+curr_date=$(date +%FT%TZ)
+exec 2> /var/log/setup_k8s.log-$curr_date 1>&2
+ln --force --symbolic /var/log/setup_k8s.log-$curr_date /var/log/setup_k8s.log
+
 set -euxo pipefail
 
 # This script is intended to be called by epoxy as the action for the last stage
