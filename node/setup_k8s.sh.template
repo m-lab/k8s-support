@@ -1,6 +1,9 @@
 #!/bin/bash
 
-exec 2> /tmp/setup_k8s.log 1>&2
+curr_date=$(date +%FT%TZ)
+exec 2> /var/log/setup_k8s.log-$curr_date 1>&2
+ln --force --symbolic /var/log/setup_k8s.log-$curr_date /var/log/setup_k8s.log
+
 set -euxo pipefail
 
 # This script is intended to be called by epoxy as the action for the last stage
@@ -35,7 +38,7 @@ MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
 # Install things in /etc
 # Startup configs for the kubelet
 RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
-mkdir -p /etc/systemd/system
+mkdir --parents /etc/systemd/system
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
 # Add node tags to the kubelet so that node metadata is there right at the very
@@ -46,7 +49,7 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 
 NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=platform,mlab/project=${GCP_PROJECT}"
 DYNAMIC_CONFIG_DIR="/var/lib/kubelet/dynamic-configs"
-mkdir -p /etc/systemd/system/kubelet.service.d
+mkdir --parents /etc/systemd/system/kubelet.service.d
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
   | sed -e "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS --dynamic-config-dir=$DYNAMIC_CONFIG_DIR |g" \
   > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
@@ -55,13 +58,13 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 # `staticPodPath` /var/lib/kubelet/config.yaml defines this and is a standard
 # for k8s. If it doesn't exist the kubelet logs a message every few seconds that
 # it doesn't exist, polluting the logs terribly.
-mkdir -p /etc/kubernetes/manifests
+mkdir --parents /etc/kubernetes/manifests
 
 # CNI binaries are baked into the boot images at /usr/cni/bin, however, the
 # kubelet expects to find them in /opt/cni/bin by default. Rather than muck
 # with default settings, we just create a symlink here.
-mkdir -p /opt
-ln -s /usr/cni /opt/cni
+mkdir --parents /opt
+ln --force --no-dereference --symbolic /usr/cni /opt/cni
 
 systemctl daemon-reload
 systemctl enable docker
