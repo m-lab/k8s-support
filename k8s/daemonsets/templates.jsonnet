@@ -108,7 +108,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute',
-    image: 'measurementlab/traceroute-caller:v0.2.0',
+    image: 'measurementlab/traceroute-caller:v0.2.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
