@@ -92,7 +92,7 @@ for zone in $GCE_ZONES; do
   
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
-    kubectl drain $gce_name --ignore-daemonsets
+    kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
   
     # Upgrade CNI plugins.
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
