@@ -132,6 +132,46 @@ for zone in $GCE_ZONES; do
 
     # Mark the node schedulable again.
     kubectl uncordon $gce_name
+
+    # Verify that the running api-server is actually upgraded.
+    API_VERSION=\$(kubectl get pod kube-apiserver-${gce_name} -n kube-system \
+        -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$API_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-apiserver version ${K8S_VERSION}, but got \$API_VERSION."
+      exit 1
+    fi
+
+    # Verify that the running kube-controller is actually upgraded.
+    CONTROLLER_VERSION=\$(kubectl get pod kube-controller-manager-${gce_name} \
+        -n kube-system -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$CONTROLLER_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-controller-manager version ${K8S_VERSION}, but got \$CONTROLLER_VERSION."
+      exit 1
+    fi
+
+    # Verify that the running kube-scheduler is actually upgraded.
+    SCHEDULER_VERSION=\$(kubectl get pod kube-scheduler-${gce_name} \
+        -n kube-system -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$SCHEDULER_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-scheduler version ${K8S_VERSION}, but got \$SCHEDULER_VERSION."
+      exit 1
+    fi
+
+    # Verify that k8s knows the kubelet is upgraded to the expected version.
+    KUBELET_VERSION=\$(kubectl get node $gce_name \
+        -o jsonpath='{.status.nodeInfo.kubeletVersion}')
+    if [[ \$KUBELET_VERSION != $K8S_VERSION ]]; then
+      echo "Expected kubelet version ${K8S_VERSION}, but got \$KUBELET_VERSION."
+      exit 1
+    fi
+
+    # Verify that the kubeadm-config ConfigMap reflects the desired version.
+    KUBEADM_CFG_VERSION=\$(kubectl describe cm kubeadm-config -n kube-system \
+        | grep kubernetesVersion | cut -d' ' -f2)
+    if [[ \$KUBEADM_CFG_VERSION != $K8S_VERSION ]]; then
+      echo "Expected kubeadm-config ConfigMap version ${K8S_VERSION}, but got \$KUBEADM_CFG_VERSION."
+      exit 1
+    fi
 EOF
   UPGRADE_STATE="existing"
 done
