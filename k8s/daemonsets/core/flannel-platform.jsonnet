@@ -14,6 +14,7 @@
     labels: {
       app: 'flannel',
       tier: 'node',
+      workload: 'flannel-platform',
     },
     name: 'kube-flannel-ds-platform',
     namespace: 'kube-system',
@@ -21,15 +22,17 @@
   spec: {
     selector: {
       matchLabels: {
+        app: 'flanne',
+        tier: 'node',
         workload: 'flannel-platform',
       },
     },
     template: {
       metadata: {
         labels: {
-          workload: 'flannel-platform',
           app: 'flannel',
           tier: 'node',
+          workload: 'flannel-platform',
         },
       },
       spec: {
