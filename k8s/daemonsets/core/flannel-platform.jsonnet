@@ -22,8 +22,8 @@
     selector: {
       matchLabels: {
         workload: 'flannel-platform',
-      }
-    }
+      },
+    },
     template: {
       metadata: {
         labels: {
