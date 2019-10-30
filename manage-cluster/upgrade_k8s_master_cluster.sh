@@ -36,7 +36,7 @@ UPGRADE_STATE="new"
 
 for zone in $GCE_ZONES; do
   gce_zone="${GCE_REGION}-${zone}"
-  gce_name="${GCE_BASE_NAME}-${gce_zone}"
+  gce_name="master-${GCE_BASE_NAME}-${gce_zone}"
 
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
