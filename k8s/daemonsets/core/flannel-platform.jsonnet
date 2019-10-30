@@ -8,7 +8,7 @@
 // their external networking run done by ipvlan with a custom IPAM plugin. The
 // ability to have multus network interfaces in a pod is provided by multus.
 {
-  apiVersion: 'extensions/v1beta1',
+  apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
     labels: {
