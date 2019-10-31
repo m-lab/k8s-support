@@ -92,6 +92,9 @@ for zone in $GCE_ZONES; do
   
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
+    # The flag --delete-local-data causes the command to "continue even if
+    # there are pods using emptyDir". In our case, the CoreDNS pods use
+    # emptyDir volumes, but we don't care about the data in there.
     kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
   
     # Upgrade CNI plugins.
