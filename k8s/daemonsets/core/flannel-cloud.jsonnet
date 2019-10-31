@@ -15,11 +15,6 @@
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    labels: {
-      app: 'flannel',
-      tier: 'node',
-      workload: 'flannel-cloud',
-    },
     name: 'kube-flannel-ds-cloud',
     namespace: 'kube-system',
   },
