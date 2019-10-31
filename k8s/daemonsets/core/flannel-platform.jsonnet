@@ -22,7 +22,7 @@
   spec: {
     selector: {
       matchLabels: {
-        app: 'flanne',
+        app: 'flannel',
         tier: 'node',
         workload: 'flannel-platform',
       },
