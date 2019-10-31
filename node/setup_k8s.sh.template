@@ -77,8 +77,8 @@ TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" \
     ${K8S_TOKEN_URL} 2> $K8S_TOKEN_ERROR_FILE )
 # IF there was an error and the error was 408 (Request Timeout), then reboot
 # the machine to reset the token timeout.
-ERROR_CODE=$(grep --only-matching '...$' $K8S_TOKEN_ERROR_FILE)
-if [[ $ERROR_CODE -eq "408" ]]; then
+ERROR_CODE=$(grep '408 Request Timeout' $K8S_TOKEN_ERROR_FILE)
+if [[ -n $ERROR_CODE ]]; then
   /sbin/reboot
 fi
 
