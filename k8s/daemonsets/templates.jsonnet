@@ -201,7 +201,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 ;
 
 local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
-  apiVersion: 'extensions/v1beta1',
+  apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
     name: name,

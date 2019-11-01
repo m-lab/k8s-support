@@ -22,6 +22,7 @@ GCP_PROJECT=${1:?GCP Project is missing.}
 # IPV4="$2"  # Currently unused.
 HOSTNAME=${3:?Node hostname is missing.}
 K8S_TOKEN_URL=${4:?k8s token URL is missing. Node cannot join k8s cluster.}
+K8S_TOKEN_ERROR_FILE="/tmp/k8s_token_error"
 
 # Turn the hostname into its component parts.
 MACHINE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $1 }')
@@ -70,8 +71,17 @@ systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
 
-# Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr.
-TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" ${K8S_TOKEN_URL} )
+# Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr,
+# so write stderr to a file so we can read any error code.
+TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" \
+    ${K8S_TOKEN_URL} 2> $K8S_TOKEN_ERROR_FILE )
+# IF there was an error and the error was 408 (Request Timeout), then reboot
+# the machine to reset the token timeout.
+ERROR_408=$(grep '408 Request Timeout' $K8S_TOKEN_ERROR_FILE || :)
+if [[ -n $ERROR_408 ]]; then
+  /sbin/reboot
+fi
+
 export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 # TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
 # that we can hard-code the CA hash below without having to change it all the

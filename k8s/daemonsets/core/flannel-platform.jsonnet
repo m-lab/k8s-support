@@ -8,22 +8,26 @@
 // their external networking run done by ipvlan with a custom IPAM plugin. The
 // ability to have multus network interfaces in a pod is provided by multus.
 {
-  apiVersion: 'extensions/v1beta1',
+  apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    labels: {
-      app: 'flannel',
-      tier: 'node',
-    },
     name: 'kube-flannel-ds-platform',
     namespace: 'kube-system',
   },
   spec: {
+    selector: {
+      matchLabels: {
+        app: 'flannel',
+        tier: 'node',
+        workload: 'flannel-platform',
+      },
+    },
     template: {
       metadata: {
         labels: {
           app: 'flannel',
           tier: 'node',
+          workload: 'flannel-platform',
         },
       },
       spec: {

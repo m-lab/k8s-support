@@ -12,22 +12,26 @@
 // https://github.com/kubernetes/kubernetes/issues/44254
 
 {
-  apiVersion: 'extensions/v1beta1',
+  apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    labels: {
-      app: 'flannel',
-      tier: 'node',
-    },
     name: 'kube-flannel-ds-cloud',
     namespace: 'kube-system',
   },
   spec: {
+    selector: {
+      matchLabels: {
+        app: 'flannel',
+        tier: 'node',
+        workload: 'flannel-cloud',
+      },
+    },
     template: {
       metadata: {
         labels: {
           app: 'flannel',
           tier: 'node',
+          workload: 'flannel-cloud',
         },
       },
       spec: {

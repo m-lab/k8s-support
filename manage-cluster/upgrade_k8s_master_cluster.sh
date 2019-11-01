@@ -36,7 +36,7 @@ UPGRADE_STATE="new"
 
 for zone in $GCE_ZONES; do
   gce_zone="${GCE_REGION}-${zone}"
-  gce_name="${GCE_BASE_NAME}-${gce_zone}"
+  gce_name="master-${GCE_BASE_NAME}-${gce_zone}"
 
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
@@ -76,7 +76,7 @@ for zone in $GCE_ZONES; do
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
         -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-        -e 's|{{LOAD_BALANCER_NAME}}|${GCE_BASE_NAME}|g' \
+        -e 's|{{LOAD_BALANCER_NAME}}|api-${GCE_BASE_NAME}|g' \
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
         -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
         -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
@@ -92,10 +92,13 @@ for zone in $GCE_ZONES; do
   
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
-    kubectl drain $gce_name --ignore-daemonsets
+    # The flag --delete-local-data causes the command to "continue even if
+    # there are pods using emptyDir". In our case, the CoreDNS pods use
+    # emptyDir volumes, but we don't care about the data in there.
+    kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
   
     # Upgrade CNI plugins.
-    curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+    curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
     # Upgrade crictl.
     curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
@@ -132,6 +135,46 @@ for zone in $GCE_ZONES; do
 
     # Mark the node schedulable again.
     kubectl uncordon $gce_name
+
+    # Verify that the running api-server is actually upgraded.
+    API_VERSION=\$(kubectl get pod kube-apiserver-${gce_name} -n kube-system \
+        -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$API_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-apiserver version ${K8S_VERSION}, but got \$API_VERSION."
+      exit 1
+    fi
+
+    # Verify that the running kube-controller is actually upgraded.
+    CONTROLLER_VERSION=\$(kubectl get pod kube-controller-manager-${gce_name} \
+        -n kube-system -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$CONTROLLER_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-controller-manager version ${K8S_VERSION}, but got \$CONTROLLER_VERSION."
+      exit 1
+    fi
+
+    # Verify that the running kube-scheduler is actually upgraded.
+    SCHEDULER_VERSION=\$(kubectl get pod kube-scheduler-${gce_name} \
+        -n kube-system -o jsonpath='{.spec.containers[0].image}' | cut -d: -f2)
+    if [[ \$SCHEDULER_VERSION != $K8S_VERSION ]]; then
+      echo "Expected running kube-scheduler version ${K8S_VERSION}, but got \$SCHEDULER_VERSION."
+      exit 1
+    fi
+
+    # Verify that k8s knows the kubelet is upgraded to the expected version.
+    KUBELET_VERSION=\$(kubectl get node $gce_name \
+        -o jsonpath='{.status.nodeInfo.kubeletVersion}')
+    if [[ \$KUBELET_VERSION != $K8S_VERSION ]]; then
+      echo "Expected kubelet version ${K8S_VERSION}, but got \$KUBELET_VERSION."
+      exit 1
+    fi
+
+    # Verify that the kubeadm-config ConfigMap reflects the desired version.
+    KUBEADM_CFG_VERSION=\$(kubectl describe cm kubeadm-config -n kube-system \
+        | grep kubernetesVersion | cut -d' ' -f2)
+    if [[ \$KUBEADM_CFG_VERSION != $K8S_VERSION ]]; then
+      echo "Expected kubeadm-config ConfigMap version ${K8S_VERSION}, but got \$KUBEADM_CFG_VERSION."
+      exit 1
+    fi
 EOF
   UPGRADE_STATE="existing"
 done
