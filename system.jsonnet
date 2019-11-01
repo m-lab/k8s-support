@@ -18,7 +18,6 @@
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
     import 'k8s/daemonsets/core/update-agent.jsonnet',
     import 'k8s/daemonsets/core/utilization.jsonnet',
-    import 'k8s/daemonsets/experiments/bismark.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
