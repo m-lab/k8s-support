@@ -194,7 +194,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
     ],
   }] +
   if hostNetwork then
-    [RBACProxy('traceroute', tcpPort)]
+    [RBACProxy('pcap', tcpPort)]
   else
     []
 ;
