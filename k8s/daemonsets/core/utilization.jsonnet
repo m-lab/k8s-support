@@ -60,7 +60,9 @@ local exp = import '../templates.jsonnet';
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher('utilization', 9994, ['switch', 'system'], true, 'pusher-' + std.extVar('PROJECT_ID')),
+            // We want this port to be separate from the ports used by the
+            // sidecar services, so we count down from 9990, rather than up.
+            exp.Pusher('utilization', 9989, ['switch', 'system'], true, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         hostNetwork: true,
         // hostPID: true,
