@@ -41,7 +41,7 @@ case $PROJECT in
   mlab-staging)
     MACHINE_TYPE="n1-standard-8";;
   mlab-oti)
-    MACHINE_TYPE="n1-highmem-8";;
+    MACHINE_TYPE="n1-highmem-16";;
   *)
     echo "Unknown GCP project: ${PROJECT}"
     exit 1
