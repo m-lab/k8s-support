@@ -66,10 +66,23 @@ local RBACProxy(name, port) = {
   ],
 };
 
+local tcpinfoServiceVolume = {
+  volumemount: {
+    mountPath: '/var/local/tcpinfoeventsocket',
+    name: 'tcpinfo-eventsocket',
+    readOnly: false,
+  },
+  volume: {
+    emptyDir: {},
+    name: 'tcpinfo-eventsocket',
+  },
+  eventsocketFilename: '/var/local/tcpinfoeventsocket/tcpevents.sock',
+};
+
 local Tcpinfo(expName, tcpPort, hostNetwork) = [
   {
     name: 'tcpinfo',
-    image: 'measurementlab/tcp-info:v1.1.0',
+    image: 'measurementlab/tcp-info:v1.2.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -78,6 +91,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       ,
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
+      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
@@ -96,6 +110,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
     ],
     volumeMounts: [
       VolumeMount(expName),
+      tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
   }] +
@@ -116,6 +131,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
+      '-tcpinfo.socket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
@@ -134,6 +150,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     ],
     volumeMounts: [
       VolumeMount(expName),
+      tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
   }] +
@@ -143,10 +160,50 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     []
 ;
 
+local Pcap(expName, tcpPort, hostNetwork) = [
+  {
+    name: 'pcap',
+    image: 'measurementlab/packet-headers:v0.3',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
+      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+    ],
+    env: if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      tcpinfoServiceVolume.volumemount,
+      uuid.volumemount,
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('pcap', tcpPort)]
+  else
+    []
+;
+
+
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
     name: 'pusher',
-    image: 'measurementlab/pusher:v1.9',
+    image: 'measurementlab/pusher:v1.10',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -228,7 +285,8 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
-            Pusher(name, 9993, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket),
+            Pcap(name, 9993, hostNetwork),
+            Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
@@ -246,6 +304,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           },
           uuid.volume,
           volume(name),
+          tcpinfoServiceVolume.volume,
         ],
       },
     },
