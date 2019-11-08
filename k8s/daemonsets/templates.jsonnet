@@ -202,8 +202,9 @@ local Pcap(expName, tcpPort, hostNetwork) = [
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
+    local version='v1.11',
     name: 'pusher',
-    image: 'measurementlab/pusher:v1.10',
+    image: 'measurementlab/pusher:'+version,
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -213,6 +214,11 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-experiment=' + expName,
       '-archive_size_threshold=50MB',
       '-directory=/var/spool/' + expName,
+      // TODO: Add version information for every other service to the metadata.
+      '-metadata MLAB.server.name=$(MLAB_NODE_NAME)',
+      '-metadata MLAB.service.name=' + expName,
+      '-metadata MLAB.pusher.image=measurementlab/pusher:' + version,
+      '-metadata MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
     ] + ['-datatype=' + d for d in datatypes],
     env: [
       {
