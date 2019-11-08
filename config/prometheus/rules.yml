@@ -174,5 +174,5 @@ groups:
 ## Pusher Daily Volume metrics
 #
 # This rule optimizes the alert query used for PusherDailyDataVolumeTooLow.
-  - record: datatype:pusher_bytes_per_tarile:increase24h
+  - record: datatype:pusher_bytes_per_tarfile:increase24h
     expr: sum by(datatype) (increase(pusher_bytes_per_tarfile_sum[1d]))
