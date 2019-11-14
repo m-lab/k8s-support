@@ -286,7 +286,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
             // Pcap(name, 9993, hostNetwork),
-            Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
+            Pusher(name, 9994, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
