@@ -42,10 +42,13 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 # by default.
 # https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
 kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml
+
+# Helm 3 does not automatically create namespaces anymore.
+kubectl create namespace cert-manager || true
+
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo update
-./linux-amd64/helm install \
-  --name cert-manager \
+./linux-amd64/helm install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
   --set ingressShim.defaultIssuerName=letsencrypt \
