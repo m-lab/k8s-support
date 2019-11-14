@@ -37,8 +37,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--config.file=/etc/prometheus/prometheus.yml',
               '--storage.tsdb.path=/prometheus',
               '--web.enable-lifecycle',
-              // TODO: enable longer retention once persistent volumes are available.
-              //  "--storage.tsdb.retention=2880h",
+              '--storage.tsdb.retention=2880h',
             ],
             image: 'prom/prometheus:v2.4.2',
             name: 'prometheus',
