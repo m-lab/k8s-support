@@ -6,14 +6,14 @@ USAGE="USAGE: $0 <google-cloud-project> [<kubeconfig>]"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
 KUBECONFIG=${2:-}
 
+# Source the main configuration file.
+source ./k8s_deploy.conf
+
 if [[ -n "${KUBECONFIG}" ]]; then
   export KUBECONFIG="${KUBECONFIG}"
 else
   # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
   # fetch it from the first master node in the cluster.
-
-  # Source the main configuration file.
-  source ./k8s_deploy.conf
 
   # Create a string representing region and zone variable names for this project.
   GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
