@@ -35,7 +35,7 @@ else
 fi
 
 # Download helm and use it to install cert-manager.
-wget https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
+curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
