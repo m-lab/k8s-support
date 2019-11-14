@@ -34,6 +34,25 @@ else
   export KUBECONFIG=./kube-config
 fi
 
+# Download helm and use it to install cert-manager.
+wget https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
+tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
+
+# Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
+# by default.
+# https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
+kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml
+kubectl create namespace cert-manager
+./linux-amd64/helm repo add jetstack https://charts.jetstack.io
+./linux-amd64/helm repo update
+./linux-amd64/helm install \
+  --name cert-manager \
+  --namespace cert-manager \
+  --version ${K8S_CERTMANAGER_VERSION} \
+  --set ingressShim.defaultIssuerName=letsencrypt \
+  --set ingressShim.defaultIssuerKind=ClusterIssuer \
+  jetstack/cert-manager
+
 # Apply the configuration
 
 # The configurations of the secrets for the cluster happen in a separate
