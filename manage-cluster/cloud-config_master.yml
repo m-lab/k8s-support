@@ -136,8 +136,10 @@ write_files:
       source /root/.bashrc
       # Members are listed whether they are healthy or not.
       ETCD_ENDPOINTS=$(/usr/bin/etcdctl member list | awk '{print $5}' | paste -s -d, -)
-      # Only healthy endpoints are reported on stdout.
-      ETCD_HEALTHY_COUNT=$(/usr/bin/etcdctl endpoint health --endpoints "${ETCD_ENDPOINTS}" | wc -l)
+      # Currently healthy endpoints are reported on stderr, along with true
+      # errors: https://github.com/etcd-io/etcd/pull/11322
+      ETCD_HEALTHY_COUNT=$(/usr/bin/etcdctl endpoint health --endpoints "${ETCD_ENDPOINTS}" 2>&1 \
+          | grep -P '(?<!un)healthy' | wc -l)
       if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
         echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
         exit 0
