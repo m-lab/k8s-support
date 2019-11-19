@@ -34,7 +34,7 @@ else
   export KUBECONFIG=./kube-config
 fi
 
-# Download helm and use it to install cert-manager.
+# Download helm and use it to install cert-manager and ingress-nginx
 curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 
@@ -53,7 +53,13 @@ kubectl create namespace cert-manager || true
   --version ${K8S_CERTMANAGER_VERSION} \
   --set ingressShim.defaultIssuerName=letsencrypt \
   --set ingressShim.defaultIssuerKind=ClusterIssuer \
-  jetstack/cert-manager
+  jetstack/cert-manager || true
+
+# Install ingress-nginx.
+./linux-amd64/helm install nginx-ingress \
+  --set rbac.create=true \
+  --set controller.nodeSelector.run=prometheus-server \
+  stable/nginx-ingress || true
 
 # Apply the configuration
 
