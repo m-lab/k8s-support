@@ -43,7 +43,7 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
 mkdir -p secrets/prometheus-etcd-tls
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.* secrets/prometheus-etcd-tls/
 gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.community
-gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/prometheus-htpasswd
+gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
 
 # Convert secret data into configs.
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
@@ -56,7 +56,7 @@ kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
 kubectl create secret generic snmp-community --from-file secrets/snmp.community \
     --dry-run -o json > secret-configs/snmp-community.json
-kubectl create secret generic prometheus-htpasswd --from-file secrets/prometheus-htpasswd \
+kubectl create secret generic prometheus-htpasswd --from-file secrets/auth \
     --dry-run -o json > secret-configs/prometheus-htpasswd.json
 
 # Download the platform cluster CA cert.
