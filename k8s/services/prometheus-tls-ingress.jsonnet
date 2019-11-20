@@ -7,6 +7,9 @@
     annotations: {
       'kubernetes.io/tls-acme': 'true',
       'kubernetes.io/ingress.class': 'nginx',
+      'nginx.ingress.kubernetes.io/auth-type': 'basic',
+      'nginx.ingress.kubernetes.io/auth-secret': 'prometheus-htpasswd',
+      'nginx.ingress.kubernetes.io/auth-realm': 'Authentication Required',
     },
   },
   spec: {
