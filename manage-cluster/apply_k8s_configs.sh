@@ -49,6 +49,7 @@ kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cer
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager || true
+kubectl create namespace nginx-ingress || true
 
 ./linux-amd64/helm repo update
 ./linux-amd64/helm install cert-manager \
