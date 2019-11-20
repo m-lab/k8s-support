@@ -27,6 +27,9 @@
     import 'k8s/deployments/update-operator.jsonnet',
     // Namespaces
     import 'k8s/namespaces/reboot-operator.jsonnet',
+    // ClusterIssuers
+    import 'k8s/clusterissuers/letsencrypt-staging.jsonnet',
+    import 'k8s/clusterissuers/letsencrypt.jsonnet',
   ] + std.flattenArrays([
     // Networks (which are in array form already).
     import 'k8s/networks/networks.jsonnet',
