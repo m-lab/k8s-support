@@ -13,14 +13,14 @@
     tls: [
       {
         hosts: [
-          'prometheus-platform-cluster.mlab-sandbox.measurementlab.net',
+          'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
         ],
         secretName: 'prometheus-tls',
       },
     ],
     rules: [
       {
-        host: 'prometheus-platform-cluster.mlab-sandbox.measurementlab.net',
+        host: 'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
         http: {
           paths: [
             {
