@@ -6,14 +6,14 @@ USAGE="USAGE: $0 <google-cloud-project> [<kubeconfig>]"
 PROJECT=${1:?Please specify the google cloud project: $USAGE}
 KUBECONFIG=${2:-}
 
+# Source the main configuration file.
+source ./k8s_deploy.conf
+
 if [[ -n "${KUBECONFIG}" ]]; then
   export KUBECONFIG="${KUBECONFIG}"
 else
   # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
   # fetch it from the first master node in the cluster.
-
-  # Source the main configuration file.
-  source ./k8s_deploy.conf
 
   # Create a string representing region and zone variable names for this project.
   GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
@@ -33,6 +33,40 @@ else
       "${GCE_ARGS[@]}" > ./kube-config
   export KUBECONFIG=./kube-config
 fi
+
+# Download helm and use it to install cert-manager and ingress-nginx
+curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
+tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
+
+# Add the required Helm repositories.
+./linux-amd64/helm repo add jetstack https://charts.jetstack.io
+./linux-amd64/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+./linux-amd64/helm repo update
+
+# Helm 3 does not automatically create namespaces anymore.
+kubectl create namespace cert-manager || true
+kubectl create namespace nginx-ingress || true
+
+# Install ingress-nginx and set it to run on the same node as prometheus-server.
+./linux-amd64/helm install nginx-ingress \
+  --namespace nginx-ingress \
+  --set rbac.create=true \
+  --set controller.nodeSelector.run=prometheus-server \
+  --set defaultBackend.nodeSelector.run=prometheus-server \
+  --set controller.service.enabled=false \
+  --set controller.hostNetwork=true \
+  stable/nginx-ingress || true
+
+# Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
+# by default.
+# https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
+kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/${K8S_CERTMANAGER_RESOURCES_VERSION}/deploy/manifests/00-crds.yaml
+./linux-amd64/helm install cert-manager \
+  --namespace cert-manager \
+  --version ${K8S_CERTMANAGER_VERSION} \
+  --set ingressShim.defaultIssuerName=letsencrypt \
+  --set ingressShim.defaultIssuerKind=ClusterIssuer \
+  jetstack/cert-manager || true
 
 # Apply the configuration
 

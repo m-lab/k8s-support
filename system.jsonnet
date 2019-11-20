@@ -27,6 +27,14 @@
     import 'k8s/deployments/update-operator.jsonnet',
     // Namespaces
     import 'k8s/namespaces/reboot-operator.jsonnet',
+    // ClusterIssuers
+    // The letsencrypt-staging is provided to test new TLS
+    // services but commented out here by default.
+    // import 'k8s/clusterissuers/letsencrypt-staging.jsonnet',
+    import 'k8s/clusterissuers/letsencrypt.jsonnet',
+    // Services
+    import 'k8s/services/prometheus-tls.jsonnet',
+    import 'k8s/services/prometheus-tls-ingress.jsonnet',
   ] + std.flattenArrays([
     // Networks (which are in array form already).
     import 'k8s/networks/networks.jsonnet',
