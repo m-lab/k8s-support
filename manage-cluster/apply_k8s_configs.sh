@@ -41,23 +41,11 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 # Add the required Helm repositories.
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-
-# Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
-# by default.
-# https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
-kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml
+./linux-amd64/helm repo update
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager || true
 kubectl create namespace nginx-ingress || true
-
-./linux-amd64/helm repo update
-./linux-amd64/helm install cert-manager \
-  --namespace cert-manager \
-  --version ${K8S_CERTMANAGER_VERSION} \
-  --set ingressShim.defaultIssuerName=letsencrypt-staging \
-  --set ingressShim.defaultIssuerKind=ClusterIssuer \
-  jetstack/cert-manager || true
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm install nginx-ingress \
@@ -68,6 +56,17 @@ kubectl create namespace nginx-ingress || true
   --set controller.service.enabled=false \
   --set controller.hostNetwork=true \
   stable/nginx-ingress || true
+
+# Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
+# by default.
+# https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
+kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.11/deploy/manifests/00-crds.yaml
+./linux-amd64/helm install cert-manager \
+  --namespace cert-manager \
+  --version ${K8S_CERTMANAGER_VERSION} \
+  --set ingressShim.defaultIssuerName=letsencrypt-staging \
+  --set ingressShim.defaultIssuerKind=ClusterIssuer \
+  jetstack/cert-manager || true
 
 # Apply the configuration
 
