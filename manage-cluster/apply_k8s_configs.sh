@@ -65,6 +65,8 @@ kubectl create namespace nginx-ingress || true
   --set rbac.create=true \
   --set controller.nodeSelector.run=prometheus-server \
   --set defaultBackend.nodeSelector.run=prometheus-server \
+  --set controller.service.enabled=false \
+  --set controller.hostNetwork=true \
   stable/nginx-ingress || true
 
 # Apply the configuration
