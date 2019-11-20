@@ -55,7 +55,7 @@ kubectl create namespace nginx-ingress || true
 ./linux-amd64/helm install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
-  --set ingressShim.defaultIssuerName=letsencrypt \
+  --set ingressShim.defaultIssuerName=letsencrypt-staging \
   --set ingressShim.defaultIssuerKind=ClusterIssuer \
   jetstack/cert-manager || true
 
