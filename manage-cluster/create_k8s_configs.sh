@@ -56,6 +56,7 @@ kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
 kubectl create secret generic snmp-community --from-file secrets/snmp.community \
     --dry-run -o json > secret-configs/snmp-community.json
+# NB: The file containing the user/password pair must be called 'auth'.
 kubectl create secret generic prometheus-htpasswd --from-file secrets/auth \
     --dry-run -o json > secret-configs/prometheus-htpasswd.json
 
