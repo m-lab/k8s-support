@@ -60,7 +60,7 @@ kubectl create namespace cert-manager || true
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm install nginx-ingress \
-  --namespace nginx-ingress
+  --namespace nginx-ingress \
   --set rbac.create=true \
   --set controller.nodeSelector.run=prometheus-server \
   stable/nginx-ingress || true
