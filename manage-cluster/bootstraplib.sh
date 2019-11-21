@@ -10,6 +10,8 @@ function create_master {
 
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
+  GCE_TYPE_VAR="GCE_TYPE_${PROJECT//-/_}"
+
   # Create a static IP for the GCE instance, or use the one that already exists.
   EXISTING_IP=$(gcloud compute addresses list \
       --filter "name=${gce_name} AND region:${GCE_REGION}" \
@@ -91,7 +93,7 @@ function create_master {
     --subnet "${GCE_K8S_SUBNET}" \
     --can-ip-forward \
     --tags "${GCE_NET_TAGS}" \
-    --machine-type "${GCE_TYPE}" \
+    --machine-type "${!GCE_TYPE_VAR}" \
     --address "${EXTERNAL_IP}" \
     --scopes "${GCE_API_SCOPES}" \
     --metadata-from-file "user-data=cloud-config_master.yml" \
