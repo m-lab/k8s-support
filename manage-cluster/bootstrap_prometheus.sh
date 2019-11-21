@@ -169,7 +169,7 @@ if [[ -z "${EXISTING_DISK}" ]]; then
   # Attempt to create disk and ignore errors.
   gcloud compute disks create \
       "${DISK_NAME}" \
-      --size "200GB" \
+      --size "500GB" \
       --type "pd-ssd" \
       --labels "${PROM_BASE_NAME}=true" \
       "${GCE_ARGS[@]}" || :
