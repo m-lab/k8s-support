@@ -66,6 +66,7 @@ kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cer
   --version ${K8S_CERTMANAGER_VERSION} \
   --set ingressShim.defaultIssuerName=letsencrypt \
   --set ingressShim.defaultIssuerKind=ClusterIssuer \
+  --set webhook.enabled=false \
   jetstack/cert-manager || true
 
 # Apply the configuration
