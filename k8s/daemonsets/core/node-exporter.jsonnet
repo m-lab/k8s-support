@@ -32,6 +32,7 @@
               '--collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)',
               '--collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$',
               '--collector.netstat.fields=^(.*_(InErrors|InErrs)|Ip_Forwarding|Ip(6|Ext)_(InOctets|OutOctets)|Icmp6?_(InMsgs|OutMsgs)|TcpExt_(TCPDSACK.*|Listen.*|Syncookies.*|TCPSynRetrans)|Tcp_(ActiveOpens|InSegs|OutSegs|PassiveOpens|RetransSegs|CurrEstab)|Udp6?_(InDatagrams|OutDatagrams|NoPorts))$',
+              '--collector.systemd',
               '--no-collector.arp',
               '--no-collector.bcache',
               '--no-collector.bonding',
@@ -82,6 +83,10 @@
                 mountPath: '/var/spool/node-exporter',
                 name: 'node-exporter-data',
                 readOnly: false,
+              },
+              {
+                mountPath: '/var/run/dbus/system_bus_socket',
+                name: 'dbus-socket',
               },
             ],
           },
@@ -155,6 +160,12 @@
               type: 'DirectoryOrCreate',
             },
             name: 'node-exporter-data',
+          },
+          {
+            hostPath: {
+              path: '/var/run/dbus/system_bus_socket',
+            },
+            name: 'dbus-socket',
           },
         ],
       },
