@@ -84,6 +84,10 @@
                 name: 'node-exporter-data',
                 readOnly: false,
               },
+              {
+                mountPath: '/var/run/dbus/system_bus_socket',
+                name: 'dbus-socket',
+              },
             ],
           },
           {
@@ -156,6 +160,12 @@
               type: 'DirectoryOrCreate',
             },
             name: 'node-exporter-data',
+          },
+          {
+            hostPath: {
+              path: '/var/run/dbus/system_bus_socket',
+            },
+            name: 'dbus-socket',
           },
         ],
       },
