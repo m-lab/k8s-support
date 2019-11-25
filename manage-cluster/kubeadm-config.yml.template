@@ -1,4 +1,4 @@
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 nodeRegistration:
   name: "{{MASTER_NAME}}"
@@ -6,7 +6,7 @@ localAPIEndpoint:
   advertiseAddress: "{{INTERNAL_IP}}"
   bindPort: 6443
 ---
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: JoinConfiguration
 discovery:
   bootstrapToken:
@@ -22,7 +22,7 @@ controlPlane:
 nodeRegistration:
   name: "{{MASTER_NAME}}"
 ---
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 kubernetesVersion: {{K8S_VERSION}}
 apiServer:
