@@ -170,7 +170,9 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
-    ],
+    ] + if hostNetwork then [
+      '-interface=eth0',
+    ] else [],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
