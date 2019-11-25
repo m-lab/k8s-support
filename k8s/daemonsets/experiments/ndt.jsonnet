@@ -58,7 +58,9 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), ['ndt5', 'ndt7'])
         // Feel free to change this to a smaller value for speedy
         // sandbox deployments to enable faster compile-run-debug loops,
         // but 60+60+30=150 is what it needs to be for staging and prod.
-        terminationGracePeriodSeconds: 150,
+        //
+        // Only enable grace period where production traffic is possible.
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 150,
         volumes+: [
           {
             name: 'ndt-tls',
