@@ -53,7 +53,7 @@ for zone in $GCE_ZONES; do
       "${GCP_ARGS[@]}")
 
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
-    UPGRADE_COMMAND="apply ${K8S_VERSION} --force --config kubeadm-config.yml"
+    UPGRADE_COMMAND="apply ${K8S_VERSION} --force"
   else
     UPGRADE_COMMAND="node experimental-control-plane"
   fi
