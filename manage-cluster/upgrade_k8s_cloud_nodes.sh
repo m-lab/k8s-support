@@ -61,7 +61,7 @@ set -x
 for node in $NODES; do
   # Determine the zone of the node.
   ZONE=$(gcloud compute instances list --filter "name=${node}" \
-      --project mlab-sandbox \
+      --project ${PROJECT} \
       --format "value(zone)")
   # Ssh to the node, update all the k8s binaries.
   gcloud compute ssh "${node}" --project "${PROJECT}" --zone "${ZONE}" <<EOF
