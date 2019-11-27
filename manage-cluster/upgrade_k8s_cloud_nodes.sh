@@ -20,19 +20,6 @@ fi
 # Source all the global configuration variables.
 source k8s_deploy.conf
 
-# Issue a warning to the user and only continue if they agree.
-cat <<EOF
-  WARNING: this script is going to attempt to upgrade _all_ cloud nodes (not
-  including master nodes) in the ${PROJECT} kubernetes platform cluster to
-  version ${K8S_VERSION}.
-
-  Are you sure you want to continue? [y/N]:
-EOF
-read keepgoing
-if [[ "${keepgoing}" != "y" ]]; then
-  exit 0
-fi
-
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
 # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
@@ -49,6 +36,27 @@ NODES=$(
       --selector 'mlab/type=cloud,!node-role.kubernetes.io/master' \
       --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 )
+
+set +x
+echo -e "\n\n##### NODES TO BE UPGRADED #####"
+for node in $NODES; do
+  echo $node
+done
+echo -e "\n"
+
+# Issue a warning to the user and only continue if they agree.
+cat <<EOF
+WARNING: this script is going to attempt to upgrade all of the cloud nodes
+listed above in the ${PROJECT} kubernetes platform cluster to version
+${K8S_VERSION}.
+
+Are you sure you want to continue? [y/N]:
+EOF
+read keepgoing
+if [[ "${keepgoing}" != "y" ]]; then
+  exit 0
+fi
+set -x
 
 for node in $NODES; do
   # Determine the zone of the node.
