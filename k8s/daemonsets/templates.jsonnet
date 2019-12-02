@@ -162,7 +162,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork) = [
   {
     name: 'pcap',
-    image: 'measurementlab/packet-headers:v0.3',
+    image: 'measurementlab/packet-headers:v0.5.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -170,7 +170,9 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
-    ],
+    ] + if hostNetwork then [
+      '-interface=eth0',
+    ] else [],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
@@ -284,12 +286,12 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
-            /* if std.extVar('PROJECT_ID') != 'mlab-oti' then
+            if std.extVar('PROJECT_ID') != 'mlab-oti' then
               std.flattenArrays([
                 Pcap(name, 9993, hostNetwork),
                 Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
               ])
-            else */
+            else
               Pusher(name, 9994, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket)
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
