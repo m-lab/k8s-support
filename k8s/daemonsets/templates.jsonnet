@@ -91,7 +91,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       ,
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
