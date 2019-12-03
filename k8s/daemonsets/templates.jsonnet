@@ -162,7 +162,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork) = [
   {
     name: 'pcap',
-    image: 'soltesz/packet-headers:v0.5.3-soltesz',
+    image: 'soltesz/packet-headers:v0.5.4-soltesz',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
