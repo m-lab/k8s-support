@@ -34,6 +34,7 @@
               '--collector.netstat.fields=^(.*_(InErrors|InErrs)|Ip_Forwarding|Ip(6|Ext)_(InOctets|OutOctets)|Icmp6?_(InMsgs|OutMsgs)|TcpExt_(TCPDSACK.*|Listen.*|Syncookies.*|TCPSynRetrans)|Tcp_(ActiveOpens|InSegs|OutSegs|PassiveOpens|RetransSegs|CurrEstab)|Udp6?_(InDatagrams|OutDatagrams|NoPorts))$',
               '--collector.systemd',
               '--collector.systemd.unit-whitelist=^(setup-after-boot.service|system-cloudinit.+|docker.service|kubelet.service)',
+              '--collector.processes',
               '--no-collector.arp',
               '--no-collector.bcache',
               '--no-collector.bonding',
