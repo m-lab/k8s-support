@@ -131,7 +131,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-tcpinfo.socket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
