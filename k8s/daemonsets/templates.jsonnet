@@ -82,7 +82,7 @@ local tcpinfoServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork) = [
   {
     name: 'tcpinfo',
-    image: 'measurementlab/tcp-info:v1.2.0',
+    image: 'measurementlab/tcp-info:v1.3.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -170,7 +170,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
-      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ] + if hostNetwork then [
       '-interface=eth0',
     ] else [],
