@@ -82,7 +82,7 @@ local tcpinfoServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork) = [
   {
     name: 'tcpinfo',
-    image: 'measurementlab/tcp-info:v1.2.0',
+    image: 'measurementlab/tcp-info:v1.3.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -91,7 +91,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       ,
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
@@ -123,14 +123,15 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute',
-    image: 'measurementlab/traceroute-caller:v0.3.2',
+    image: 'measurementlab/traceroute-caller:v0.3.3',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
-      '-uuid-prefix-file=' + uuid.prefixfile
+      '-uuid-prefix-file=' + uuid.prefixfile,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ],
     env: if hostNetwork then [] else [
       {
@@ -162,15 +163,17 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork) = [
   {
     name: 'pcap',
-    image: 'measurementlab/packet-headers:v0.3',
+    image: 'measurementlab/packet-headers:v0.5.4',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
-      '-eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
-    ],
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+    ] + if hostNetwork then [
+      '-interface=eth0',
+    ] else [],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
@@ -284,12 +287,12 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
-            /* if std.extVar('PROJECT_ID') != 'mlab-oti' then
+            if std.extVar('PROJECT_ID') != 'mlab-oti' then
               std.flattenArrays([
                 Pcap(name, 9993, hostNetwork),
                 Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
               ])
-            else */
+            else
               Pusher(name, 9994, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket)
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
