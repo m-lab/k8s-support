@@ -30,7 +30,7 @@
             args: [
               '--collectors=daemonsets,deployments,nodes,pods,resourcequotas,services',
             ],
-            image: 'quay.io/coreos/kube-state-metrics:v1.5.0',
+            image: 'quay.io/coreos/kube-state-metrics:v1.8.0',
             name: 'kube-state-metrics',
             ports: [
               {
