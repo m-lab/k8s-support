@@ -39,7 +39,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--web.enable-lifecycle',
               '--storage.tsdb.retention=2880h',
             ],
-            image: 'prom/prometheus:v2.4.2',
+            image: 'prom/prometheus:v2.14.0',
             name: 'prometheus',
             ports: [
               {
