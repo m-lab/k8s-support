@@ -286,13 +286,8 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork),
             Traceroute(name, 9992, hostNetwork),
-            if std.extVar('PROJECT_ID') != 'mlab-oti' then
-              std.flattenArrays([
-                Pcap(name, 9993, hostNetwork),
-                Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
-              ])
-            else
-              Pusher(name, 9994, ['tcpinfo', 'traceroute'] + datatypes, hostNetwork, bucket)
+            Pcap(name, 9993, hostNetwork),
+            Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
