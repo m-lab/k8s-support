@@ -38,18 +38,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
       spec: {
         containers: [
           {
-            // If fluentd consumes its own logs, the following
-            // situation may happen: fluentd fails to send a chunk
-            // to the server => writes it to the log => tries to
-            // send this message to the server => fails to send a
-            // chunk and so on. Writing to a file, which is not
-            // exported to the back-end prevents it. It also allows
-            // to increase the fluentd verbosity by default.
-            command: [
-              '/bin/sh',
-              '-c',
-              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS 2>&1 >>/var/log/fluentd.log',
-            ],
             env: [
               {
                 name: 'FLUENTD_ARGS',
@@ -68,7 +56,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 },
               },
             ],
-            image: 'k8s.gcr.io/fluentd-gcp:2.1.1',
+            image: 'fluent/fluentd-kubernetes-daemonset:v1.7.4-debian-stackdriver-1.1',
             name: 'fluentd',
             ports: [
               {
