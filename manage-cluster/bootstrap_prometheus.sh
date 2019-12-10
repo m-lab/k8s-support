@@ -37,11 +37,17 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 # The type of GCE VM which will be deployed.
 case $PROJECT in
   mlab-sandbox)
-    MACHINE_TYPE="n1-standard-2";;
+    MACHINE_TYPE="n1-standard-2"
+    DISK_SIZE="200GB"
+    ;;
   mlab-staging)
-    MACHINE_TYPE="n1-standard-8";;
+    MACHINE_TYPE="n1-standard-8"
+    DISK_SIZE="500GB"
+    ;;
   mlab-oti)
-    MACHINE_TYPE="n1-highmem-16";;
+    MACHINE_TYPE="n1-highmem-16"
+    DISK_SIZE="2000GB"
+    ;;
   *)
     echo "Unknown GCP project: ${PROJECT}"
     exit 1
@@ -169,7 +175,7 @@ if [[ -z "${EXISTING_DISK}" ]]; then
   # Attempt to create disk and ignore errors.
   gcloud compute disks create \
       "${DISK_NAME}" \
-      --size "500GB" \
+      --size "${DISK_SIZE}" \
       --type "pd-ssd" \
       --labels "${PROM_BASE_NAME}=true" \
       "${GCE_ARGS[@]}" || :
