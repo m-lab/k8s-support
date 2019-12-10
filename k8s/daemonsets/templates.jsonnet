@@ -41,6 +41,38 @@ local VolumeMount(name) = {
   name: name + '-data',
 };
 
+/*
+kubectl run --restart=Never \
+    --image=alpine/socat soltesz-deletemeafter-20191127 -- \
+    -d -d tcp-listen:9993,fork,reuseaddr tcp-connect:192.168.1.144:9993
+
+*/
+local SOCATProxy(name, port) = {
+  name: 'socat-proxy-' + name,
+  image: 'alpine/socat',
+  args: [
+    // socat does not support long options.
+    '-dd', // debug.
+    'tcp-listen:' + port + ',fork,reuseaddr',
+    'tcp-connect:$(IP):' +  port,
+  ],
+  env: [
+    {
+      name: 'IP',
+      valueFrom: {
+        fieldRef: {
+          fieldPath: 'status.podIP',
+        },
+      },
+    },
+  ],
+  ports: [
+    {
+      containerPort: port,
+    },
+  ],
+};
+
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
   image: 'quay.io/coreos/kube-rbac-proxy:v0.4.1',
@@ -117,7 +149,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
   if hostNetwork then
     [RBACProxy('tcpinfo', tcpPort)]
   else
-    []
+    [SOCATProxy('tcpinfo', tcpPort)]
 ;
 
 local Traceroute(expName, tcpPort, hostNetwork) = [
@@ -156,7 +188,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   if hostNetwork then
     [RBACProxy('traceroute', tcpPort)]
   else
-    []
+    [SOCATProxy('traceroute', tcpPort)]
 ;
 
 local Pcap(expName, tcpPort, hostNetwork) = [
@@ -197,7 +229,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
   if hostNetwork then
     [RBACProxy('pcap', tcpPort)]
   else
-    []
+    [SOCATProxy('pcap', tcpPort)]
 ;
 
 
@@ -255,7 +287,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   if hostNetwork then
     [RBACProxy('pusher', tcpPort)]
   else
-    []
+    [SOCATProxy('pusher', tcpPort)]
 ;
 
 local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
