@@ -53,7 +53,7 @@ local SOCATProxy(name, port) = {
   args: [
     // socat does not support long options.
     '-dd', // debug.
-    'tcp-listen:' + port + ',fork,reuseaddr',
+    'tcp-listen:127.0.0.1:' + port + ',fork,reuseaddr',
     'tcp-connect:$(IP):' +  port,
   ],
   env: [
