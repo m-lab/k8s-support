@@ -41,12 +41,10 @@ local VolumeMount(name) = {
   name: name + '-data',
 };
 
-/*
-kubectl run --restart=Never \
-    --image=alpine/socat soltesz-deletemeafter-20191127 -- \
-    -d -d tcp-listen:9993,fork,reuseaddr tcp-connect:192.168.1.144:9993
-
-*/
+// SOCATProxy creates a tunnel between localhost:<port> and the private pod
+// IP:<port>. This allows operators and developers to use `kubectl port-forward`
+// (which only binds to localhost) to connect to :<port>/debug/pprof for profile
+// information.
 local SOCATProxy(name, port) = {
   name: 'socat-proxy-' + name,
   image: 'alpine/socat',
@@ -388,6 +386,11 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
   // metrics securely over https, andto https-authenticate to only serve them to
   // ourselves.
   RBACProxy(name, port):: RBACProxy(name, port),
+
+  // RBACProxy creates a localhost proxy for containers that listen on the
+  // pod private IP. This allows operators to use kubectl port-forward to access
+  // metrics and debug/pprof profiling safely through kubectl.
+  SOCATProxy(name, port):: SOCATProxy(name, port),
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
