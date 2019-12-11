@@ -41,7 +41,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             env: [
               {
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
-                value: '/etc/fluent/keys'
+                value: '/etc/fluent/keys/fluentd.json'
               },
               
               {
@@ -73,7 +73,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 readOnly: true,
               },
               {
-                mountPath: '/config',
+                mountPath: '/fluentd/etc/',
                 name: 'config-volume',
               },
               {
