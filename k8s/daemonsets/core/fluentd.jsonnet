@@ -38,6 +38,13 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
           {
             name: 'fluentd',
             image: 'fluent/fluentd-kubernetes-daemonset:v0.12-debian-stackdriver',
+            command: [
+              '/bin/bash',
+              '-c',
+              'cp /config/* /fluentd/etc/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/"
+              /fluentd/etc/fluentd.conf && fluentd -c /fluentd/etc/${FLUENTD_CONF}
+              -p /fluentd/plugins --gemfile /fluentd/Gemfile ${FLUENTD_OPT}',
+            ],
             env: [
               {
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -73,7 +80,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 readOnly: true,
               },
               {
-                mountPath: '/fluentd/etc/',
+                mountPath: '/config',
                 name: 'config-volume',
               },
               {
