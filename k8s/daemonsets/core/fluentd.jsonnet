@@ -1,52 +1,47 @@
-local fluentdConfig = import '../../../config/fluentd.jsonnet';
-
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    labels: {
-      'addonmanager.kubernetes.io/mode': 'Reconcile',
-      'kubernetes.io/cluster-service': 'true',
-      version: 'v2.0',
-    },
     name: 'fluentd',
+    namespace: 'kube-system',
+    labels: {
+      'k8s-app': 'fluentd-logging',
+      version: 'v1',
+    },
   },
   spec: {
     selector: {
       matchLabels: {
-        'kubernetes.io/cluster-service': 'true',
-        version: 'v2.0',
-        workload: 'fluentd',
+        'k8s-app': 'fluentd-logging',
+        version: 'v1',
       },
     },
     template: {
       metadata: {
-        annotations: {
-          'prometheus.io/scrape': 'true',
-          // This annotation ensures that fluentd does not get evicted
-          // if the node supports critical pod annotation based
-          // priority scheme. Note that this does not guarantee
-          // admission on the nodes (#40573).
-          'scheduler.alpha.kubernetes.io/critical-pod': '',
-        },
         labels: {
-          'kubernetes.io/cluster-service': 'true',
-          version: 'v2.0',
-          workload: 'fluentd',
+          'k8s-app': 'fluentd-logging',
+          version: 'v1',
         },
       },
       spec: {
+        serviceAccount: 'fluentd',
+        serviceAccountName: 'fluentd',
+        tolerations: [
+          {
+            key: 'node-role.kubernetes.io/master',
+            effect: 'NoSchedule',
+          },
+        ],
         containers: [
           {
+            name: 'fluentd',
+            image: 'fluent/fluentd-kubernetes-daemonset:v1-debian-stackdriver',
             env: [
               {
-                name: 'FLUENTD_ARGS',
-                value: '--no-supervisor',
-              },
-              {
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
-                value: '/etc/fluent/keys/fluentd.json',
+                value: '/etc/fluent/keys'
               },
+              
               {
                 name: 'NODE_HOSTNAME',
                 valueFrom: {
@@ -54,15 +49,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                     fieldPath: 'spec.nodeName',
                   },
                 },
-              },
-            ],
-            image: 'fluent/fluentd-kubernetes-daemonset:v1.7.4-debian-stackdriver-1.1',
-            name: 'fluentd',
-            ports: [
-              {
-                containerPort: 9900,
-                name: 'scrape',
-                protocol: 'TCP',
               },
             ],
             resources: {
@@ -76,21 +62,12 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             },
             volumeMounts: [
               {
-                mountPath: '/var/log',
                 name: 'varlog',
+                mountPath: '/var/log',
               },
               {
-                mountPath: '/var/lib/docker/containers',
                 name: 'varlibdockercontainers',
-                readOnly: true,
-              },
-              {
-                mountPath: '/cache/docker',
-                name: 'cachedocker',
-              },
-              {
-                mountPath: '/host/lib',
-                name: 'libsystemddir',
+                mountPath: '/var/lib/docker/containers',
                 readOnly: true,
               },
               {
@@ -105,60 +82,22 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             ],
           },
         ],
-        dnsPolicy: 'Default',
         terminationGracePeriodSeconds: 30,
-        tolerations: [
-          {
-            effect: 'NoSchedule',
-            key: 'node.alpha.kubernetes.io/ismaster',
-          },
-          {
-            effect: 'NoSchedule',
-            key: 'node-role.kubernetes.io/master',
-          },
-        ],
         volumes: [
           {
+            name: 'varlog',
             hostPath: {
               path: '/var/log',
             },
-            name: 'varlog',
           },
           {
+            name: 'varlibdockercontainers',
             hostPath: {
               path: '/var/lib/docker/containers',
-            },
-            name: 'varlibdockercontainers',
-          },
-          {
-            hostPath: {
-              path: '/cache/docker',
-            },
-            name: 'cachedocker',
-          },
-          {
-            hostPath: {
-              path: '/usr/lib64',
-            },
-            name: 'libsystemddir',
-          },
-          {
-            configMap: {
-              name: fluentdConfig.metadata.name,
-            },
-            name: 'config-volume',
-          },
-          {
-            name: 'credentials',
-            secret: {
-              secretName: 'fluentd-credentials',
             },
           },
         ],
       },
-    },
-    updateStrategy: {
-      type: 'RollingUpdate',
     },
   },
 }
