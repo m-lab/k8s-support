@@ -41,9 +41,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             command: [
               '/bin/bash',
               '-c',
-              'cp /config/* /fluentd/etc/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/"
-              /fluentd/etc/fluentd.conf && fluentd -c /fluentd/etc/${FLUENTD_CONF}
-              -p /fluentd/plugins --gemfile /fluentd/Gemfile ${FLUENTD_OPT}',
+              'cp /config/* /fluentd/etc/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /fluentd/etc/fluentd.conf && fluentd -c /fluentd/etc/${FLUENTD_CONF} -p /fluentd/plugins --gemfile /fluentd/Gemfile ${FLUENTD_OPT}',
             ],
             env: [
               {
