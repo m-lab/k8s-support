@@ -12,6 +12,9 @@ local data = {
 {
   kind: 'ConfigMap',
   apiVersion: 'v1',
-  metadata: cmutil.metadata('fluentd-config', data),
+  metadata: {
+    name: 'fluentd-config',
+    namespace: 'kube-system',
+  },
   data: data,
 }
