@@ -1,3 +1,5 @@
+local fluentdConfig = import '../../../config/fluentd.jsonnet';
+
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -94,6 +96,18 @@
             name: 'varlibdockercontainers',
             hostPath: {
               path: '/var/lib/docker/containers',
+            },
+          },
+          {
+            configMap: {
+              name: fluentdConfig.metadata.name,
+            },
+            name: 'config-volume',
+          },
+          {
+            name: 'credentials',
+            secret: {
+              secretName: 'fluentd-credentials',
             },
           },
         ],
