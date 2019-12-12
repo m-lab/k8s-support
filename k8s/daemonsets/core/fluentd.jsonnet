@@ -37,7 +37,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
         containers: [
           {
             name: 'fluentd',
-            image: 'fluent/fluentd-kubernetes-daemonset:v1.7-debian-stackdriver-2',
+            image: 'evfirerob/fluentd:v1.6.3-stackdriver',
             command: [
               '/bin/bash',
               '-c',
