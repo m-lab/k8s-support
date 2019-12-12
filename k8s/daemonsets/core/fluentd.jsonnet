@@ -45,7 +45,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
         containers: [
           {
             name: 'fluentd',
-            image: 'evfirerob/fluentd:v1.6.3-stackdriver',
+            image: 'measurementlab/fluentd:v1.6.3-stackdriver',
             command: [
               '/bin/bash',
               '-c',
