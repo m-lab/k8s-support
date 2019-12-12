@@ -153,7 +153,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute',
-    image: 'measurementlab/traceroute-caller:v0.3.2',
+    image: 'measurementlab/traceroute-caller:v0.4.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -161,6 +161,10 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
+      '--poll=false',
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '--tracetool=paris-traceroute',
+      '--paris.timeout=60s',
     ],
     env: if hostNetwork then [] else [
       {
