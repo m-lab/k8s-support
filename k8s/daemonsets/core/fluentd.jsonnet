@@ -73,8 +73,8 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 mountPath: '/var/log',
               },
               {
-                name: 'varlibdockercontainers',
-                mountPath: '/var/lib/docker/containers',
+                name: 'cachedockercontainers',
+                mountPath: '/cache/docker/containers',
                 readOnly: true,
               },
               {
@@ -98,9 +98,9 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             },
           },
           {
-            name: 'varlibdockercontainers',
+            name: 'cachedockercontainers',
             hostPath: {
-              path: '/var/lib/docker/containers',
+              path: '/cache/docker/containers',
             },
           },
           {
