@@ -8,14 +8,12 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
     namespace: 'kube-system',
     labels: {
       workload: 'fluentd',
-      version: 'v1',
     },
   },
   spec: {
     selector: {
       matchLabels: {
         workload: 'fluentd',
-        version: 'v1',
       },
     },
     template: {
@@ -30,7 +28,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
         },
         labels: {
           workload: 'fluentd',
-          version: 'v1',
         },
       },
       spec: {
@@ -54,7 +51,7 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             env: [
               {
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
-                value: '/etc/fluent/keys/fluentd.json'
+                value: '/etc/fluent/keys/fluentd.json',
               },
               {
                 name: 'NODE_HOSTNAME',
