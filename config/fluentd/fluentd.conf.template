@@ -1,7 +1,6 @@
 @include "#{ENV['FLUENTD_SYSTEMD_CONF'] || 'systemd'}.conf"
 @include "#{ENV['FLUENTD_PROMETHEUS_CONF'] || 'prometheus'}.conf"
 @include kubernetes.conf
-@include conf.d/*.conf
 
 <match **>
   @type google_cloud
