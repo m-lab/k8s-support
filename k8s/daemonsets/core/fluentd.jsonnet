@@ -7,21 +7,29 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
     name: 'fluentd',
     namespace: 'kube-system',
     labels: {
-      'k8s-app': 'fluentd-logging',
+      workload: 'fluentd',
       version: 'v1',
     },
   },
   spec: {
     selector: {
       matchLabels: {
-        'k8s-app': 'fluentd-logging',
+        workload: 'fluentd',
         version: 'v1',
       },
     },
     template: {
       metadata: {
+        annotations: {
+          'prometheus.io/scrape': 'true',
+          // This annotation ensures that fluentd does not get evicted
+          // if the node supports critical pod annotation based
+          // priority scheme. Note that this does not guarantee
+          // admission on the nodes (#40573).
+          'scheduler.alpha.kubernetes.io/critical-pod': '',
+        },
         labels: {
-          'k8s-app': 'fluentd-logging',
+          workload: 'fluentd',
           version: 'v1',
         },
       },
@@ -48,7 +56,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
                 value: '/etc/fluent/keys/fluentd.json'
               },
-              
               {
                 name: 'NODE_HOSTNAME',
                 valueFrom: {
