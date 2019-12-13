@@ -30,7 +30,7 @@
   # Never wait longer than 30 seconds between retries.
   max_retry_wait 30
   # Disable the limit on the number of retries (retry forever).
-  disable_retry_limit
+  #disable_retry_limit
   # Use multiple threads for processing.
   num_threads 2
 </match>
