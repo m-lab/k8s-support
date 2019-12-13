@@ -4,6 +4,7 @@
     kind: 'ServiceAccount',
     metadata: {
       name: 'fluentd',
+      namespace: 'default',
     },
   },
   {
@@ -11,6 +12,7 @@
     kind: 'ClusterRole',
     metadata: {
       name: 'fluentd',
+      namespace: 'default',
     },
     rules: [
       {
@@ -44,6 +46,7 @@
       {
         kind: 'ServiceAccount',
         name: 'fluentd',
+        namespace: 'default',
       },
     ],
   },
