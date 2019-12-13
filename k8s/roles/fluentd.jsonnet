@@ -4,7 +4,6 @@
     kind: 'ServiceAccount',
     metadata: {
       name: 'fluentd',
-      namespace: 'kube-system',
     },
   },
   {
@@ -12,7 +11,6 @@
     kind: 'ClusterRole',
     metadata: {
       name: 'fluentd',
-      namespace: 'kube-system',
     },
     rules: [
       {
@@ -46,7 +44,6 @@
       {
         kind: 'ServiceAccount',
         name: 'fluentd',
-        namespace: 'kube-system',
       },
     ],
   },

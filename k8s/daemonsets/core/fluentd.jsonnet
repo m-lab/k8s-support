@@ -5,7 +5,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
   kind: 'DaemonSet',
   metadata: {
     name: 'fluentd',
-    namespace: 'kube-system',
     labels: {
       workload: 'fluentd',
     },
