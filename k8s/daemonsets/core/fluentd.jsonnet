@@ -61,6 +61,11 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 },
               },
             ],
+            ports: [
+              {
+                containerPort: 9900,
+              },
+            ],
             resources: {
               limits: {
                 memory: '800Mi',
