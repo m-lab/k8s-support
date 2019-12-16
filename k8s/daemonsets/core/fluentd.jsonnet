@@ -81,10 +81,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 mountPath: '/var/log',
               },
               {
-                name: 'systemd',
-                mountPath: '/var/run/systemd',
-              },
-              {
                 name: 'cachedockercontainers',
                 mountPath: '/cache/docker/containers',
                 readOnly: true,
@@ -107,12 +103,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             name: 'varlog',
             hostPath: {
               path: '/var/log',
-            },
-          },
-          {
-            name: 'systemd',
-            hostPath: {
-              path: '/var/run/systemd',  
             },
           },
           {
