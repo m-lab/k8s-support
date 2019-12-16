@@ -50,7 +50,7 @@ kubectl create secret generic pusher-credentials --from-file secrets/pusher.json
     --dry-run -o json > secret-configs/pusher-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
-kubectl create secret generic fluentd-credentials -n kube-system --from-file secrets/fluentd.json \
+kubectl create secret generic fluentd-credentials --from-file secrets/fluentd.json \
     --dry-run -o json > secret-configs/fluentd-credentials.json
 kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus-etcd-tls/ \
     --dry-run -o json > secret-configs/prometheus-etcd-tls.json
