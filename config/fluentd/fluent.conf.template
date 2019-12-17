@@ -27,10 +27,27 @@
   buffer_queue_limit 6
   # Never wait more than 5 seconds before flushing logs in the non-error case.
   flush_interval 5s
-  # Never wait longer than 30 seconds between retries.
-  max_retry_wait 30
-  # Disable the limit on the number of retries (retry forever).
-  #disable_retry_limit
+
+  # When a buffer chunk fails to be flushed, retry after 20 seconds.
+  # This delay is doubled on each following retry until either retry_limit or
+  # max_retry_wait is reached.
+
+  retry_wait 20s
+
+  # Never wait longer than 300 seconds between retries.
+  max_retry_wait 300
+
+  # NOTE: we do not want to set disable_retry_limit as according to our current
+  # understanding it would keep a problematic chunk in memory indefinitely,
+  # leading to an increase in memory usage over time. Instead, we raised the
+  # retry_limit from the default (3) to 10.
+  # After 4 retries, every subsequent retry up to the tenth will happen after
+  # a 300-second delay. This gives us more than half an hour to send a failed
+  # chunk to Stackdriver again, which is likely more than enough to deal with
+  # temporary network failures.
+
+  retry_limit 10
+
   # Use multiple threads for processing.
   num_threads 2
 </match>
