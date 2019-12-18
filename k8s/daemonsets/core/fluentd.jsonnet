@@ -4,18 +4,14 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    labels: {
-      'addonmanager.kubernetes.io/mode': 'Reconcile',
-      'kubernetes.io/cluster-service': 'true',
-      version: 'v2.0',
-    },
     name: 'fluentd',
+    labels: {
+      workload: 'fluentd',
+    },
   },
   spec: {
     selector: {
       matchLabels: {
-        'kubernetes.io/cluster-service': 'true',
-        version: 'v2.0',
         workload: 'fluentd',
       },
     },
@@ -30,31 +26,28 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
           'scheduler.alpha.kubernetes.io/critical-pod': '',
         },
         labels: {
-          'kubernetes.io/cluster-service': 'true',
-          version: 'v2.0',
           workload: 'fluentd',
         },
       },
       spec: {
+        serviceAccount: 'fluentd',
+        serviceAccountName: 'fluentd',
+        tolerations: [
+          {
+            key: 'node-role.kubernetes.io/master',
+            effect: 'NoSchedule',
+          },
+        ],
         containers: [
           {
-            // If fluentd consumes its own logs, the following
-            // situation may happen: fluentd fails to send a chunk
-            // to the server => writes it to the log => tries to
-            // send this message to the server => fails to send a
-            // chunk and so on. Writing to a file, which is not
-            // exported to the back-end prevents it. It also allows
-            // to increase the fluentd verbosity by default.
+            name: 'fluentd',
+            image: 'measurementlab/fluentd:v1.6.3-stackdriver',
             command: [
-              '/bin/sh',
+              '/bin/bash',
               '-c',
-              'mkdir /etc/fluent/config.d && cp /config/* /etc/fluent/config.d/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /etc/fluent/config.d/output.conf && /run.sh $FLUENTD_ARGS 2>&1 >>/var/log/fluentd.log',
+              'cp /config/* /fluentd/etc/ && sed -i "s/NODE_HOSTNAME/$NODE_HOSTNAME/" /fluentd/etc/fluent.conf && fluentd -c /fluentd/etc/${FLUENTD_CONF} -p /fluentd/plugins --gemfile /fluentd/Gemfile ${FLUENTD_OPT}',
             ],
             env: [
-              {
-                name: 'FLUENTD_ARGS',
-                value: '--no-supervisor',
-              },
               {
                 name: 'GOOGLE_APPLICATION_CREDENTIALS',
                 value: '/etc/fluent/keys/fluentd.json',
@@ -68,13 +61,9 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
                 },
               },
             ],
-            image: 'k8s.gcr.io/fluentd-gcp:2.1.1',
-            name: 'fluentd',
             ports: [
               {
                 containerPort: 9900,
-                name: 'scrape',
-                protocol: 'TCP',
               },
             ],
             resources: {
@@ -88,21 +77,12 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             },
             volumeMounts: [
               {
-                mountPath: '/var/log',
                 name: 'varlog',
+                mountPath: '/var/log',
               },
               {
-                mountPath: '/var/lib/docker/containers',
-                name: 'varlibdockercontainers',
-                readOnly: true,
-              },
-              {
-                mountPath: '/cache/docker',
-                name: 'cachedocker',
-              },
-              {
-                mountPath: '/host/lib',
-                name: 'libsystemddir',
+                name: 'cachedockercontainers',
+                mountPath: '/cache/docker/containers',
                 readOnly: true,
               },
               {
@@ -117,42 +97,19 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
             ],
           },
         ],
-        dnsPolicy: 'Default',
         terminationGracePeriodSeconds: 30,
-        tolerations: [
-          {
-            effect: 'NoSchedule',
-            key: 'node.alpha.kubernetes.io/ismaster',
-          },
-          {
-            effect: 'NoSchedule',
-            key: 'node-role.kubernetes.io/master',
-          },
-        ],
         volumes: [
           {
+            name: 'varlog',
             hostPath: {
               path: '/var/log',
             },
-            name: 'varlog',
           },
           {
+            name: 'cachedockercontainers',
             hostPath: {
-              path: '/var/lib/docker/containers',
+              path: '/cache/docker/containers',
             },
-            name: 'varlibdockercontainers',
-          },
-          {
-            hostPath: {
-              path: '/cache/docker',
-            },
-            name: 'cachedocker',
-          },
-          {
-            hostPath: {
-              path: '/usr/lib64',
-            },
-            name: 'libsystemddir',
           },
           {
             configMap: {
@@ -168,9 +125,6 @@ local fluentdConfig = import '../../../config/fluentd.jsonnet';
           },
         ],
       },
-    },
-    updateStrategy: {
-      type: 'RollingUpdate',
     },
   },
 }
