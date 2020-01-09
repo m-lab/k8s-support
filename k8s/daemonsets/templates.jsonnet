@@ -352,7 +352,7 @@ local ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode) = {
   },
 };
 
-local Experiment(name, index, bucket, datatypes=[], anonMode) = ExperimentNoIndex(name, bucket, datatypes, false, anonMode) + {
+local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoIndex(name, bucket, anonMode, datatypes, false) + {
   spec+: {
     template+: {
       metadata+: {
@@ -384,7 +384,7 @@ local Experiment(name, index, bucket, datatypes=[], anonMode) = ExperimentNoInde
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode):: ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -398,7 +398,7 @@ local Experiment(name, index, bucket, datatypes=[], anonMode) = ExperimentNoInde
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
-  Experiment(name, index, bucket, datatypes, anonMode):: Experiment(name, index, bucket, datatypes, anonMode),
+  Experiment(name, index, bucket, anonMode, datatypes):: Experiment(name, index, bucket, anonMode, datatypes),
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
