@@ -292,7 +292,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
     [SOCATProxy('pusher', tcpPort)]
 ;
 
-local ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode) = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
