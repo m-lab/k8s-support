@@ -109,7 +109,7 @@ local tcpinfoServiceVolume = {
   eventsocketFilename: '/var/local/tcpinfoeventsocket/tcpevents.sock',
 };
 
-local Tcpinfo(expName, tcpPort, hostNetwork) = [
+local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcpinfo',
     image: 'measurementlab/tcp-info:v1.4.0',
@@ -122,7 +122,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
-      '-anonymize.ip=netblock',
+      '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
       {
@@ -292,7 +292,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
     [SOCATProxy('pusher', tcpPort)]
 ;
 
-local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
+local ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode) = {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -318,7 +318,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
       spec: {
         containers:
           std.flattenArrays([
-            Tcpinfo(name, 9991, hostNetwork),
+            Tcpinfo(name, 9991, hostNetwork, anonMode),
             Traceroute(name, 9992, hostNetwork),
             Pcap(name, 9993, hostNetwork),
             Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
@@ -352,7 +352,7 @@ local ExperimentNoIndex(name, datatypes, hostNetwork, bucket) = {
   },
 };
 
-local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, datatypes, false, bucket) + {
+local Experiment(name, index, bucket, datatypes=[], anonMode) = ExperimentNoIndex(name, bucket, datatypes, false, anonMode) + {
   spec+: {
     template+: {
       metadata+: {
@@ -384,7 +384,7 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, datatypes, hostNetwork, bucket):: ExperimentNoIndex(name, datatypes, hostNetwork, bucket),
+  ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode):: ExperimentNoIndex(name, bucket, datatypes, hostNetwork, anonMode),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -398,7 +398,7 @@ local Experiment(name, index, bucket, datatypes=[]) = ExperimentNoIndex(name, da
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
-  Experiment(name, index, datatypes, bucket):: Experiment(name, index, datatypes, bucket),
+  Experiment(name, index, bucket, datatypes, anonMode):: Experiment(name, index, bucket, datatypes, anonMode),
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
