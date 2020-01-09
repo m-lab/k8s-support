@@ -112,7 +112,7 @@ local tcpinfoServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork) = [
   {
     name: 'tcpinfo',
-    image: 'measurementlab/tcp-info:v1.3.0',
+    image: 'measurementlab/tcp-info:v1.4.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -122,6 +122,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork) = [
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-anonymize.ip=netblock',
     ],
     env: if hostNetwork then [] else [
       {
@@ -161,8 +162,8 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-poll=false',	
-      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,	
+      '-poll=false',
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
       '-tracetool=scamper-daemon-with-scamper-backup',
     ],
     env: if hostNetwork then [] else [
