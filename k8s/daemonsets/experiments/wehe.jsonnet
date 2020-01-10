@@ -7,7 +7,7 @@ exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), ['replay']) + {
                 containers+: [
                     {
                         name: 'wehe',
-                        image: 'measurementlab/wehe:v0.1',
+                        image: 'measurementlab/wehe:general-start',
                         args: [
                             'wehe.$(MLAB_NODE_NAME)'
                         ],
@@ -20,11 +20,19 @@ exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), ['replay']) + {
                                     },
                                 },
                             },
+                            {
+                                name: 'CA_KEY',
+                                value: '/wehe-ca/ca.key',
+                            },
+                            {
+                                name: 'CA_CERT',
+                                value: '/wehe-ca/ca.crt',
+                            },
                         ],
                         volumeMounts: [
                             {
-                                mountPath: '/wehe/ssl',
-                                name: 'wehe-certs',
+                                mountPath: '/wehe-ca',
+                                name: 'wehe-ca',
                                 readOnly: true,
                             },
                             exp.VolumeMount('wehe'),
@@ -33,9 +41,9 @@ exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), ['replay']) + {
                 ],
                 volumes+: [
                     {
-                        name: 'wehe-certs',
+                        name: 'wehe-ca',
                         secret: {
-                            secretName: 'wehe-certs',
+                            secretName: 'wehe-ca',
                         },
                     },
                 ],
