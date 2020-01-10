@@ -38,6 +38,7 @@ mkdir -p secret-configs
 
 # Fetch and configure all the secrets.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls secrets/.
+gsutil cp -R gs://${!GCS_BUCKET_K8S}/wehe-certs secrets/.
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
 mkdir -p secrets/prometheus-etcd-tls
@@ -50,6 +51,8 @@ kubectl create secret generic pusher-credentials --from-file secrets/pusher.json
     --dry-run -o json > secret-configs/pusher-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
+kubectl create secret generic wehe-certs --from-file secrets/wehe-certs/ \
+    --dry-run -o json > secret-configs/wehe-certs.json
 kubectl create secret generic fluentd-credentials --from-file secrets/fluentd.json \
     --dry-run -o json > secret-configs/fluentd-credentials.json
 kubectl create secret generic prometheus-etcd-tls --from-file secrets/prometheus-etcd-tls/ \
