@@ -1,7 +1,7 @@
 local exp = import '../templates.jsonnet';
 local expName = 'ndtcloud';
 
-exp.ExperimentNoIndex(expName, ['ndt5', 'ndt7'], true, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID')) + {
+exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 'ndt7'], true) + {
   spec+: {
     template+: {
       spec+: {
