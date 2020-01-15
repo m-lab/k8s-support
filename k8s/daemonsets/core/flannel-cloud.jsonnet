@@ -67,11 +67,11 @@
             resources: {
               limits: {
                 cpu: '100m',
-                memory: '50Mi',
+                memory: '128Mi',
               },
               requests: {
                 cpu: '100m',
-                memory: '50Mi',
+                memory: '128Mi',
               },
             },
             securityContext: {
