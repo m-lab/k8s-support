@@ -35,7 +35,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               },
               exp.uuid.volumemount,
             ] + [
-              exp.VolumeMount(expName + '/', d) for d in datatypes
+              exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
             ports: [
               {
@@ -72,7 +72,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             },
           },
         ] + [
-          exp.volume(expName + '/', d) for d in datatypes
+          exp.volume(expName + '/' + d) for d in datatypes
         ],
       },
     },

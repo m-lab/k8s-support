@@ -26,7 +26,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
                 name: 'nodeinfo-config',
                 readOnly: true,
               },
-              exp.VolumeMount('', expName),
+              exp.VolumeMount(expName),
             ],
           },
           exp.RBACProxy('nodeinfo', 9990),

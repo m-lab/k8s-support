@@ -25,7 +25,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
               },
               exp.uuid.volumemount,
             ] + [
-              exp.VolumeMount(expName + '/', d) for d in datatypes
+              exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
             ports: [],
           },
@@ -59,7 +59,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
             },
           },
         ] + [
-          exp.volume(expName + '/', d) for d in datatypes
+          exp.volume(expName + '/' + d) for d in datatypes
         ],
         nodeSelector: {
           'mlab/type': 'cloud',
