@@ -28,16 +28,16 @@ local uuid = {
   },
 };
 
-local volume(name) = {
+local volume(path, name) = {
   hostPath: {
-    path: '/cache/data/' + name,
+    path: '/cache/data/' + path + name,
     type: 'DirectoryOrCreate',
   },
   name: name + '-data',
 };
 
-local VolumeMount(name) = {
-  mountPath: '/var/spool/' + name,
+local VolumeMount(path, name) = {
+  mountPath: '/var/spool/' + path + name,
   name: name + '-data',
 };
 
@@ -119,7 +119,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort
       ,
-      '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
+      '-output=' + VolumeMount('', expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
       '-anonymize.ip=' + anonMode,
@@ -140,7 +140,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       },
     ],
     volumeMounts: [
-      VolumeMount(expName),
+      VolumeMount('', expName),
       tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
@@ -160,7 +160,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+      '-outputPath=' + VolumeMount('', expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
@@ -182,7 +182,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       },
     ],
     volumeMounts: [
-      VolumeMount(expName),
+      VolumeMount('', expName),
       tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
@@ -202,7 +202,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
+      '-datadir=' + VolumeMount('', expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
     ] + if hostNetwork then [
       '-interface=eth0',
@@ -223,7 +223,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       },
     ],
     volumeMounts: [
-      VolumeMount(expName),
+      VolumeMount('', expName),
       tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
@@ -278,7 +278,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       },
     ],
     volumeMounts: [
-      VolumeMount(expName),
+      VolumeMount('', expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials',
@@ -338,7 +338,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             },
           },
           uuid.volume,
-          volume(name),
+          volume('', name),
           tcpinfoServiceVolume.volume,
         ],
       },
@@ -400,9 +400,12 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // need to add one new container.
   Experiment(name, index, bucket, anonMode, datatypes):: Experiment(name, index, bucket, anonMode, datatypes),
 
+  // Returns a volume for a given name/path.
+  volume(path, name):: volume(path, name),
+
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
-  VolumeMount(name):: VolumeMount(name),
+  VolumeMount(path, name):: VolumeMount(path, name),
 
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.

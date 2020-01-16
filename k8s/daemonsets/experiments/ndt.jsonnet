@@ -1,6 +1,8 @@
+local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
+local expName = 'ndt';
 
-exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 'ndt7']) + {
+exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
       spec+: {
@@ -13,7 +15,7 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/ndt',
+              '-datadir=/var/spool/' + expName,
             ],
             env: [
               {
@@ -32,7 +34,8 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount('ndt'),
+            ] + [
+              exp.VolumeMount(expName + '/', d) for d in datatypes
             ],
             ports: [
               {
@@ -68,6 +71,8 @@ exp.Experiment('ndt', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 
               secretName: 'ndt-tls',
             },
           },
+        ] + [
+          exp.volume(expName + '/', d) for d in datatypes
         ],
       },
     },

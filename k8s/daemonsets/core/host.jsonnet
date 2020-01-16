@@ -1,11 +1,12 @@
 local nodeinfoConfig = import '../../../config/nodeinfo.jsonnet';
 
 local exp = import '../templates.jsonnet';
+local expName = 'host';
 
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
 local nodeinfo_datatypes = [d.Datatype for d in nodeinfoconfig];
 
-exp.ExperimentNoIndex('host', 'pusher-' + std.extVar('PROJECT_ID'), "none", nodeinfo_datatypes, true) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nodeinfo_datatypes, true) + {
   spec+: {
     template+: {
       spec+: {
@@ -14,7 +15,7 @@ exp.ExperimentNoIndex('host', 'pusher-' + std.extVar('PROJECT_ID'), "none", node
             name: 'nodeinfo',
             image: 'measurementlab/nodeinfo:v1.2',
             args: [
-              '-datadir=/var/spool/host',
+              '-datadir=/var/spool/' + expName,
               '-wait=1h',
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-config=/etc/nodeinfo/config.json',
@@ -25,7 +26,7 @@ exp.ExperimentNoIndex('host', 'pusher-' + std.extVar('PROJECT_ID'), "none", node
                 name: 'nodeinfo-config',
                 readOnly: true,
               },
-              exp.VolumeMount('host'),
+              exp.VolumeMount('', expName),
             ],
           },
           exp.RBACProxy('nodeinfo', 9990),

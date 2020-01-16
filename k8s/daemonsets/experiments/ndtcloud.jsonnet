@@ -1,7 +1,8 @@
+local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'ndtcloud';
 
-exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "none", ['ndt5', 'ndt7'], true) + {
+exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "none", datatypes, true) + {
   spec+: {
     template+: {
       spec+: {
@@ -23,7 +24,8 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.VolumeMount(expName),
+            ] + [
+              exp.VolumeMount(expName + '/', d) for d in datatypes
             ],
             ports: [],
           },
@@ -56,6 +58,8 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
               secretName: 'ndt-tls',
             },
           },
+        ] + [
+          exp.volume(expName + '/', d) for d in datatypes
         ],
         nodeSelector: {
           'mlab/type': 'cloud',
