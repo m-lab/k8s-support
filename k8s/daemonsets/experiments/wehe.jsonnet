@@ -1,13 +1,32 @@
 local exp = import '../templates.jsonnet';
 
-exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), ['replay']) + {
+exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
     spec+: {
         template+: {
             spec+: {
+                initContainers+: [
+                    {
+                        name: 'ca-copy',
+                        image: 'busybox',
+                        args: [
+                            'cp', '/wehe-ca/ca.key', '/wehe-ca/ca.crt', '/wehe/ssl/',
+                        ],
+                        volumeMounts: [
+                            {
+                                mountPath: '/wehe/ssl/',
+                                name: 'wehe-ca-cache',
+                            },
+                            {
+                                mountPath: '/wehe-ca/',
+                                name: 'wehe-ca',
+                            },
+                        ]
+                    },
+                ],
                 containers+: [
                     {
                         name: 'wehe',
-                        image: 'measurementlab/wehe:general-start',
+                        image: 'measurementlab/wehe:v0.1',
                         args: [
                             'wehe.$(MLAB_NODE_NAME)'
                         ],
@@ -20,26 +39,21 @@ exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), ['replay']) + {
                                     },
                                 },
                             },
-                            {
-                                name: 'CA_KEY',
-                                value: '/wehe-ca/ca.key',
-                            },
-                            {
-                                name: 'CA_CERT',
-                                value: '/wehe-ca/ca.crt',
-                            },
                         ],
                         volumeMounts: [
                             {
-                                mountPath: '/wehe-ca',
-                                name: 'wehe-ca',
-                                readOnly: true,
+                                mountPath: '/wehe/ssl/',
+                                name: 'wehe-ca-cache',
                             },
                             exp.VolumeMount('wehe'),
                         ],
                     }
                 ],
                 volumes+: [
+                    {
+                        name: 'wehe-ca-cache',
+                        emptyDir: {},
+                    },
                     {
                         name: 'wehe-ca',
                         secret: {
