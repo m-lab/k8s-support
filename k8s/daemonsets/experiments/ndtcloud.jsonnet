@@ -58,8 +58,6 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
               secretName: 'ndt-tls',
             },
           },
-        ] + [
-          exp.volume(expName + '/' + d) for d in datatypes
         ],
         nodeSelector: {
           'mlab/type': 'cloud',

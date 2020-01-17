@@ -71,8 +71,6 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               secretName: 'ndt-tls',
             },
           },
-        ] + [
-          exp.volume(expName + '/' + d) for d in datatypes
         ],
       },
     },
