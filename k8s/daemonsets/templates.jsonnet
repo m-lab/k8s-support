@@ -33,12 +33,12 @@ local volume(name) = {
     path: '/cache/data/' + name,
     type: 'DirectoryOrCreate',
   },
-  name: name + '-data',
+  name: std.strReplace(name, '/', '-') + '-data',
 };
 
 local VolumeMount(name) = {
   mountPath: '/var/spool/' + name,
-  name: name + '-data',
+  name: std.strReplace(name, '/', '-') + '-data',
 };
 
 // SOCATProxy creates a tunnel between localhost:<port> and the private pod
@@ -340,6 +340,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
           uuid.volume,
           volume(name),
           tcpinfoServiceVolume.volume,
+        ] + [
+          volume(name + '/' + d) for d in datatypes
         ],
       },
     },

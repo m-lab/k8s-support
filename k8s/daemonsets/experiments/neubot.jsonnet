@@ -1,15 +1,17 @@
+local datatypes = ['dash'];
 local exp = import '../templates.jsonnet';
+local expName = 'neubot';
 
-exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['dash']) + {
+exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
       spec+: {
         containers+: [
             {
-              name: 'neubot',
+              name: expName,
               image: 'measurementlab/neubot-dash:v0.4.0',
             args: [
-              '-datadir=/var/spool/neubot',
+              '-datadir=/var/spool/' + expName,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-http-listen-address=:80',
               '-https-listen-address=:443',
@@ -32,7 +34,8 @@ exp.Experiment('neubot', 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", ['das
                 name: 'ndt-tls',
                 readOnly: true,
               },
-              exp.VolumeMount('neubot'),
+            ] + [
+              exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
             ports: [
               {
