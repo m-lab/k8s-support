@@ -51,6 +51,7 @@ exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
                         ],
                     }
                 ],
+                [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
                 volumes+: [
                     {
                         name: 'wehe-ca-cache',

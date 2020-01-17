@@ -238,7 +238,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
     name: 'pusher',
-    image: 'measurementlab/pusher:v1.10',
+    image: 'measurementlab/pusher:v1.14',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -247,6 +247,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-bucket=' + bucket,
       '-experiment=' + expName,
       '-archive_size_threshold=50MB',
+      '-sigterm_wait_time=120s',
       '-directory=/var/spool/' + expName,
     ] + ['-datatype=' + d for d in datatypes],
     env: [

@@ -52,6 +52,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
             },
           },
         ],
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
             name: 'ndt-tls',
