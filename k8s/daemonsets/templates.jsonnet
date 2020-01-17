@@ -402,9 +402,6 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // need to add one new container.
   Experiment(name, index, bucket, anonMode, datatypes):: Experiment(name, index, bucket, anonMode, datatypes),
 
-  // Returns a volume for a given name/path.
-  volume(name):: volume(name),
-
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
   VolumeMount(name):: VolumeMount(name),
