@@ -63,7 +63,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         // but 60+60+30=150 is what it needs to be for staging and prod.
         //
         // Only enable grace period where production traffic is possible.
-        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 150,
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
             name: 'ndt-tls',

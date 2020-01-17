@@ -50,7 +50,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
         // Feel free to change this to a smaller value for speedy
         // sandbox deployments to enable faster compile-run-debug loops,
         // but 60+60+30=150 is what it needs to be for staging and prod.
-        terminationGracePeriodSeconds: 150,
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
             name: 'ndt-tls',
