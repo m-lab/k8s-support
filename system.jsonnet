@@ -21,6 +21,7 @@
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
+    import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
     import 'k8s/deployments/prometheus.jsonnet',
