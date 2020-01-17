@@ -70,6 +70,7 @@ local exp = import '../templates.jsonnet';
           'mlab/type': 'platform',
         },
         serviceAccountName: 'kube-rbac-proxy',
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes: [
           {
             name: 'pusher-credentials',
