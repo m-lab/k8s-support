@@ -29,7 +29,8 @@ exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
                         name: 'wehe',
                         image: 'measurementlab/wehe:v0.1',
                         args: [
-                            'diff.mlab.$(MLAB_NODE_NAME)', // should be wehe.$(MLAB_NODE_NAME)
+                            // should be wehe.$(MLAB_NODE_NAME)
+                            'diff.mlab.$(MLAB_NODE_NAME)',
                         ],
                         env: [
                             {
