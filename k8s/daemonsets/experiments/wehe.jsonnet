@@ -1,6 +1,7 @@
 local exp = import '../templates.jsonnet';
 
-exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
+// Should this be 1?
+exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
     spec+: {
         template+: {
             spec+: {
@@ -28,7 +29,7 @@ exp.Experiment('wehe', 1, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
                         name: 'wehe',
                         image: 'measurementlab/wehe:v0.1',
                         args: [
-                            'wehe.$(MLAB_NODE_NAME)'
+                            'diff.mlab.$(MLAB_NODE_NAME)', // should be wehe.$(MLAB_NODE_NAME)
                         ],
                         env: [
                             {
