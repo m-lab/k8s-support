@@ -294,6 +294,10 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
+  // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
+  // supports anonymization.
+  local allDatatypes =  ['tcpinfo', 'pcap'] + datatypes +
+      if anonMode == "none" then ['traceroute'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -320,9 +324,10 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         containers:
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork, anonMode),
-            Traceroute(name, 9992, hostNetwork),
+            if anonMode == "none" then
+              Traceroute(name, 9992, hostNetwork) else [],
             Pcap(name, 9993, hostNetwork),
-            Pusher(name, 9994, ['tcpinfo', 'traceroute', 'pcap'] + datatypes, hostNetwork, bucket),
+            Pusher(name, 9994, allDatatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
