@@ -1,6 +1,5 @@
 local exp = import '../templates.jsonnet';
 
-// Should this be 1?
 exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
     spec+: {
         template+: {
