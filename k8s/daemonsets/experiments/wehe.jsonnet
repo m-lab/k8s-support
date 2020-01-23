@@ -7,6 +7,11 @@ exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
             spec+: {
                 initContainers+: [
                     {
+                        // Wehe expects the ca.key and ca.crt to be in a
+                        // directory to which it can write the resulting keys
+                        // produced. Secrets can't be mounted read/write, so
+                        // before we start we copy those files from the mounted
+                        // secret (read-only) to a cache directory (read-write).
                         name: 'ca-copy',
                         image: 'busybox',
                         args: [
@@ -29,7 +34,6 @@ exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
                         name: 'wehe',
                         image: 'measurementlab/wehe:v0.1',
                         args: [
-                            // should be wehe.$(MLAB_NODE_NAME)
                             'wehe.$(MLAB_NODE_NAME)',
                         ],
                         env: [
@@ -47,7 +51,12 @@ exp.Experiment('wehe', 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['re
                                 mountPath: '/wehe/ssl/',
                                 name: 'wehe-ca-cache',
                             },
-                            exp.VolumeMount('wehe'),
+                            // This volume exists in the volumes entry because
+                            // 'replay' was one of the passed-in datatypes.
+                            exp.VolumeMount('wehe/replay') + {
+                                // Mount it where wehe expects to write it
+                                mountPath: '/data/RecordReplay/ReplayDumps',
+                            },
                         ],
                     }
                 ],
