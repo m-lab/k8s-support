@@ -116,7 +116,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter|utilization)",
+            container_label_workload !~ "(flannel-cloud|flannel-platform|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -132,7 +132,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter|utilization)",
+            container_label_workload !~ "(flannel-cloud|flannel-platform|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -148,7 +148,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter|utilization)",
+            container_label_workload !~ "(flannel-cloud|flannel-platform|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
@@ -164,7 +164,7 @@ groups:
             container_label_io_kubernetes_container_name = "POD",
             container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
-            container_label_workload !~ "(host|node-exporter|utilization)",
+            container_label_workload !~ "(flannel-cloud|flannel-platform|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*",
             image != ""
           }
