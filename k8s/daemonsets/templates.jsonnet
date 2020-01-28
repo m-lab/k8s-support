@@ -250,7 +250,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-archive_size_threshold=50MB',
       '-sigterm_wait_time=120s',
       '-directory=/var/spool/' + expName,
-      //'-metadata MLAB.server.name=$(MLAB_NODE_NAME)',
+      '-metadata MLAB.server.name=$(MLAB_NODE_NAME)',
       '-metadata=MLAB.experiment.name=' + expName,
       '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
