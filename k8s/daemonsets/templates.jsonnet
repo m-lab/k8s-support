@@ -251,16 +251,15 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-sigterm_wait_time=120s',
       '-directory=/var/spool/' + expName,
       //'-metadata MLAB.server.name=$(MLAB_NODE_NAME)',
-      '-metadata MLAB.experiment.name=' + expName,
-      '-metadata MLAB.pusher.image=measurementlab/pusher:' + version,
-      '-metadata MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
+      '-metadata=MLAB.experiment.name=' + expName,
+      '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
+      '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
     ] + ['-datatype=' + d for d in datatypes],
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
         value: '/etc/credentials/pusher.json',
       },
-      /*
       {
         name: 'MLAB_NODE_NAME',
         valueFrom: {
@@ -269,7 +268,6 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
           },
         },
       },
-      */
     ] + if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
