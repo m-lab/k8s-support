@@ -9,7 +9,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
         containers+: [
             {
               name: expName,
-              image: 'measurementlab/neubot-dash:v0.4.0',
+              image: 'measurementlab/neubot:v0.4.1',
             args: [
               '-datadir=/var/spool/' + expName,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
