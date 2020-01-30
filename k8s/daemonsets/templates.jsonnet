@@ -111,7 +111,7 @@ local tcpinfoServiceVolume = {
 
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
-    name: 'tcpinfo',
+    name: 'tcp-info',
     image: 'measurementlab/tcp-info:v1.4.0',
     args: [
       if hostNetwork then
@@ -153,7 +153,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
-    name: 'traceroute',
+    name: 'traceroute-caller',
     image: 'measurementlab/traceroute-caller:v0.6.0',
     args: [
       if hostNetwork then
@@ -195,7 +195,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 
 local Pcap(expName, tcpPort, hostNetwork) = [
   {
-    name: 'pcap',
+    name: 'packet-headers',
     image: 'measurementlab/packet-headers:v0.5.4',
     args: [
       if hostNetwork then
