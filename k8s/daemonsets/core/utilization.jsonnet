@@ -26,7 +26,7 @@ local exp = import '../templates.jsonnet';
       spec: {
         containers: [
           {
-            name: 'collectd',
+            name: 'utility-support',
             image: 'measurementlab/utility-support:v2.0.8',
             env: [
               {
