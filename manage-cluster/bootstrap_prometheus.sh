@@ -150,12 +150,11 @@ fi
 
 # Create a firewall rule allowing external access to ports:
 #   TCP 22: SSH
-#   TCP 9090: k8s API server
 #   TCP 80/443: nginx-ingress
 gcloud compute firewall-rules create "${PROM_BASE_NAME}-external" \
     --network "${GCE_NETWORK}" \
     --action "allow" \
-    --rules "tcp:22,tcp:9090,tcp:80,tcp:443" \
+    --rules "tcp:22,tcp:80,tcp:443" \
     --source-ranges "0.0.0.0/0" \
     --target-tags "${PROM_BASE_NAME}" \
     "${GCP_ARGS[@]}"
