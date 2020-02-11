@@ -40,7 +40,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 valueFrom: {
                   configMapKeyRef: {
                     name: std.extVar('MAX_RATES_CONFIGMAP'),
-                    key: $(NODE_NAME),
+                    key: '$(NODE_NAME)',
                   },
                 },
               },
