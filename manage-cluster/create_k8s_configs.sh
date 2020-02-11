@@ -21,6 +21,7 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
 GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+GCS_BUCKET_SITEINFO="GCS_BUCKET_SITEINFO_${PROJECT//-/_}"
 
 # Create the json configuration for the entire cluster (except for secrets)
 jsonnet \
@@ -62,6 +63,25 @@ kubectl create secret generic snmp-community --from-file secrets/snmp.community 
 # NB: The file containing the user/password pair must be called 'auth'.
 kubectl create secret generic prometheus-htpasswd --from-file secrets/auth \
     --dry-run -o json > secret-configs/prometheus-htpasswd.json
+
+# Fetch switches.json from siteinfo and create a directory with site-speed
+# mappings. This directory will created into a ConfigMap later. These value
+# mappings will ultimately be used to set the --max-rate flag for ndt-server.
+# This is a roundabout way of informing a container about the uplink capacity.
+gsutil cp gs://${!GCS_BUCKET_SITEINFO}/v1/sites/switches.json .
+mkdir -p "${MAX_RATES_DIR}"
+for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
+  site=$(echo $r | cut -d: -f1)
+  speed=$(echo $r | cut -d: -f2)
+  if [[ "${speed}" == "1g" ]]; then
+    echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${site}"
+  elif [[ "${speed}" == "10g" ]]; then
+    echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${site}"
+  else
+    echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
+    exit 1
+  fi
+done
 
 # Download the platform cluster CA cert.
 gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
