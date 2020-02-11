@@ -16,6 +16,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
+              '-max-rate=$(MAX_RATE),
             ],
             env: [
               {
@@ -23,6 +24,23 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 valueFrom: {
                   fieldRef: {
                     fieldPath: 'status.podIP',
+                  },
+                },
+              },
+              {
+                name: 'NODE_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+              {
+                name: 'MAX_RATE',
+                valueFrom: {
+                  configMapKeyRef {
+                    name: std.extVar('MAX_RATES_CONFIGMAP')
+                    key: $(NODE_NAME),
                   },
                 },
               },

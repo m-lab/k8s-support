@@ -31,6 +31,7 @@ jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
+   --ext-str MAX_RATES_CONFIGMAP=${MAX_RATES_CONFIGMAP} \
    ../system.jsonnet > system.json
 
 # Download every secret, and turn each one into a config.
@@ -73,14 +74,16 @@ mkdir -p "${MAX_RATES_DIR}"
 for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
   site=$(echo $r | cut -d: -f1)
   speed=$(echo $r | cut -d: -f2)
-  if [[ "${speed}" == "1g" ]]; then
-    echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${site}"
-  elif [[ "${speed}" == "10g" ]]; then
-    echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${site}"
-  else
-    echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
-    exit 1
-  fi
+  for node in mlab1 mlab1 mlab3 mlab4; do
+    if [[ "${speed}" == "1g" ]]; then
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+    elif [[ "${speed}" == "10g" ]]; then
+      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+    else
+      echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
+      exit 1
+    fi
+  done
 done
 
 # Download the platform cluster CA cert.
