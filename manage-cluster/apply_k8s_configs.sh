@@ -77,7 +77,7 @@ kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cer
 kubectl apply -f secret-configs/
 
 # Apply the site-max-rates ConfigMap
-kubectl create configmap "${MAX_RATES_CONFIGMAP}"
+kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
     --from-file "${MAX_RATES_DIR}/" \
     --dry-run \
     -o yaml \
