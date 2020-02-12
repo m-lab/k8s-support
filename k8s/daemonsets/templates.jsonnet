@@ -298,10 +298,49 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
     [SOCATProxy('pusher', tcpPort)]
 ;
 
+local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
+  {
+    name: 'uuid-annotator',
+    image: 'measurementlab/uuid-annotator:v0.0.1',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-datadir=' + VolumeMount(expName).mountPath + '/annotation',
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-url=gs://downloader-' + std.extVar('PROJECT_ID') + '/Maxmind/current/GeoLite2-City-CSV.zip',
+    ],
+    env: if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      tcpinfoServiceVolume.volumemount,
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('uuid-annotator', tcpPort)]
+  else
+    [SOCATProxy('uuid-annotator', tcpPort)]
+;
+
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
-  local allDatatypes =  ['tcpinfo', 'pcap'] + datatypes +
+  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
       if anonMode == "none" then ['traceroute'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -332,7 +371,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             if anonMode == "none" then
               Traceroute(name, 9992, hostNetwork) else [],
             Pcap(name, 9993, hostNetwork),
-            Pusher(name, 9994, allDatatypes, hostNetwork, bucket),
+            UUIDAnnotator(name, 9994, hostNetwork),
+            Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
