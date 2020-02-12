@@ -67,6 +67,7 @@ mkdir -p secret-configs
 # Fetch and configure all the secrets.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls secrets/.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/wehe-ca secrets/.
+gsutil cp gs://${!GCS_BUCKET_K8S}/uuid-annotator-credentials.json secrets/uuid-annotator.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
 mkdir -p secrets/prometheus-etcd-tls
@@ -75,6 +76,8 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.com
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
 
 # Convert secret data into configs.
+kubectl create secret generic uuid-annotator-credentials --from-file secrets/uuid-annotator.json \
+    --dry-run -o json > secret-configs/uuid-annotator-credentials.json
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
     --dry-run -o json > secret-configs/pusher-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
