@@ -320,6 +320,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
           },
         },
       },
+    ] + [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
         value: '/etc/credentials/uuid-annotator.json',
