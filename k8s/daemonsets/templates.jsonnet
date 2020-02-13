@@ -311,7 +311,12 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
       '-url=gs://downloader-' + std.extVar('PROJECT_ID') + '/Maxmind/current/GeoLite2-City-CSV.zip',
     ],
-    env: if hostNetwork then [] else [
+    env: [
+        {
+          name: 'GOOGLE_APPLICATION_CREDENTIALS',
+          value: '/etc/credentials/uuid-annotator.json',
+        },
+    ] + if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
         valueFrom: {
@@ -319,11 +324,6 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
             fieldPath: 'status.podIP',
           },
         },
-      },
-    ] + [
-      {
-        name: 'GOOGLE_APPLICATION_CREDENTIALS',
-        value: '/etc/credentials/uuid-annotator.json',
       },
     ],
     ports: if hostNetwork then [] else [
