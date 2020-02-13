@@ -320,6 +320,10 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
           },
         },
       },
+      {
+        name: 'GOOGLE_APPLICATION_CREDENTIALS',
+        value: '/etc/credentials/uuid-annotator.json',
+      },
     ],
     ports: if hostNetwork then [] else [
       {
@@ -329,6 +333,11 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
+      {
+        mountPath: '/etc/credentials',
+        name: 'uuid-annotator-credentials',
+        readOnly: true,
+      },
     ],
   }] +
   if hostNetwork then
@@ -386,6 +395,12 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             name: 'pusher-credentials',
             secret: {
               secretName: 'pusher-credentials',
+            },
+          },
+          {
+            name: 'uuid-annotator-credentials',
+            secret: {
+              secretName: 'uuid-annotator-credentials',
             },
           },
           uuid.volume,
