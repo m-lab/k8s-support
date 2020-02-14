@@ -27,7 +27,7 @@ GCS_BUCKET_SITEINFO="GCS_BUCKET_SITEINFO_${PROJECT//-/_}"
 # mappings. This directory will created into a ConfigMap later. These value
 # mappings will ultimately be used to set the --max-rate flag for ndt-server.
 # This is a roundabout way of informing a container about the uplink capacity.
-gsutil cp gs://${!GCS_BUCKET_SITEINFO}/v1/sites/switches.json .
+curl --silent --output switches.json "https://siteinfo.mlab-oti.measurementlab.net/v1/sites/switches.json"
 mkdir -p "${MAX_RATES_DIR}"
 for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
   site=$(echo $r | cut -d: -f1)
@@ -47,7 +47,7 @@ done
 # Create the nodes max rates ConfigMap
 kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
     --from-file "${MAX_RATES_DIR}/" \
-    --dry-run -o json > "../config/nodes-max-rate.yml"
+    --dry-run -o json > "../config/nodes-max-rate.json"
 
 # Create the json configuration for the entire cluster (except for secrets)
 jsonnet \
