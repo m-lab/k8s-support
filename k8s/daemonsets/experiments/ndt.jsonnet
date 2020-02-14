@@ -10,13 +10,17 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
+            command: [
+              "/bin/sh", "-c",
+              "n=$(NODE_NAME); m=$(cat /etc/" + std.extVar('MAX_RATES_CONFIGMAP') + "/$n); /ndt-server -max-rate=$m $@",
+              "--",
+            ],
             args: [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
-              '-max-rate=$(MAX_RATE)',
             ],
             env: [
               {
@@ -35,20 +39,16 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                   },
                 },
               },
-              {
-                name: 'MAX_RATE',
-                valueFrom: {
-                  configMapKeyRef: {
-                    name: std.extVar('MAX_RATES_CONFIGMAP'),
-                    key: '$(NODE_NAME)',
-                  },
-                },
-              },
             ],
             volumeMounts: [
               {
                 mountPath: '/certs',
                 name: 'ndt-tls',
+                readOnly: true,
+              },
+              {
+                mountPath: '/etc/' + std.extVar('MAX_RATES_CONFIGMAP'),
+                name: std.extVar('MAX_RATES_CONFIGMAP'),
                 readOnly: true,
               },
               exp.uuid.volumemount,
@@ -87,6 +87,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             name: 'ndt-tls',
             secret: {
               secretName: 'ndt-tls',
+            },
+          },
+          {
+            name: std.extVar('MAX_RATES_CONFIGMAP'),
+            configMap: {
+              name: std.extVar('MAX_RATES_CONFIGMAP'),
             },
           },
         ],
