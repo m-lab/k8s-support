@@ -47,7 +47,7 @@ done
 # Create the nodes max rates ConfigMap
 kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
     --from-file "${MAX_RATES_DIR}/" \
-    --dry-run -o yaml > "../config/nodes-max-rate.yml"
+    --dry-run -o json > "../config/nodes-max-rate.yml"
 
 # Create the json configuration for the entire cluster (except for secrets)
 jsonnet \
