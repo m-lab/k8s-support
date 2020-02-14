@@ -21,6 +21,33 @@ GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
 GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
 
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+GCS_BUCKET_SITEINFO="GCS_BUCKET_SITEINFO_${PROJECT//-/_}"
+
+# Fetch switches.json from siteinfo and create a directory with site-speed
+# mappings. This directory will created into a ConfigMap later. These value
+# mappings will ultimately be used to set the --max-rate flag for ndt-server.
+# This is a roundabout way of informing a container about the uplink capacity.
+curl --silent --output switches.json "https://siteinfo.mlab-oti.measurementlab.net/v1/sites/switches.json"
+mkdir -p "${MAX_RATES_DIR}"
+for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
+  site=$(echo $r | cut -d: -f1)
+  speed=$(echo $r | cut -d: -f2)
+  for node in mlab1 mlab2 mlab3 mlab4; do
+    if [[ "${speed}" == "1g" ]]; then
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+    elif [[ "${speed}" == "10g" ]]; then
+      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+    else
+      echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
+      exit 1
+    fi
+  done
+done
+
+# Create the nodes max rates ConfigMap
+kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
+    --from-file "${MAX_RATES_DIR}/" \
+    --dry-run -o json > "../config/nodes-max-rate.json"
 
 # Create the json configuration for the entire cluster (except for secrets)
 jsonnet \
@@ -30,6 +57,7 @@ jsonnet \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str PROJECT_ID=${PROJECT} \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
+   --ext-str MAX_RATES_CONFIGMAP=${MAX_RATES_CONFIGMAP} \
    ../system.jsonnet > system.json
 
 # Download every secret, and turn each one into a config.

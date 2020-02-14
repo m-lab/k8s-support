@@ -5,3 +5,4 @@ RUN go get github.com/google/go-jsonnet/cmd/jsonnet
 FROM gcr.io/cloud-builders/gsutil
 COPY --from=jsonnet-builder /go/bin/jsonnet /bin
 RUN yes | /builder/google-cloud-sdk/bin/gcloud components install kubectl
+RUN apt-get -y update && apt-get -y install jq
