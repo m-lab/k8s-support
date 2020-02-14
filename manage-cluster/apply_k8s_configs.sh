@@ -76,13 +76,6 @@ kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cer
 # part of secret-configs public.  They are our passwords and private keys!
 kubectl apply -f secret-configs/
 
-# Apply the site-max-rates ConfigMap
-kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
-    --from-file "${MAX_RATES_DIR}/" \
-    --dry-run \
-    -o yaml \
-    | kubectl apply -f -
-
 # We call 'kubectl apply -f system.json' three times because kubectl doesn't
 # support defining and declaring certain objects in the same file. This is a
 # bug in kubectl, and so we call it three times as a workaround for the bug.

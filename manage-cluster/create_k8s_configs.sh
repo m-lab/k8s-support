@@ -74,7 +74,7 @@ mkdir -p "${MAX_RATES_DIR}"
 for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
   site=$(echo $r | cut -d: -f1)
   speed=$(echo $r | cut -d: -f2)
-  for node in mlab1 mlab1 mlab3 mlab4; do
+  for node in mlab1 mlab2 mlab3 mlab4; do
     if [[ "${speed}" == "1g" ]]; then
       echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
     elif [[ "${speed}" == "10g" ]]; then
@@ -85,6 +85,11 @@ for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); 
     fi
   done
 done
+
+# Create the nodes max rates ConfigMap
+kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
+    --from-file "${MAX_RATES_DIR}/" \
+    --dry-run -o yaml > "../config/${MAX_RATES_CONFIGMAP}.yml"
 
 # Download the platform cluster CA cert.
 gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .

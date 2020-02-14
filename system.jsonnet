@@ -7,6 +7,7 @@
     import 'config/fluentd.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
+    import 'config/' + std.extVar('MAX_RATES_CONFIGMAP') + '.yml',
     // Custom resource definitions
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
