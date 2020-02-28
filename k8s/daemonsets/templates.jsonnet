@@ -1,4 +1,5 @@
 local ndtVersion = 'v0.14.1';
+local PROJECT_ID = std.extVar('PROJECT_ID');
 
 local uuid = {
   initContainer: {
@@ -301,7 +302,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.1.0',
+    image: 'measurementlab/uuid-annotator:v0.2.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -309,13 +310,26 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/annotation',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
-      '-url=gs://downloader-' + std.extVar('PROJECT_ID') + '/Maxmind/current/GeoLite2-City-CSV.zip',
+      '-maxmind.url=gs://downloader-' + PROJECT_ID + '/Maxmind/current/GeoLite2-City.tar.gz',
+      '-routeview-v4.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv4/current/routeview.pfx2as.gz',
+      '-routeview-v6.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv6/current/routeview.pfx2as.gz',
+      '-siteinfo.url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v1/sites/annotations.json',
+      '-hostname=$(MLAB_NODE_NAME)',
+
     ],
     env: [
-        {
-          name: 'GOOGLE_APPLICATION_CREDENTIALS',
-          value: '/etc/credentials/uuid-annotator.json',
+      {
+        name: 'GOOGLE_APPLICATION_CREDENTIALS',
+        value: '/etc/credentials/uuid-annotator.json',
+      },
+      {
+        name: 'MLAB_NODE_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'spec.nodeName',
+          },
         },
+      },
     ] + if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
