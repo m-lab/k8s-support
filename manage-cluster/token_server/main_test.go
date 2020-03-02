@@ -74,7 +74,7 @@ func Test_allocateTokenHandler(t *testing.T) {
 			v1: &extension.V1{
 				Hostname:    "mlab1.foo01.measurement-lab.org",
 				IPv4Address: "192.168.1.1",
-				LastBoot:    time.Now().UTC().Add(-16 * time.Minute),
+				LastBoot:    time.Now().UTC().Add(-125 * time.Minute),
 			},
 			status: http.StatusRequestTimeout,
 		},
