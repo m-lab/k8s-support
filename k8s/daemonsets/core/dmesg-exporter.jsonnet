@@ -49,10 +49,18 @@
             volumeMounts: [
               {
                 mountPath: '/dev/kmsg',
-                name: 'proc',
+                name: 'kmsg',
                 readOnly: true,
               },
             ],
+          },
+        ],
+        volumes: [
+          {
+            name: 'kmsg',
+            hostPath: {
+              path: '/dev/kmsg',
+            },
           },
         ],
       },
