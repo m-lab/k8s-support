@@ -28,7 +28,7 @@
               '--address=$(PRIVATE_IP):9900',
               '--path=/metrics',
             ],
-            image: 'cirocosta/dmesg_exporter',
+            image: 'cirocosta/dmesg_exporter:0.0.1',
             name: 'dmesg-exporter',
             env: [
               {
