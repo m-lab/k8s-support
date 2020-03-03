@@ -25,11 +25,21 @@
           {
             args: [
               'start',
-              '--address=127.0.0.1:9900',
+              '--address=${PRIVATE_IP}:9900',
               '--path=/metrics',
             ],
             image: 'cirocosta/dmesg_exporter',
             name: 'dmesg-exporter',
+            env: [
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
+            ],
             ports: [
               {
                 containerPort: 9900,
@@ -53,6 +63,11 @@
                 readOnly: true,
               },
             ],
+            // This exporter needs to access /dev/kmsg on the host, which
+            // requires it to be privileged.
+            securityContext: {
+              privileged: true,
+            },
           },
         ],
         volumes: [
