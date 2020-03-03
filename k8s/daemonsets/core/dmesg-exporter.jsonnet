@@ -25,7 +25,7 @@
           {
             args: [
               'start',
-              '--address=${PRIVATE_IP}:9900',
+              '--address=$(PRIVATE_IP):9900',
               '--path=/metrics',
             ],
             image: 'cirocosta/dmesg_exporter',
