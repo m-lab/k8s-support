@@ -12,6 +12,7 @@
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
+    import 'k8s/daemonsets/core/dmesg-exporter.jsonnet',
     import 'k8s/daemonsets/core/flannel-cloud.jsonnet',
     import 'k8s/daemonsets/core/flannel-platform.jsonnet',
     import 'k8s/daemonsets/core/fluentd.jsonnet',
