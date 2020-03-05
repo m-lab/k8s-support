@@ -91,7 +91,7 @@
           {
             args: [
               '-f',
-              '/etc/kube-flannel/physical-node-cni-conf.json',
+              '/etc/kube-flannel/physical-cni-conf.json',
               '/etc/cni/net.d/multus-cni.conf',
             ],
             command: [
