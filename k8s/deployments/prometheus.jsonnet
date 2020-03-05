@@ -65,7 +65,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
         // TODO: use native k8s service entry points, if possible.
         hostNetwork: true,
         nodeSelector: {
-          'mlab/type': 'cloud',
+          'mlab/type': 'virtual',
           run: 'prometheus-server',
         },
         serviceAccountName: 'prometheus',

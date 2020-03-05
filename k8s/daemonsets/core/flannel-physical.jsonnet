@@ -1,17 +1,18 @@
-// The daemonset for networking on platform nodes.
+// The daemonset for networking on physical platform nodes.
 //
-// As can be seen in the nodeSelector, a platform node is any node with the
-// label mlab/type=platform. If a node tries to join without an mlab/type, its
-// network will likely not work.
+// As can be seen in the nodeSelector, a physical platform node is any node
+// with the label mlab/type=physical. If a node tries to join without an
+// mlab/type, its network will likely not work.
 //
-// Platform nodes have their cluster-internal networking done by Flannel and
-// their external networking run done by ipvlan with a custom IPAM plugin. The
-// ability to have multus network interfaces in a pod is provided by multus.
+// Physical platform nodes have their cluster-internal networking done by
+// Flannel and their external networking run done by ipvlan with a custom IPAM
+// plugin. The ability to have multus network interfaces in a pod is provided
+// by multus.
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'kube-flannel-ds-platform',
+    name: 'kube-flannel-ds-physical',
     namespace: 'kube-system',
   },
   spec: {
@@ -19,7 +20,7 @@
       matchLabels: {
         app: 'flannel',
         tier: 'node',
-        workload: 'flannel-platform',
+        workload: 'flannel-physical',
       },
     },
     template: {
@@ -27,7 +28,7 @@
         labels: {
           app: 'flannel',
           tier: 'node',
-          workload: 'flannel-platform',
+          workload: 'flannel-physical',
         },
       },
       spec: {
@@ -90,7 +91,7 @@
           {
             args: [
               '-f',
-              '/etc/kube-flannel/platform-node-cni-conf.json',
+              '/etc/kube-flannel/physical-node-cni-conf.json',
               '/etc/cni/net.d/multus-cni.conf',
             ],
             command: [
@@ -112,7 +113,7 @@
         ],
         nodeSelector: {
           'beta.kubernetes.io/arch': 'amd64',
-          'mlab/type': 'platform',
+          'mlab/type': 'physical',
         },
         serviceAccountName: 'flannel',
         tolerations: [

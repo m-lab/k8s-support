@@ -2,8 +2,8 @@
 prometheus-etcd-tls/
 ndt-tls/
 flannel.yml
-flannel-cloud.yml
-flannel-platform.yml
+flannel-virtual.yml
+flannel-physical.yml
 fluentd.json
 kube-config
 output.conf

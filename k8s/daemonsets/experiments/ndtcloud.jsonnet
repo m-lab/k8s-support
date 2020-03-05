@@ -60,7 +60,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
           },
         ],
         nodeSelector: {
-          'mlab/type': 'cloud',
+          'mlab/type': 'virtual',
           'mlab/run': expName,
         },
         hostNetwork: true,

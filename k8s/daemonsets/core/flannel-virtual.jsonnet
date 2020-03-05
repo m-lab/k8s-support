@@ -1,9 +1,9 @@
-// The daemonset for networking on cloud nodes.
+// The daemonset for networking on virtual nodes.
 //
-// As can be seen in the nodeSelector, a cloud node is any node with the label
-// mlab/type=cloud. If a node tries to join without an mlab/type, its network
-// will likely not work. Pods running on cloud nodes only get an internal IP
-// address.
+// As can be seen in the nodeSelector, a virtual node is any node with the
+// label mlab/type=virtual. If a node tries to join without an mlab/type, its
+// network will likely not work. Pods running on virtual nodes only get an
+// internal IP address.
 //
 // The toleration "key: node-role.kubernetes.io/master" was removed because of
 // this issue: https://github.com/coreos/flannel/issues/1044. This was needed
@@ -15,7 +15,7 @@
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'kube-flannel-ds-cloud',
+    name: 'kube-flannel-ds-virtual',
     namespace: 'kube-system',
   },
   spec: {
@@ -23,7 +23,7 @@
       matchLabels: {
         app: 'flannel',
         tier: 'node',
-        workload: 'flannel-cloud',
+        workload: 'flannel-virtual',
       },
     },
     template: {
@@ -31,7 +31,7 @@
         labels: {
           app: 'flannel',
           tier: 'node',
-          workload: 'flannel-cloud',
+          workload: 'flannel-virtual',
         },
       },
       spec: {
@@ -94,7 +94,7 @@
           {
             args: [
               '-f',
-              '/etc/kube-flannel/cloud-cni-conf.json',
+              '/etc/kube-flannel/virtual-cni-conf.json',
               '/etc/cni/net.d/10-flannel.conflist',
             ],
             command: [
@@ -116,7 +116,7 @@
         ],
         nodeSelector: {
           'beta.kubernetes.io/arch': 'amd64',
-          'mlab/type': 'cloud',
+          'mlab/type': 'virtual',
         },
         serviceAccountName: 'flannel',
         tolerations: [
