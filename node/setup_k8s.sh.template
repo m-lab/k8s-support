@@ -48,7 +48,7 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 # TODO: Add annotations to the node as well as labels. The annotations should
 #       contain most of /proc/cmdline as well as the args to this script.
 
-NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=platform,mlab/project=${GCP_PROJECT}"
+NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=physical,mlab/project=${GCP_PROJECT}"
 DYNAMIC_CONFIG_DIR="/var/lib/kubelet/dynamic-configs"
 mkdir --parents /etc/systemd/system/kubelet.service.d
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \

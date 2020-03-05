@@ -7,8 +7,8 @@ local netConf = {
   },
 };
 
-// This is the CNI config needed for the cloud machines.
-local cloudCNIConf = {
+// This is the CNI config needed for the virtual machines.
+local virtualCNIConf = {
   name: 'cbr0',
   plugins: [
     {
@@ -28,10 +28,10 @@ local cloudCNIConf = {
   ],
 };
 
-// This is the CNI config needed for the platform nodes.
+// This is the CNI config needed for the physical nodes.
 // It should not contain any index2ip stuff. It is the backup config for when
 // multus isn't working or a pod is not tagged with any network annotations.
-local platformNodeCNIConf = {
+local physicalCNIConf = {
   name: 'multus-network',
   type: 'multus',
   kubeconfig: '/etc/kubernetes/kubelet.conf',
@@ -52,7 +52,7 @@ local platformNodeCNIConf = {
   },
   data: {
     'net-conf.json': std.toString(netConf),
-    'cloud-cni-conf.json': std.toString(cloudCNIConf),
-    'platform-node-cni-conf.json': std.toString(platformNodeCNIConf),
+    'virtual-cni-conf.json': std.toString(virtualCNIConf),
+    'physical-cni-conf.json': std.toString(physicalCNIConf),
   },
 }

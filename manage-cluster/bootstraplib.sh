@@ -413,7 +413,7 @@ EOF
     set -euxo pipefail
 
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
-    kubectl label node ${gce_name} mlab/type=cloud
+    kubectl label node ${gce_name} mlab/type=virtual
 EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.

@@ -65,7 +65,7 @@
           },
         ],
         nodeSelector: {
-          'mlab/type': 'platform',
+          'mlab/type': 'physical',
         },
         serviceAccountName: 'reboot-coordinator',
         // This is a pod that should be scheduled under every possible

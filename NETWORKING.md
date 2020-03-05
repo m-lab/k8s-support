@@ -27,10 +27,10 @@ world.
 ## Kubernetes configs
 
 All the kubernetes configs for cluster networking. They specify that all nodes
-with the label `mlab/type=cloud` run flannel in the standard way, and all nodes
-with the label `mlab/type=platform` run multus+flannel+ipvlan+index2ip in our
-custom way. If a node has no value for the `mlab/type` label, the network will
-likely not work at all.
+with the label `mlab/type=virtual` run flannel in the standard way, and all
+nodes with the label `mlab/type=physical` run multus+flannel+ipvlan+index2ip in
+our custom way. If a node has no value for the `mlab/type` label, the network
+will likely not work at all.
 
 ## Debugging CNI plugins
 

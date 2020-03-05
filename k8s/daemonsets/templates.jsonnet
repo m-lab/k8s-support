@@ -405,7 +405,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
           uuid.initContainer,
         ],
         nodeSelector: {
-          'mlab/type': 'platform',
+          'mlab/type': 'physical',
         },
         volumes: [
           {
