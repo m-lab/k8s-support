@@ -44,7 +44,7 @@ coreos:
                                       --volume /etc:/etc:ro \
                                       --volume /:/ro:ro \
                                       --name %N -- \
-                                      measurementlab/k8s-token-server:v0.0 \
+                                      measurementlab/k8s-token-server:v2.9.0 \
                                       -command /ro/opt/bin/kubeadm
         ExecStop=/usr/bin/docker stop %N
 
