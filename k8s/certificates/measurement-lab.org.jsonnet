@@ -7,7 +7,7 @@
   },
   spec: {
     dnsNames: [
-      '*.measurement-lab.org',
+      if std.extVar('PROJECT_ID') == 'mlab-oti' then '*.measurement-lab.org',
       '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
     ],
     issuerRef: {
