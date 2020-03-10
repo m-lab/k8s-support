@@ -31,10 +31,11 @@
     // Namespaces
     import 'k8s/namespaces/reboot-operator.jsonnet',
     // ClusterIssuers
-    // The letsencrypt-staging is provided to test new TLS
-    // services but commented out here by default.
+    // letsencrypt-staging is provided to test new TLS services
     import 'k8s/clusterissuers/letsencrypt-staging.jsonnet',
     import 'k8s/clusterissuers/letsencrypt.jsonnet',
+    //Certificates
+    import 'k8s/certificates/measurement-lab.org.jsonnet',
     // Services
     import 'k8s/services/prometheus-tls.jsonnet',
     import 'k8s/services/prometheus-tls-ingress.jsonnet',
