@@ -81,7 +81,8 @@ kubectl create secret generic uuid-annotator-credentials --from-file secrets/uui
     --dry-run -o json > secret-configs/uuid-annotator-credentials.json
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
     --dry-run -o json > secret-configs/pusher-credentials.json
-kubectl create secret generic cert-manager-credentials --from-file secrets/cert-manager.json \
+kubectl create secret generic cert-manager-credentials --namespace cert-manager \
+    --from-file secrets/cert-manager.json \
     --dry-run -o json > secret-configs/cert-manager-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
