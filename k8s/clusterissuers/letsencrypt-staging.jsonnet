@@ -18,6 +18,27 @@
               class: 'nginx',
             },
           },
+          selector: {
+            dnsNames: [
+              'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
+            ],
+          },
+        },
+        {
+          dns01: {
+            clouddns: {
+              project: std.extVar('PROJECT_ID'),
+              serviceAccountSecretRef: {
+                name: cert-manager-dns01-solver
+                key: cert-manager-sa-key.json
+              },
+            },
+          },
+          selector: {
+            dnsNames: [
+              '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
+            ],
+          },
         },
       ],
     },
