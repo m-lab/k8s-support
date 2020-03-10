@@ -1,0 +1,14 @@
+cainjector:
+  nodeSelector:
+    "node-role.kubernetes.io/master": ""
+  tolerations:
+  - operator: Exists
+ingressShim:
+  defaultIssuerName: letsencrypt
+  defaultIssuerKind: ClusterIssuer
+nodeSelector:
+  "node-role.kubernetes.io/master": ""
+webhook:
+  enabled: false
+tolerations:
+- operator: Exists
