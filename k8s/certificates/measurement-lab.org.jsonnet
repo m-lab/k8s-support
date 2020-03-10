@@ -7,6 +7,7 @@
   },
   spec: {
     dnsNames: [
+      '*.measurement-lab.org',
       '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
     ],
     issuerRef: {
