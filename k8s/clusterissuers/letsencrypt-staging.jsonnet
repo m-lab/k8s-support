@@ -29,8 +29,8 @@
             clouddns: {
               project: std.extVar('PROJECT_ID'),
               serviceAccountSecretRef: {
-                name: cert-manager-credentials,
-                key: cert-manager.json,
+                name: 'cert-manager-credentials',
+                key: 'cert-manager.json',
               },
             },
           },
