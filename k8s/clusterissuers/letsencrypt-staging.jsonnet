@@ -35,8 +35,9 @@
             },
           },
           selector: {
-            dnsNames: [
-              if std.extVar('PROJECT_ID') == 'mlab-oti' then '*.measurement-lab.org' else '',
+            dnsNames: if std.extVar('PROJECT_ID') == 'mlab-oti' then [
+              '*.measurement-lab.org',
+            ] else [] + [
               '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
             ],
           },
