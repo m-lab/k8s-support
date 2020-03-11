@@ -14,7 +14,7 @@
     issuerRef: {
       group: 'cert-manager.io',
       kind: 'ClusterIssuer',
-      name: 'letsencrypt-staging',
+      name: 'letsencrypt',
     },
     secretName: std.extVar('PROJECT_ID') + '-measurment-lab-org-tls',
   },
