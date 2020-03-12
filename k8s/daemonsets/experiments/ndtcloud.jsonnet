@@ -11,8 +11,8 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
             args: [
-              '-key=/certs/key.pem',
-              '-cert=/certs/cert.pem',
+              '-key=/certs/tls.key',
+              '-cert=/certs/tls.crt',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/' + expName,
@@ -20,7 +20,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
             volumeMounts: [
               {
                 mountPath: '/certs',
-                name: 'ndt-tls',
+                name: 'measurement-lab-org-tls',
                 readOnly: true,
               },
               exp.uuid.volumemount,
@@ -53,9 +53,9 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
-            name: 'ndt-tls',
+            name: 'measurement-lab-org-tls',
             secret: {
-              secretName: 'ndt-tls',
+              secretName: 'measurement-lab-org-tls',
             },
           },
         ],

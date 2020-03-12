@@ -21,8 +21,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               "--",
             ],
             args: [
-              '-key=/certs/key.pem',
-              '-cert=/certs/cert.pem',
+              '-key=/certs/tls.key',
+              '-cert=/certs/tls.crt',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
@@ -49,7 +49,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             volumeMounts: [
               {
                 mountPath: '/certs',
-                name: 'ndt-tls',
+                name: 'measurement-lab-org-tls',
                 readOnly: true,
               },
               {
@@ -92,9 +92,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
-            name: 'ndt-tls',
+            name: 'measurement-lab-org-tls',
             secret: {
-              secretName: 'ndt-tls',
+              secretName: 'measurement-lab-org-tls',
             },
           },
           {
