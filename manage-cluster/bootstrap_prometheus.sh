@@ -141,7 +141,7 @@ fi
 #######################################################
 
 # Create the new node
-./add_k8s_cloud_node.sh -p "${PROJECT}" \
+./add_k8s_virtual_node.sh -p "${PROJECT}" \
     -m "${MACHINE_TYPE}" \
     -n "${PROM_BASE_NAME}" \
     -a "${PROM_BASE_NAME}" \

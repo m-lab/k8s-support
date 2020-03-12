@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Upgrades k8s components on all cloud nodes that are not master nodes.
+# Upgrades k8s components on all virtual nodes that are not master nodes.
 
 set -euxo pipefail
 
@@ -30,10 +30,10 @@ if [[ -z "${KUBECONFIG}" ]]; then
 fi
 export KUBECONFIG=$KUBECONFIG
 
-# Get a list of all the cloud nodes in the cluster that are not master nodes.
+# Get a list of all the virtual nodes in the cluster that are not master nodes.
 NODES=$(
   kubectl get nodes \
-      --selector 'mlab/type=cloud,!node-role.kubernetes.io/master' \
+      --selector 'mlab/type=virtual,!node-role.kubernetes.io/master' \
       --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 )
 
@@ -46,7 +46,7 @@ echo -e "\n"
 
 # Issue a warning to the user and only continue if they agree.
 cat <<EOF
-WARNING: this script is going to attempt to upgrade all of the cloud nodes
+WARNING: this script is going to attempt to upgrade all of the virtual nodes
 listed above in the ${PROJECT} kubernetes platform cluster to version
 ${K8S_VERSION}.
 

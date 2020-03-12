@@ -67,7 +67,7 @@ local exp = import '../templates.jsonnet';
         hostNetwork: true,
         // hostPID: true,
         nodeSelector: {
-          'mlab/type': 'platform',
+          'mlab/type': 'physical',
         },
         serviceAccountName: 'kube-rbac-proxy',
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,

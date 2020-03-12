@@ -95,7 +95,7 @@
           },
         ],
         nodeSelector: {
-          'mlab/type': 'cloud',
+          'mlab/type': 'virtual',
         },
         serviceAccountName: 'kube-state-metrics',
       },
