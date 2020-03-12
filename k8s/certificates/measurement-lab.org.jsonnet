@@ -16,6 +16,6 @@
       kind: 'ClusterIssuer',
       name: 'letsencrypt',
     },
-    secretName: std.extVar('PROJECT_ID') + '-measurement-lab-org-tls',
+    secretName: 'measurement-lab-org-tls',
   },
 }
