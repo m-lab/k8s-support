@@ -69,6 +69,7 @@ gsutil cp -R gs://${!GCS_BUCKET_K8S}/ndt-tls secrets/.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/wehe-ca secrets/.
 gsutil cp gs://${!GCS_BUCKET_K8S}/uuid-annotator-credentials.json secrets/uuid-annotator.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
+gsutil cp gs://${!GCS_BUCKET_K8S}/cert-manager-credentials.json secrets/cert-manager.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/fluentd-credentials.json secrets/fluentd.json
 mkdir -p secrets/prometheus-etcd-tls
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.* secrets/prometheus-etcd-tls/
@@ -80,6 +81,9 @@ kubectl create secret generic uuid-annotator-credentials --from-file secrets/uui
     --dry-run -o json > secret-configs/uuid-annotator-credentials.json
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
     --dry-run -o json > secret-configs/pusher-credentials.json
+kubectl create secret generic cert-manager-credentials --namespace cert-manager \
+    --from-file secrets/cert-manager.json \
+    --dry-run -o json > secret-configs/cert-manager-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
 kubectl create secret generic wehe-ca --from-file secrets/wehe-ca/ \

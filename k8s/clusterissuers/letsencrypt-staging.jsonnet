@@ -18,6 +18,29 @@
               class: 'nginx',
             },
           },
+          selector: {
+            dnsNames: [
+              'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
+            ],
+          },
+        },
+        {
+          dns01: {
+            clouddns: {
+              project: std.extVar('PROJECT_ID'),
+              serviceAccountSecretRef: {
+                name: 'cert-manager-credentials',
+                key: 'cert-manager.json',
+              },
+            },
+          },
+          selector: {
+            dnsNames: if std.extVar('PROJECT_ID') == 'mlab-oti' then [
+              '*.measurement-lab.org',
+            ] else [] + [
+              '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
+            ],
+          },
         },
       ],
     },
