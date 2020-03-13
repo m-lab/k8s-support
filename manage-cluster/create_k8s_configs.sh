@@ -29,6 +29,7 @@ GCS_BUCKET_SITEINFO="GCS_BUCKET_SITEINFO_${PROJECT//-/_}"
 # This is a roundabout way of informing a container about the uplink capacity.
 curl --silent --output switches.json "https://siteinfo.mlab-oti.measurementlab.net/v1/sites/switches.json"
 mkdir -p "${MAX_RATES_DIR}"
+which jq &> /dev/null # Check that command exists.
 for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); do
   site=$(echo $r | cut -d: -f1)
   speed=$(echo $r | cut -d: -f2)
