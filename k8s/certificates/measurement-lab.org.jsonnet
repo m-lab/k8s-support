@@ -6,10 +6,10 @@
     namespace: 'default',
   },
   spec: {
-    dnsNames: if std.extVar('PROJECT_ID') == 'mlab-oti' then [
-      '*.measurement-lab.org',
-    ] else [] + [
-      '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
+    dnsNames: (if std.extVar('PROJECT_ID') == 'mlab-oti' then [
+      '*.measurement-lab.org'
+    ] else []) + [
+      '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org'
     ],
     issuerRef: {
       group: 'cert-manager.io',
