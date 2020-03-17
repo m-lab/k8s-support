@@ -6,9 +6,9 @@
     namespace: 'default',
   },
   spec: {
-    dnsNames: if std.extVar('PROJECT_ID') == 'mlab-oti' then [
+    dnsNames: (if std.extVar('PROJECT_ID') == 'mlab-oti' then [
       '*.measurement-lab.org',
-    ] else [] + [
+    ] else []) + [
       '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
     ],
     issuerRef: {
