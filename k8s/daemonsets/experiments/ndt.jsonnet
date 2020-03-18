@@ -21,8 +21,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               "--",
             ],
             args: [
-              '-key=/certs/key.pem',
-              '-cert=/certs/cert.pem',
+              '-key=/certs/tls.key',
+              '-cert=/certs/tls.crt',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
@@ -94,7 +94,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           {
             name: 'measurement-lab-org-tls',
             secret: {
-              secretName: 'ndt-tls',
+              secretName: 'measurement-lab-org-tls',
             },
           },
           {
