@@ -20,9 +20,13 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               "n=$(NODE_NAME); m=$(cat /etc/" + std.extVar('MAX_RATES_CONFIGMAP') + "/$n); /ndt-server -txcontroller.max-rate=$m $@",
               "--",
             ],
-            args: [
+            args: if std.extVar('PROJECT_ID') != 'mlab-oti' then [
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
+            ] else [
+              '-key=/certs/key.pem',
+              '-cert=/certs/cert.pem',
+            ] + [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
@@ -94,7 +98,10 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           {
             name: 'measurement-lab-org-tls',
             secret: {
-              secretName: 'measurement-lab-org-tls',
+              secretName: if std.extVar('PROJECT_ID') != 'mlab-oti' then
+                'measurement-lab-org-tls'
+              else
+                'ndt-tls',
             },
           },
           {
