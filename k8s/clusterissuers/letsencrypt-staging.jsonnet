@@ -1,3 +1,8 @@
+// NOTE: This file is not named *-staging for having anything to do with the
+// mlab-staging project, but instead denotes that this ClusterIssuer uses the
+// LetsEncrypt staging endpoint instead of the production one, which has looser
+// limits and is better for testing, though it doesn't produce globally valid
+// TLS certs.
 {
   apiVersion: 'cert-manager.io/v1alpha2',
   kind: 'ClusterIssuer',
