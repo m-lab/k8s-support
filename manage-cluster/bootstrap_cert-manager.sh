@@ -45,7 +45,7 @@ EXISTING_ACME_ZONE=$(gcloud dns managed-zones list \
     --project ${PROJECT}
 )
 if [[ -z "${EXISTING_ACME_ZONE}" ]]; then
-  gcloud dns managed-zones create acme-mlab-sandbox-measurement-lab-org \
+  gcloud dns managed-zones create "acme-${PROJECT}-measurement-lab-org" \
       --description "Subdomain for ACME challenges." \
       --dns-name "acme.${PROJECT}.measurement-lab.org" \
       --project "${PROJECT}"
@@ -58,8 +58,8 @@ if [[ -z "${EXISTING_ACME_ZONE}" ]]; then
       --zone "acme-${PROJECT}-measurement-lab-org" \
       --name "acme.${PROJECT}.measurement-lab.org" \
       --type "NS" \
-      --format "value(rrdatas.flatten(separator=' ')" \
-      --project mlab-sandbox)
+      --format "value(rrdatas.flatten(separator=' '))" \
+      --project "${PROJECT}")
 
   # If any previous transation existed, delete it.
   rm -f transaction.yaml
