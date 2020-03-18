@@ -23,7 +23,12 @@
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
-    import 'k8s/daemonsets/experiments/revtr.jsonnet',
+  ] + (
+    // Don't deploy revtr to prod until all privacy i's and t's are dotted and crossed.
+    if std.extVar('PROJECT_ID') != 'mlab-oti'
+    then [import 'k8s/daemonsets/experiments/revtr.jsonnet']
+    else []
+  ) + [
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
