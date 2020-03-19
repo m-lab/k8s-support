@@ -25,12 +25,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
               '-txcontroller.device=net1',
-            ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
-            ] else [
-              '-key=/certs/key.pem',
-              '-cert=/certs/cert.pem',
             ],
             env: [
               {
@@ -98,10 +94,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           {
             name: 'measurement-lab-org-tls',
             secret: {
-              secretName: if std.extVar('PROJECT_ID') != 'mlab-oti' then
-                'measurement-lab-org-tls'
-              else
-                'ndt-tls',
+              secretName: 'measurement-lab-org-tls',
             },
           },
           {

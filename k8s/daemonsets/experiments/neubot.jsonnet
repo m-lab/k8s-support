@@ -15,12 +15,8 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-http-listen-address=:80',
               '-https-listen-address=:443',
-            ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
               '-tls-cert=/certs/tls.crt',
               '-tls-key=/certs/tls.key',
-            ] else [
-              '-tls-cert=/certs/cert.pem',
-              '-tls-key=/certs/key.pem',
             ],
             env: [
               {
@@ -61,10 +57,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
           {
             name: 'measurement-lab-org-tls',
             secret: {
-              secretName: if std.extVar('PROJECT_ID') != 'mlab-oti' then
-                'measurement-lab-org-tls'
-              else
-                'ndt-tls',
+              secretName: 'measurement-lab-org-tls',
             },
           },
         ],
