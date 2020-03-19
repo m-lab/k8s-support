@@ -10,16 +10,16 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
-            args: if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+            args: [
+              '-uuid-prefix-file=' + exp.uuid.prefixfile,
+              '-prometheusx.listen-address=127.0.0.1:9990',
+              '-datadir=/var/spool/' + expName,
+            ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
             ] else [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
-            ] + [
-              '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=127.0.0.1:9990',
-              '-datadir=/var/spool/' + expName,
             ],
             volumeMounts: [
               {

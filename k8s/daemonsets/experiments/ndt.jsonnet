@@ -20,17 +20,17 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               "n=$(NODE_NAME); m=$(cat /etc/" + std.extVar('MAX_RATES_CONFIGMAP') + "/$n); /ndt-server -txcontroller.max-rate=$m $@",
               "--",
             ],
-            args: if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+            args: [
+              '-uuid-prefix-file=' + exp.uuid.prefixfile,
+              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
+              '-datadir=/var/spool/' + expName,
+              '-txcontroller.device=net1',
+            ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
             ] else [
               '-key=/certs/key.pem',
               '-cert=/certs/cert.pem',
-            ] + [
-              '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/' + expName,
-              '-txcontroller.device=net1',
             ],
             env: [
               {
