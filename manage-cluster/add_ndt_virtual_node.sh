@@ -28,6 +28,13 @@ if ! [[ "${CLOUD_SITE}" =~ $SITE_REGEX ]]; then
   exit 1
 fi
 
+# The base domain to use. e.g., mlab-staging.measurement-lab.org
+BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
+BASE_DOMAIN=${!BASE_DOMAIN_VAR}
+
+# Should the host part of names be separated by a dash or dot. e.g., mlab1-den05
+NAME_SEPARATOR_VAR="NAME_SEPARATOR_${PROJECT//-/_}"
+
 # Determine the region based on $CLOUD_ZONE.
 GCE_REGION="${CLOUD_ZONE%-*}"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
@@ -40,8 +47,8 @@ else
   MLAB_MACHINE="mlab1"
 fi
 
-GCE_NAME="${MLAB_MACHINE}-${CLOUD_SITE}-measurement-lab-org"
-K8S_NAME="${MLAB_MACHINE}.${CLOUD_SITE}.measurement-lab.org"
+GCE_NAME="${MLAB_MACHINE}-${CLOUD_SITE}-${BASE_DOMAIN//./-}"
+K8S_NAME="${MLAB_MACHINE}${!NAME_SEPARATOR_VAR}${CLOUD_SITE}.${BASE_DOMAIN}"
 
 # Create the static cloud public IP, if it doesn't already exist.
 CURRENT_CLOUD_IP=$(gcloud compute addresses list \
@@ -78,4 +85,3 @@ fi
 ./add_k8s_virtual_node.sh -p "${PROJECT}" -z "${CLOUD_ZONE}" \
     -n "${GCE_NAME}" -H "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
     -l "mlab/type=virtual mlab/run=ndtcloud mlab/machine=${MLAB_MACHINE} mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
-

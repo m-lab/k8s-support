@@ -8,6 +8,10 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 # Source the main configuration file.
 source ./k8s_deploy.conf
 
+# The base domain to use. i.e., Does the base domain include the project.
+BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
+NAME_SEPARATOR_VAR="NAME_SEPARATOR_${PROJECT//-/_}"
+
 # Create a string representing region and zone variable names for this project.
 GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
 GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
@@ -35,9 +39,9 @@ for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); 
   speed=$(echo $r | cut -d: -f2)
   for node in mlab1 mlab2 mlab3 mlab4; do
     if [[ "${speed}" == "1g" ]]; then
-      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}${!NAMES_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
     elif [[ "${speed}" == "10g" ]]; then
-      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/$node.${site}.measurement-lab.org"
+      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}${!NAME_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
     else
       echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
       exit 1
