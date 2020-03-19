@@ -39,7 +39,7 @@ for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); 
   speed=$(echo $r | cut -d: -f2)
   for node in mlab1 mlab2 mlab3 mlab4; do
     if [[ "${speed}" == "1g" ]]; then
-      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}${!NAMES_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}${!NAME_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
     elif [[ "${speed}" == "10g" ]]; then
       echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}${!NAME_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
     else
