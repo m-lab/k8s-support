@@ -8,6 +8,9 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 # Source the main configuration file.
 source ./k8s_deploy.conf
 
+# TODO(kinkade): Remove usage of BASE_DOMAIN and NAME_SEPARATOR once we have
+# fully migrated to v2 hostnames, at which point it won't be needed.
+#
 # The base domain to use. i.e., Does the base domain include the project.
 BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
 NAME_SEPARATOR_VAR="NAME_SEPARATOR_${PROJECT//-/_}"

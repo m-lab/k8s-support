@@ -28,6 +28,9 @@ if ! [[ "${CLOUD_SITE}" =~ $SITE_REGEX ]]; then
   exit 1
 fi
 
+# TODO(kinkade): Remove usage of BASE_DOMAIN and NAME_SEPARATOR once we have
+# fully migrated to v2 hostnames, at which point it won't be needed.
+#
 # The base domain to use. e.g., mlab-staging.measurement-lab.org
 BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
 BASE_DOMAIN=${!BASE_DOMAIN_VAR}
