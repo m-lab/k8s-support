@@ -50,7 +50,7 @@ func Test_allocateTokenHandler(t *testing.T) {
 			name:   "success",
 			method: "POST",
 			v1: &extension.V1{
-				Hostname:    "mlab1.foo01.measurement-lab.org",
+				Hostname:    "mlab1-foo01.mlab-oti.measurement-lab.org",
 				IPv4Address: "192.168.1.1",
 				LastBoot:    time.Now().UTC().Add(-5 * time.Minute),
 			},
@@ -72,7 +72,7 @@ func Test_allocateTokenHandler(t *testing.T) {
 			name:   "failure-last-boot-too-old",
 			method: "POST",
 			v1: &extension.V1{
-				Hostname:    "mlab1.foo01.measurement-lab.org",
+				Hostname:    "mlab1-foo01.mlab-oti.measurement-lab.org",
 				IPv4Address: "192.168.1.1",
 				LastBoot:    time.Now().UTC().Add(-125 * time.Minute),
 			},
@@ -82,7 +82,7 @@ func Test_allocateTokenHandler(t *testing.T) {
 			name:   "failure-failure-to-generate-token",
 			method: "POST",
 			v1: &extension.V1{
-				Hostname:    "mlab1.foo01.measurement-lab.org",
+				Hostname:    "mlab1-foo01.mlab-oti.measurement-lab.org",
 				IPv4Address: "192.168.1.1",
 				LastBoot:    time.Now().UTC().Add(-5 * time.Minute),
 			},
