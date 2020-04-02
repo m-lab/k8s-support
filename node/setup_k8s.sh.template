@@ -35,7 +35,7 @@ export PATH=$PATH:/sbin:/usr/sbin:/opt/bin:/opt/mlab/bin
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurement-lab.org"
+MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
 # things into etc should be done as part of cloud-config.yml or ignition or just
