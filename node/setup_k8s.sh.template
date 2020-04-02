@@ -30,6 +30,10 @@ SITE=${HOSTNAME:6:5}
 DOMAIN=${HOSTNAME:12}
 METRO="${SITE/[0-9]*/}"
 
+# Adds /opt/bin (k8s binaries) and /opt/mlab/bin (mlab binaries/scripts) to PATH.
+# Also, be 100% sure /sbin and /usr/sbin are in PATH.
+export PATH=$PATH:/sbin:/usr/sbin:/opt/bin:/opt/mlab/bin
+
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
 MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.${DOMAIN}"
@@ -39,7 +43,7 @@ MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.${DOMAIN}"
 # something besides this script.
 # Install things in /etc
 # Startup configs for the kubelet
-RELEASE=$(/opt/bin/kubelet --version | awk '{print $2}')
+RELEASE=$(kubelet --version | awk '{print $2}')
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
 # Add node tags to the kubelet so that node metadata is there right at the very
@@ -63,6 +67,12 @@ mkdir --parents /etc/kubernetes/manifests
 
 systemctl daemon-reload
 
+# CoreOS machines require this symlink. On Ubuntu machines, things are put in
+# the right place to begin with.
+if ! [[ -d "/opt/cni" ]]; then
+  ln --force --no-dereference --symbolic /usr/cni /opt/cni
+fi
+
 # Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr,
 # so write stderr to a file so we can read any error code.
 TOKEN=$( curl --fail --silent --show-error -XPOST --data-binary "{}" \
@@ -74,7 +84,6 @@ if [[ -n $ERROR_408 ]]; then
   /sbin/reboot
 fi
 
-export PATH=/sbin:/usr/sbin:/opt/bin:${PATH}
 # TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
 # that we can hard-code the CA hash below without having to change it all the
 # time.
