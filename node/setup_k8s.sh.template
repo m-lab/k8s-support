@@ -84,6 +84,9 @@ if [[ -n $ERROR_408 ]]; then
   /sbin/reboot
 fi
 
+# kubeadm complains if kubelet.service is not enabled when it runs.
+systemctl enable kubelet
+
 # TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
 # that we can hard-code the CA hash below without having to change it all the
 # time.
@@ -92,7 +95,6 @@ kubeadm join "${MASTER_NODE}:6443" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
 
 systemctl daemon-reload
-systemctl enable kubelet
 systemctl start kubelet
 
 echo 'Success: everything we did appeared to work - good luck'
