@@ -27,7 +27,6 @@ K8S_TOKEN_ERROR_FILE="/tmp/k8s_token_error"
 # Turn the hostname into its component parts.
 MACHINE=${HOSTNAME:0:5}
 SITE=${HOSTNAME:6:5}
-DOMAIN=${HOSTNAME:12}
 METRO="${SITE/[0-9]*/}"
 
 # Adds /opt/bin (k8s binaries) and /opt/mlab/bin (mlab binaries/scripts) to PATH.
@@ -36,7 +35,7 @@ export PATH=$PATH:/sbin:/usr/sbin:/opt/bin:/opt/mlab/bin
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.${DOMAIN}"
+MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurement-lab.org"
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
 # things into etc should be done as part of cloud-config.yml or ignition or just
