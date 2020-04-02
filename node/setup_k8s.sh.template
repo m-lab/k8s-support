@@ -25,21 +25,21 @@ K8S_TOKEN_URL=${4:?k8s token URL is missing. Node cannot join k8s cluster.}
 K8S_TOKEN_ERROR_FILE="/tmp/k8s_token_error"
 
 # Turn the hostname into its component parts.
-MACHINE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $1 }')
-SITE=$(echo "${HOSTNAME}" | tr . ' ' | awk '{ print $2 }')
+MACHINE=${HOSTNAME:0:5}
+SITE=${HOSTNAME:6:5}
+DOMAIN=${HOSTNAME:12}
 METRO="${SITE/[0-9]*/}"
 
 # Make sure to download any and all necessary auth tokens prior to this point.
 # It should be a simple wget from the master node to make that happen.
-MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
+MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.${DOMAIN}"
 
 # TODO(https://github.com/m-lab/k8s-support/issues/29) This installation of
 # things into etc should be done as part of cloud-config.yml or ignition or just
 # something besides this script.
 # Install things in /etc
 # Startup configs for the kubelet
-RELEASE=$(cat /usr/share/oem/installed_k8s_version.txt)
-mkdir --parents /etc/systemd/system
+RELEASE=$(/opt/bin/kubelet --version | awk '{print $2}')
 curl --silent --show-error --location "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/kubelet.service" > /etc/systemd/system/kubelet.service
 
 # Add node tags to the kubelet so that node metadata is there right at the very
@@ -61,15 +61,7 @@ curl --silent --show-error --location "https://raw.githubusercontent.com/kuberne
 # it doesn't exist, polluting the logs terribly.
 mkdir --parents /etc/kubernetes/manifests
 
-# CNI binaries are baked into the boot images at /usr/cni/bin, however, the
-# kubelet expects to find them in /opt/cni/bin by default. Rather than muck
-# with default settings, we just create a symlink here.
-mkdir --parents /opt
-ln --force --no-dereference --symbolic /usr/cni /opt/cni
-
 systemctl daemon-reload
-systemctl enable docker
-systemctl start docker
 
 # Fetch k8s token via K8S_TOKEN_URL. Curl should report most errors to stderr,
 # so write stderr to a file so we can read any error code.
