@@ -111,6 +111,7 @@ kubeadm join "${MASTER_NODE}:6443" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
 
 systemctl daemon-reload
+systemctl enable kubelet
 systemctl start kubelet
 
 echo 'Success: everything we did appeared to work - good luck'
