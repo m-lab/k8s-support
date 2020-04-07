@@ -113,7 +113,7 @@ local tcpinfoServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
-    image: 'measurementlab/tcp-info:v1.4.0',
+    image: 'measurementlab/tcp-info:v1.5.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
