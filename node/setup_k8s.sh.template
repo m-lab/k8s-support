@@ -106,7 +106,7 @@ fi
 # that we can hard-code the CA hash below without having to change it all the
 # time.
 kubeadm join "${MASTER_NODE}:6443" \
-  --v 8 \
+  --v 4 \
   --token "${TOKEN}" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
 
