@@ -63,6 +63,7 @@ fi
 # into the image. Once we have migrated fully to Ubuntu, this should be
 # removed.
 if ! [[ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]]; then
+  mkdir --parents /etc/systemd/system/kubelet.service.d
   curl --silent --show-error --location \
       "https://raw.githubusercontent.com/kubernetes/kubernetes/${RELEASE}/build/debs/10-kubeadm.conf" \
       > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
