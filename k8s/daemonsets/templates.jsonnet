@@ -100,14 +100,27 @@ local RBACProxy(name, port) = {
 local tcpinfoServiceVolume = {
   volumemount: {
     mountPath: '/var/local/tcpinfoeventsocket',
-    name: 'tcpinfo-eventsocket',
+    name: 'tcpinfoeventsocket',
     readOnly: false,
   },
   volume: {
     emptyDir: {},
-    name: 'tcpinfo-eventsocket',
+    name: 'tcpinfoeventsocket',
   },
   eventsocketFilename: '/var/local/tcpinfoeventsocket/tcpevents.sock',
+};
+
+local uuidannotatorServiceVolume = {
+  volumemount: {
+    mountPath: '/var/local/uuidannotatorsocket',
+    name: 'uuidannotatorsocket',
+    readOnly: false,
+  },
+  volume: {
+    emptyDir: {},
+    name: 'uuidannotatorsocket',
+  },
+  socketFilename: '/var/local/uuidannotatorsocket/annotator.sock',
 };
 
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
@@ -122,7 +135,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       ,
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
@@ -164,7 +177,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
-      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-tracetool=scamper-daemon-with-scamper-backup',
     ],
     env: if hostNetwork then [] else [
@@ -185,6 +198,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
+      uuidannotatorServiceVolume.volumemount,
       uuid.volumemount,
     ],
   }] +
@@ -204,7 +218,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
-      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
     ] + if hostNetwork then [
       '-interface=eth0',
     ] else [],
@@ -309,13 +323,13 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/annotation',
-      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.eventsocketFilename,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-maxmind.url=gs://downloader-' + PROJECT_ID + '/Maxmind/current/GeoLite2-City.tar.gz',
       '-routeview-v4.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv4/current/routeview.pfx2as.gz',
       '-routeview-v6.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv6/current/routeview.pfx2as.gz',
       '-siteinfo.url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v1/sites/annotations.json',
       '-hostname=$(MLAB_NODE_NAME)',
-
     ],
     env: [
       {
@@ -348,6 +362,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
+      uuidannotatorServiceVolume.volumemount,
       {
         mountPath: '/etc/credentials',
         name: 'uuid-annotator-credentials',
