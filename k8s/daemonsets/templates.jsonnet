@@ -436,6 +436,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
           uuid.volume,
           volume(name),
           tcpinfoServiceVolume.volume,
+          uuidannotatorServiceVolume.volume,
         ] + [
           volume(name + '/' + d) for d in datatypes
         ],
