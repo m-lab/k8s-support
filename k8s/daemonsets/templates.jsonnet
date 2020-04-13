@@ -107,7 +107,7 @@ local tcpinfoServiceVolume = {
     emptyDir: {},
     name: 'tcpinfoeventsocket',
   },
-  eventsocketFilename: '/var/local/tcpinfoeventsocket/tcpevents.sock',
+  socketFilename: '/var/local/tcpinfoeventsocket/tcpevents.sock',
 };
 
 local uuidannotatorServiceVolume = {
