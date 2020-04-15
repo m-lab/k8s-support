@@ -211,7 +211,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.5.4',
+    image: 'measurementlab/packet-headers:v0.6.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -219,6 +219,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-stream=false',
     ] + if hostNetwork then [
       '-interface=eth0',
     ] else [],
