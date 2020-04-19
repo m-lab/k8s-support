@@ -151,13 +151,16 @@ done
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo -i
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
-  echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
+  echo "expoit PATH=$PATH:/opt/bin" >> /root/.bashrc
+
+  # Adds /opt/bin to the end of the secure_path sudoers configuration.
+  sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
 
   # Install CNI plugins.
   mkdir -p /opt/cni/bin
@@ -199,7 +202,7 @@ EOF
 # and do that instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo -i
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -211,7 +214,7 @@ EOF
 # Ssh to the new node and use the newly created token to join the cluster.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo -i
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -232,7 +235,7 @@ EXTERNAL_IP=$(gcloud compute instances list \
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo -i
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -250,4 +253,3 @@ gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EO
     kubectl label nodes ${K8S_NODE_NAME} \${label} --overwrite=true
   done
 EOF
-
