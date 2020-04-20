@@ -178,6 +178,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename, 
       '-tracetool=scamper-daemon-with-scamper-backup',
     ],
     env: if hostNetwork then [] else [
