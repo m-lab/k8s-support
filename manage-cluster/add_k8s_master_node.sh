@@ -51,50 +51,50 @@ fi
 
 # Be sure that the node that is being added is already deleted from the k8s
 # cluster and etcd.
-#gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}" <<EOF
-#  set -eoux pipefail
-#  sudo -s
-#  # Run set again for use inside the sudo shell
-#  set -eoux pipefail
-#
-#  # etcdctl env variables need to be sourced.
-#  source /root/.bashrc
-#
-#  export PATH=\$PATH:/opt/bin
-#
-#  # Remove the node from the cluster.
-#  if kubectl get nodes | grep ${GCE_NAME}; then
-#    kubectl delete node ${GCE_NAME}
-#  fi
-#
-#  # See if the node is a member of the etcd cluster, and if so, delete it.
-#  delete_node=\$(etcdctl member list | grep ${GCE_NAME} || true)
-#  if [[ -n "\${delete_node}" ]]; then
-#    node_id=\$(echo "\${delete_node}" | cut -d, -f1)
-#    etcdctl member remove \$node_id
-#  fi
-#
-#  # Remove the node from the ClusterStatus key of kubeadm-config ConfigMap (in
-#  # kube-system namespace). If this isn't done, the new node will fail to join
-#  # because kubeadm will think the etcd cluster is down, even though it isn't.
-#  # It's basing it's decision on the etcd endpoints it *thinks* should exist
-#  # per the kubeadm-config, even though the live cluster doesn't have that node.
-#  # https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/util/etcd/etcd.go#L81
-#  #
-#  # Extract the ClusterStatus, removing the reference to the node that was
-#  # deleted. The sed statement matches the deleted node name, then deletes that
-#  # line and the 2 lines after it.
-#  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterStatus}' | \
-#      sed -e "/$GCE_NAME/,+2d" > ClusterStatus
-#  # Extract the ClusterConfiguration
-#  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterConfiguration}' \
-#      > ClusterConfiguration
-#  # Generate the new ConfigMap using the two files we just created, and replace the existing ConfigMap.
-#  kubectl create configmap kubeadm-config -n kube-system \
-#      --from-file ClusterConfiguration \
-#      --from-file ClusterStatus \
-#      -o yaml --dry-run | kubectl replace -f -
-#EOF
+gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}" <<EOF
+  set -eoux pipefail
+  sudo -s
+  # Run set again for use inside the sudo shell
+  set -eoux pipefail
+
+  # etcdctl env variables need to be sourced.
+  source /root/.bashrc
+
+  export PATH=\$PATH:/opt/bin
+
+  # Remove the node from the cluster.
+  if kubectl get nodes | grep ${GCE_NAME}; then
+    kubectl delete node ${GCE_NAME}
+  fi
+
+  # See if the node is a member of the etcd cluster, and if so, delete it.
+  delete_node=\$(etcdctl member list | grep ${GCE_NAME} || true)
+  if [[ -n "\${delete_node}" ]]; then
+    node_id=\$(echo "\${delete_node}" | cut -d, -f1)
+    etcdctl member remove \$node_id
+  fi
+
+  # Remove the node from the ClusterStatus key of kubeadm-config ConfigMap (in
+  # kube-system namespace). If this isn't done, the new node will fail to join
+  # because kubeadm will think the etcd cluster is down, even though it isn't.
+  # It's basing it's decision on the etcd endpoints it *thinks* should exist
+  # per the kubeadm-config, even though the live cluster doesn't have that node.
+  # https://github.com/kubernetes/kubernetes/blob/master/cmd/kubeadm/app/util/etcd/etcd.go#L81
+  #
+  # Extract the ClusterStatus, removing the reference to the node that was
+  # deleted. The sed statement matches the deleted node name, then deletes that
+  # line and the 2 lines after it.
+  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterStatus}' | \
+      sed -e "/$GCE_NAME/,+2d" > ClusterStatus
+  # Extract the ClusterConfiguration
+  kubectl get configmap kubeadm-config -n kube-system -o jsonpath='{.data.ClusterConfiguration}' \
+      > ClusterConfiguration
+  # Generate the new ConfigMap using the two files we just created, and replace the existing ConfigMap.
+  kubectl create configmap kubeadm-config -n kube-system \
+      --from-file ClusterConfiguration \
+      --from-file ClusterStatus \
+      -o yaml --dry-run | kubectl replace -f -
+EOF
 
 # If they exist, delete the node name from various loadbalancer group resources.
 delete_token_server_backend "${GCE_NAME}" "${GCE_ZONE}"
