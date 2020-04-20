@@ -80,7 +80,7 @@ kubectl apply -f secret-configs/
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
 # Sleep for a bit to give all pods a chance to start. Specifically, this
-# command will failing, causing the build to fail, if cert-manager-webhook is
+# command will fail, causing the build to fail, if cert-manager-webhook is
 # not up and running.
 sleep 60
 kubectl apply -f system.json
