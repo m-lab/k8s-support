@@ -1,22 +1,52 @@
 #cloud-config
 
-coreos:
-  units:
-    - name: docker.service
-      command: start
+packages:
+- docker.io
+- ebtables
+- iptables
+- socat
+- vim
+package_update: true
+package_upgrade: true
 
 write_files:
-  - path: /etc/ssh/sshd_config
-    permissions: 0600
-    owner: root:root
-    content: |
-      UsePrivilegeSeparation sandbox
-      Subsystem sftp internal-sftp
-      ClientAliveInterval 180
-      UseDNS no
-      UsePAM yes
-      PrintLastLog no # handled by PAM
-      PrintMotd no # handled by PAM
-      PasswordAuthentication no
-      ChallengeResponseAuthentication no
-      PermitRootLogin no
+- path: /etc/ssh/sshd_config
+  permissions: 0600
+  owner: root:root
+  content: |
+    UsePrivilegeSeparation sandbox
+    Subsystem sftp internal-sftp
+    ClientAliveInterval 180
+    UseDNS no
+    UsePAM yes
+    PrintLastLog no # handled by PAM
+    PrintMotd no # handled by PAM
+    PasswordAuthentication no
+    ChallengeResponseAuthentication no
+    PermitRootLogin no
+
+- path: /etc/modules
+  permissions: 0644
+  owner: root:root
+  content: |
+    br_netfilter
+
+- path: /etc/docker/daemon.json
+  permissions: 0644
+  owner: root:root
+  content: |
+    {
+      "exec-opts": [
+        "native.cgroupdriver=systemd"
+      ],
+      "log-driver": "json-file",
+      "log-opts": {
+        "max-size": "100m"
+      },
+      "storage-driver": "overlay2"
+    }
+
+runcmd:
+- echo 1 > /proc/sys/net/ipv4/ip_forward
+- systemctl enable docker
+- systemctl start docker
