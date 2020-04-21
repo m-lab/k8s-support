@@ -53,12 +53,10 @@ fi
 # cluster and etcd.
 gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MASTER_ZONE}" <<EOF
   set -eoux pipefail
-  sudo -s
+  sudo -i
+
   # Run set again for use inside the sudo shell
   set -eoux pipefail
-
-  # etcdctl env variables need to be sourced.
-  source /root/.bashrc
 
   export PATH=\$PATH:/opt/bin
 

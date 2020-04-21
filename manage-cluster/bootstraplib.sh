@@ -157,7 +157,7 @@ function create_master {
     set -euxo pipefail
 
     # Binaries will get installed in /opt/bin, put it in root's PATH
-    echo -e "\nexport PATH=\$PATH:/opt/bin" >> /root/.bashrc
+    echo -e "\nexport PATH=\$PATH:/opt/bin" >> /root/.profile
 
     # Adds /opt/bin to the end of the secure_path sudoers configuration.
     sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
@@ -186,6 +186,11 @@ function create_master {
     mkdir -p /etc/systemd/system/kubelet.service.d
     curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
         | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+    # Install etcdctl
+    curl --location https://github.com/etcd-io/etcd/releases/download/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz | tar -xz
+    cp etcd-${ETCDCTL_VERSION}-linux-amd64/etcdctl /opt/bin
+    rm -rf etcd-${ETCDCTL_VERSION}-linux-amd64
 
     # Enable and start the kubelet service
     systemctl enable --now kubelet.service
@@ -355,7 +360,7 @@ EOF
 	export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 	export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
 EOF2
-    ) >> /root/.bashrc"
+    ) >> /root/.profile"
 EOF
 
   # Annotate and label the master node.

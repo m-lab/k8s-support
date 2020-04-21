@@ -157,7 +157,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
-  echo "export PATH=\$PATH:/opt/bin" >> /root/.bashrc
+  echo "export PATH=\$PATH:/opt/bin" >> /root/.profile
 
   # Adds /opt/bin to the end of the secure_path sudoers configuration.
   sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
@@ -222,7 +222,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # Apparently at this point cloud-init is not done installing packages. Wait a
   # bit to be 100% all required packages are installed, else the kubeadm-join
   # command will fail preflight checks.
-  sleep 60
+  sleep 120
 
   ${JOIN_COMMAND} --v=4 --node-name ${K8S_NODE_NAME}
 EOF

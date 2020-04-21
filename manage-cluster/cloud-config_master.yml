@@ -117,7 +117,7 @@ write_files:
     #!/bin/bash
     REBOOT_DAY=$(cat /var/lib/mlab/etc/reboot-node-day)
     TODAY=$(date +%a)
-    source /root/.bashrc
+    source /root/.profile
     # Members are listed whether they are healthy or not.
     ETCD_ENDPOINTS=$(/usr/bin/etcdctl member list | awk '{print $5}' | paste -s -d, -)
     # Currently healthy endpoints are reported on stderr, along with true
