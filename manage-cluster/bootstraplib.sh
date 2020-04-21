@@ -156,8 +156,10 @@ function create_master {
     # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
 
-    # Binaries will get installed in /opt/bin, put it in root's PATH
+    # Binaries will get installed in /opt/bin, put it in root's PATH, for both
+    # interactive and non-interactve logins.
     echo -e "\nexport PATH=\$PATH:/opt/bin" >> /root/.profile
+    echo -e "\nexport PATH=\$PATH:/opt/bin" >> /root/.bashrc
 
     # Adds /opt/bin to the end of the secure_path sudoers configuration.
     sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
