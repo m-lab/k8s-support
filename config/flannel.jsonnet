@@ -10,6 +10,7 @@ local netConf = {
 // This is the CNI config needed for the virtual machines.
 local virtualCNIConf = {
   name: 'cbr0',
+  cniVersion: '0.2.0',
   plugins: [
     {
       type: 'flannel',
@@ -33,6 +34,7 @@ local virtualCNIConf = {
 // multus isn't working or a pod is not tagged with any network annotations.
 local physicalCNIConf = {
   name: 'multus-network',
+  cniVersion: '0.2.0',
   type: 'multus',
   kubeconfig: '/etc/kubernetes/kubelet.conf',
   multusNamespace: 'default',
