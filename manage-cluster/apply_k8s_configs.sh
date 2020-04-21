@@ -60,7 +60,7 @@ kubectl create namespace nginx-ingress || true
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
 # by default.
 # https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
-kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/${K8S_CERTMANAGER_VERSION}/cert-manager.crds.yaml
+kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/${K8S_CERTMANAGER_RESOURCES_VERSION}/deploy/manifests/00-crds.yaml
 ./linux-amd64/helm install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
