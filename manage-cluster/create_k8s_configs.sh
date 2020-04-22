@@ -8,13 +8,6 @@ PROJECT=${1:?Please specify the google cloud project: $USAGE}
 # Source the main configuration file.
 source ./k8s_deploy.conf
 
-# TODO(kinkade): Remove usage of BASE_DOMAIN and NAME_SEPARATOR once we have
-# fully migrated to v2 hostnames, at which point it won't be needed.
-#
-# The base domain to use. i.e., Does the base domain include the project.
-BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
-NAME_SEPARATOR_VAR="NAME_SEPARATOR_${PROJECT//-/_}"
-
 # Create a string representing region and zone variable names for this project.
 GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
 GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
@@ -42,9 +35,15 @@ for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); 
   speed=$(echo $r | cut -d: -f2)
   for node in mlab1 mlab2 mlab3 mlab4; do
     if [[ "${speed}" == "1g" ]]; then
-      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}${!NAME_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
+      # Create both v1 and v2 keys, to ease transition from v1 to v2 names.
+      # TODO(kinkade): Once the migration to v2 names is complete, remove the v1 key.
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}.${site}.measurement-lab.org"
+      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}-${site}.${PROJECT}.measurement-lab.org"
     elif [[ "${speed}" == "10g" ]]; then
-      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}${!NAME_SEPARATOR_VAR}${site}.${!BASE_DOMAIN_VAR}"
+      # Create both v1 and v2 keys, to ease transition from v1 to v2 names.
+      # TODO(kinkade): Once the migration to v2 names is complete, remove the v1 key.
+      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}.${site}.measurement-lab.org"
+      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}-${site}.${PROJECT}.measurement-lab.org"
     else
       echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
       exit 1
