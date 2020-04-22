@@ -151,7 +151,7 @@ function create_master {
   # k8s-token-server and gcp-loadbalancer-proxy.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
     set -euxo pipefail
-    sudo -i
+    sudo --login
 
     # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
@@ -205,7 +205,7 @@ EOF
   # event we need to recreate a k8s master.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<EOF
     set -euxo pipefail
-    sudo -i
+    sudo --login
 
     # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
@@ -253,7 +253,7 @@ EOF
   # Evaluate the kubeadm config template with a beastly sed statement.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
     set -euxo pipefail
-    sudo -i
+    sudo --login
 
     # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail
@@ -274,7 +274,7 @@ EOF
 
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
-      sudo -i
+      sudo --login
 
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
@@ -314,7 +314,7 @@ EOF
     # Join the new master node to the existing cluster.
     gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
       set -euxo pipefail
-      sudo -i
+      sudo --login
 
       # Bash options are not inherited by subshells. Reset them to exit on any error.
       set -euxo pipefail
@@ -349,7 +349,7 @@ EOF
   # should be deleted.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
-    sudo -i
+    sudo --login
 
     mkdir -p /root/.kube
     cp -i /etc/kubernetes/admin.conf /root/.kube/config
@@ -368,7 +368,7 @@ EOF
   # Annotate and label the master node.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<-EOF
     set -euxo pipefail
-    sudo -i
+    sudo --login
 
     # Bash options are not inherited by subshells. Reset them to exit on any error.
     set -euxo pipefail

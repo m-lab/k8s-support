@@ -151,7 +151,7 @@ done
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -i
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -202,7 +202,7 @@ EOF
 # and do that instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -i
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -214,7 +214,7 @@ EOF
 # Ssh to the new node and use the newly created token to join the cluster.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -i
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -239,7 +239,7 @@ EXTERNAL_IP=$(gcloud compute instances list \
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -i
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
