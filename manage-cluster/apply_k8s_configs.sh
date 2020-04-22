@@ -48,24 +48,24 @@ kubectl create namespace cert-manager --dry-run -o json | kubectl apply -f -
 kubectl create namespace nginx-ingress --dry-run -o json | kubectl apply -f -
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
-./linux-amd64/helm install nginx-ingress \
+./linux-amd64/helm upgrade --install nginx-ingress \
   --namespace nginx-ingress \
   --set rbac.create=true \
   --set controller.nodeSelector.run=prometheus-server \
   --set defaultBackend.nodeSelector.run=prometheus-server \
   --set controller.service.enabled=false \
   --set controller.hostNetwork=true \
-  stable/nginx-ingress || true
+  stable/nginx-ingress
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
 # by default.
 # https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/${K8S_CERTMANAGER_VERSION}/cert-manager.crds.yaml
-./linux-amd64/helm install cert-manager \
+./linux-amd64/helm upgrade --install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
   --values ../config/cert-manager/helm-values-overrides.yaml \
-  jetstack/cert-manager || true
+  jetstack/cert-manager
 
 # Apply the configuration
 
