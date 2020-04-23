@@ -47,6 +47,5 @@ write_files:
     }
 
 runcmd:
-- echo 1 > /proc/sys/net/ipv4/ip_forward
 - systemctl enable docker
 - systemctl start docker
