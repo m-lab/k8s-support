@@ -157,7 +157,10 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
+  # Write it to .profile and .bashrc so that it get loaded on both interactive
+  # and non-interactive session.
   echo "export PATH=\$PATH:/opt/bin" >> /root/.profile
+  echo "export PATH=\$PATH:/opt/bin" >> /root/.bashrc
 
   # Adds /opt/bin to the end of the secure_path sudoers configuration.
   sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
@@ -219,10 +222,12 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
-  # Apparently at this point cloud-init is not done installing packages. Wait a
-  # bit to be 100% all required packages are installed, else the kubeadm-join
-  # command will fail preflight checks.
-  sleep 120
+  # It is possible that at this point cloud-init is not done configuring the
+  # system. Wati until it is done before attempting to join the cluster.
+  while [[ ! -f /var/lib/cloud/instance/boot-finished ]]; do
+    echo "Waiting for cloud-init to finish before joining the cluster."
+    sleep 10
+  done
 
   ${JOIN_COMMAND} --v=4 --node-name ${K8S_NODE_NAME}
 EOF
