@@ -15,14 +15,14 @@ PROJECTS="mlab-sandbox mlab-staging mlab-oti"
 TMP_DIR=$(mktemp --directory)
 
 for project in ${PROJECTS}; do
-  gsutil cp "gs://k8s-support-${project}/admin.conf" "${TMP_DIR}/${project}_admin.confg" 
-
   kubeconfig="${TMP_DIR}/${project}_admin.confg"
   ca_cert="${TMP_DIR}/${project}_ca.cert"
   user_cert="${TMP_DIR}/${project}_user.cert"
   user_key="${TMP_DIR}/${project}_ca.key"
   api_server=$(kubectl config view --kubeconfig ${kubeconfig} --raw --output \
       jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.server}')
+
+  gsutil cp "gs://k8s-support-${project}/admin.conf" ${kubeconfig}
 
   kubectl config view --kubeconfig ${kubeconfig} --raw --output \
       jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.certificate-authority-data}' \
