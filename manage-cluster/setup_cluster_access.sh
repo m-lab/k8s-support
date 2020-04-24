@@ -5,27 +5,52 @@
 # an operator's local machine (or any machine, really), each cluster can be
 # accessed like the following examples.
 #
-# NOTE: You must source your .bashrc file after running this script.
-#
-# $ kubectl-mlab-sandbox get pods -o wide
-# $ kubectl-mlab-staging get nodes
-# $ kubectl-mlab-oti edit ds ndt
+# $ kubectl --context mlab-sandbox get pods -o wide
+# $ kubectl --context mlab-staging get nodes
+# $ kubectl --context mlab-oti edit ds ndt
+
+set -euxo pipefail
 
 PROJECTS="mlab-sandbox mlab-staging mlab-oti"
-KUBE_DIR="${HOME}/.kube"
-
-if ! [[ -d $KUBE_DIR ]]; then
-  mkdir "${KUBE_DIR}"
-fi
+TMP_DIR=$(mktemp --directory)
 
 for project in ${PROJECTS}; do
-  gsutil cp "gs://k8s-support-${project}/admin.conf" "${KUBE_DIR}/kubeconfig.${project}" 
-  cat << EOF >> "${HOME}/.bashrc"
+  gsutil cp "gs://k8s-support-${project}/admin.conf" "${TMP_DIR}/${project}_admin.confg" 
 
-function kubectl-${project} {
-  kubectl --kubeconfig "${KUBE_DIR}/kubeconfig.${project}" \$@
-}
+  kubeconfig="${TMP_DIR}/${project}_admin.confg"
+  ca_cert="${TMP_DIR}/${project}_ca.cert"
+  user_cert="${TMP_DIR}/${project}_user.cert"
+  user_key="${TMP_DIR}/${project}_ca.key"
+  api_server=$(kubectl config view --kubeconfig ${kubeconfig} --raw --output \
+      jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.server}')
 
-EOF
+  kubectl config view --kubeconfig ${kubeconfig} --raw --output \
+      jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.certificate-authority-data}' \
+      | base64 --decode > ${ca_cert}
+
+  kubectl config view --kubeconfig ${kubeconfig} --raw --output \
+      jsonpath='{.users[?(@.name == "kubernetes-admin")].user.client-certificate-data}' \
+      | base64 --decode > ${user_cert}
+
+  kubectl config view --kubeconfig ${kubeconfig} --raw --output \
+      jsonpath='{.users[?(@.name == "kubernetes-admin")].user.client-key-data}' \
+      | base64 --decode > ${user_key}
+
+  kubectl config set-cluster "${project}-cluster" \
+      --server ${api_server} \
+      --certificate-authority ${ca_cert} \
+      --embed-certs=true
+
+  kubectl config set-credentials "${project}-admin" \
+      --client-certificate ${user_cert} \
+      --client-key ${user_key} \
+      --embed-certs=true
+
+  kubectl config set-context ${project} \
+      --cluster "${project}-cluster" \
+      --user "${project}-admin"
+  
 done
   
+rm -rf ${TMP_DIR}
+
