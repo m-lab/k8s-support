@@ -27,7 +27,7 @@ local exp = import '../templates.jsonnet';
         containers: [
           {
             name: 'utility-support',
-            image: 'measurementlab/utility-support:v2.0.8',
+            image: 'measurementlab/utility-support:v2.0.10',
             env: [
               {
                 name: 'HOSTNAME',

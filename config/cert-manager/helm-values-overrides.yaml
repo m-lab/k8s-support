@@ -9,6 +9,9 @@ ingressShim:
 nodeSelector:
   "node-role.kubernetes.io/master": ""
 webhook:
-  enabled: false
+  nodeSelector:
+    "node-role.kubernetes.io/master": ""
+  tolerations:
+  - operator: Exists
 tolerations:
 - operator: Exists

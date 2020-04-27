@@ -44,28 +44,28 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 ./linux-amd64/helm repo update
 
 # Helm 3 does not automatically create namespaces anymore.
-kubectl create namespace cert-manager || true
-kubectl create namespace nginx-ingress || true
+kubectl create namespace cert-manager --dry-run -o json | kubectl apply -f -
+kubectl create namespace nginx-ingress --dry-run -o json | kubectl apply -f -
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
-./linux-amd64/helm install nginx-ingress \
+./linux-amd64/helm upgrade --install nginx-ingress \
   --namespace nginx-ingress \
   --set rbac.create=true \
   --set controller.nodeSelector.run=prometheus-server \
   --set defaultBackend.nodeSelector.run=prometheus-server \
   --set controller.service.enabled=false \
   --set controller.hostNetwork=true \
-  stable/nginx-ingress || true
+  stable/nginx-ingress
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
 # by default.
 # https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
-kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/${K8S_CERTMANAGER_RESOURCES_VERSION}/deploy/manifests/00-crds.yaml
-./linux-amd64/helm install cert-manager \
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/${K8S_CERTMANAGER_VERSION}/cert-manager.crds.yaml
+./linux-amd64/helm upgrade --install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
   --values ../config/cert-manager/helm-values-overrides.yaml \
-  jetstack/cert-manager || true
+  jetstack/cert-manager
 
 # Apply the configuration
 
@@ -79,4 +79,8 @@ kubectl apply -f secret-configs/
 # bug in kubectl, and so we call it three times as a workaround for the bug.
 kubectl apply -f system.json || true
 kubectl apply -f system.json || true
+# Sleep for a bit to give all pods a chance to start. Specifically, this
+# command will fail, causing the build to fail, if cert-manager-webhook is
+# not up and running.
+sleep 60
 kubectl apply -f system.json
