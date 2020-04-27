@@ -215,8 +215,8 @@ gcloud compute ssh "${PROM_BASE_NAME}" "${GCE_ARGS[@]}" <<EOF
 		[Service]
 		Type=oneshot
 		RemainAfterExit=yes
-		ExecStart=/usr/bin/mount /dev/sdb ${DISK_MOUNT_POINT}
-		ExecStop=/usr/bin/umount ${DISK_NAME}
+		ExecStart=/bin/mount /dev/sdb ${DISK_MOUNT_POINT}
+		ExecStop=/bin/umount ${DISK_NAME}
 		[Install]
 		WantedBy = multi-user.target
 EOF2

@@ -151,13 +151,19 @@ done
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
   # Binaries will get installed in /opt/bin, put it in root's PATH
-  echo "export PATH=$PATH:/opt/bin" >> /root/.bashrc
+  # Write it to .profile and .bashrc so that it get loaded on both interactive
+  # and non-interactive session.
+  echo "export PATH=\$PATH:/opt/bin" >> /root/.profile
+  echo "export PATH=\$PATH:/opt/bin" >> /root/.bashrc
+
+  # Adds /opt/bin to the end of the secure_path sudoers configuration.
+  sed -i -e '/secure_path/ s|"$|:/opt/bin"|' /etc/sudoers
 
   # Install CNI plugins.
   mkdir -p /opt/cni/bin
@@ -199,7 +205,7 @@ EOF
 # and do that instead of the below.
 JOIN_COMMAND=$(tail -n1 <(gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -211,13 +217,19 @@ EOF
 # Ssh to the new node and use the newly created token to join the cluster.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
+  # It is possible that at this point cloud-init is not done configuring the
+  # system. Wati until it is done before attempting to join the cluster.
+  while [[ ! -f /var/lib/cloud/instance/boot-finished ]]; do
+    echo "Waiting for cloud-init to finish before joining the cluster."
+    sleep 10
+  done
 
-  ${JOIN_COMMAND} --node-name ${K8S_NODE_NAME}
+  ${JOIN_COMMAND} --v=4 --node-name ${K8S_NODE_NAME}
 EOF
 
 # This command takes long enough that the race condition with node registration
@@ -232,7 +244,7 @@ EXTERNAL_IP=$(gcloud compute instances list \
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
   set -euxo pipefail
-  sudo -s
+  sudo --login
 
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
@@ -250,4 +262,3 @@ gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EO
     kubectl label nodes ${K8S_NODE_NAME} \${label} --overwrite=true
   done
 EOF
-

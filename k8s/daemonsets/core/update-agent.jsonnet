@@ -51,7 +51,7 @@
               },
               {
                 mountPath: '/etc/coreos',
-                name: 'etc-coreos',
+                name: 'usr-share-coreos',
               },
               {
                 mountPath: '/usr/share/coreos',
@@ -84,19 +84,13 @@
           },
           {
             hostPath: {
-              path: '/etc/coreos',
-            },
-            name: 'etc-coreos',
-          },
-          {
-            hostPath: {
               path: '/usr/share/coreos',
             },
             name: 'usr-share-coreos',
           },
           {
             hostPath: {
-              path: '/etc/os-release',
+              path: '/usr/share/coreos/os-release',
             },
             name: 'etc-os-release',
           },
