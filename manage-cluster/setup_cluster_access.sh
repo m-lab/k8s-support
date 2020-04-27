@@ -3,11 +3,21 @@
 # A small script to assist operators in setting up access to the platform
 # cluster in each project from their local machine. Once this script is run on
 # an operator's local machine (or any machine, really), each cluster can be
-# accessed like the following examples.
+# accessed on an adhoc basis with the following examples.
 #
 # $ kubectl --context mlab-sandbox get pods -o wide
 # $ kubectl --context mlab-staging get nodes
 # $ kubectl --context mlab-oti edit ds ndt
+#
+# Or you can set the current context such that all kubectl commands will use
+# that context by default, obviating the need for the --context flag. NOTE:
+# when using this method it is not obvious which cluster you are operating
+# on, so use caution when making destructive or service-impacting changes.
+#
+# $ kubectl config get-contexts
+# [...]
+# $ kubectl config use-context mlab-staging
+# $ kubectl get nodes # Lists mlab-staging nodes.
 
 set -euxo pipefail
 
