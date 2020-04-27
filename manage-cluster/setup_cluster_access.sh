@@ -29,10 +29,11 @@ for project in ${PROJECTS}; do
   ca_cert="${TMP_DIR}/${project}_ca.cert"
   user_cert="${TMP_DIR}/${project}_user.cert"
   user_key="${TMP_DIR}/${project}_ca.key"
-  api_server=$(kubectl config view --kubeconfig ${kubeconfig} --raw --output \
-      jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.server}')
 
   gsutil cp "gs://k8s-support-${project}/admin.conf" ${kubeconfig}
+
+  api_server=$(kubectl config view --kubeconfig ${kubeconfig} --raw --output \
+      jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.server}')
 
   kubectl config view --kubeconfig ${kubeconfig} --raw --output \
       jsonpath='{.clusters[?(@.name == "kubernetes")].cluster.certificate-authority-data}' \
