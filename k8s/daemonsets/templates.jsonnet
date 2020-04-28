@@ -1,4 +1,4 @@
-local ndtVersion = 'v0.15.0';
+local ndtVersion = 'v0.16.0';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 local uuid = {

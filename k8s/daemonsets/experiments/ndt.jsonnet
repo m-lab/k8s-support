@@ -27,6 +27,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-txcontroller.device=net1',
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
+              '-token.machine=$(NODE_NAME)',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
             ],
             env: [
               {
@@ -55,6 +57,11 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               {
                 mountPath: '/etc/' + std.extVar('MAX_RATES_CONFIGMAP'),
                 name: std.extVar('MAX_RATES_CONFIGMAP'),
+                readOnly: true,
+              },
+              {
+                mountPath: '/verify',
+                name: 'locate-verify-keys',
                 readOnly: true,
               },
               exp.uuid.volumemount,
@@ -101,6 +108,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             name: std.extVar('MAX_RATES_CONFIGMAP'),
             configMap: {
               name: std.extVar('MAX_RATES_CONFIGMAP'),
+            },
+          },
+          {
+            name: 'locate-verify-keys',
+            secret: {
+              secretName: 'locate-verify-keys',
             },
           },
         ],

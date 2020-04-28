@@ -82,6 +82,7 @@ mkdir -p secrets/prometheus-etcd-tls
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-etcd-tls/client.* secrets/prometheus-etcd-tls/
 gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.community
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
+gsutil cp -R gs://${!GCS_BUCKET_K8S}/locate secrets/.
 
 # Convert secret data into configs.
 kubectl create secret generic uuid-annotator-credentials --from-file secrets/uuid-annotator.json \
@@ -104,6 +105,8 @@ kubectl create secret generic snmp-community --from-file secrets/snmp.community 
 # NB: The file containing the user/password pair must be called 'auth'.
 kubectl create secret generic prometheus-htpasswd --from-file secrets/auth \
     --dry-run -o json > secret-configs/prometheus-htpasswd.json
+kubectl create secret generic locate-verify-keys --from-file secrets/locate/ \
+    --dry-run -o json > secret-configs/locate-verify-keys.json
 
 # Download the platform cluster CA cert.
 gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
@@ -117,8 +120,3 @@ ca_cert_hash=$(openssl x509 -pubkey -in ./ca.crt | \
 # Evaluate the setup_k8s.sh.template using the generated hash of the CA cert.
 sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
     > ./setup_k8s.sh
-
-# Upload the evaluated template to GCS.
-cache_control="Cache-Control:private, max-age=0, no-transform"
-gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
-gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_ubuntu/setup_k8s.sh
