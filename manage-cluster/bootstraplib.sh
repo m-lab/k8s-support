@@ -362,7 +362,7 @@ EOF
 	export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 	export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
 EOF2
-    ) >> /root/.profile"
+    ) | tee -a /root/.profile /root/.bashrc"
 EOF
 
   # Annotate and label the master node.
