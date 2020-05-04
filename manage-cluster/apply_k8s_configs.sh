@@ -55,11 +55,7 @@ kubectl create namespace nginx-ingress --dry-run -o json | kubectl apply -f -
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install nginx-ingress \
   --namespace nginx-ingress \
-  --set rbac.create=true \
-  --set controller.nodeSelector.run=prometheus-server \
-  --set defaultBackend.nodeSelector.run=prometheus-server \
-  --set controller.service.enabled=false \
-  --set controller.hostNetwork=true \
+  --values ../config/nginx-ingress/helm-values-overrides.yaml \
   stable/nginx-ingress
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer

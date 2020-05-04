@@ -8,10 +8,12 @@ ingressShim:
   defaultIssuerKind: ClusterIssuer
 nodeSelector:
   "node-role.kubernetes.io/master": ""
+strategy:
+  type: Recreate
+tolerations:
+- operator: Exists
 webhook:
   nodeSelector:
     "node-role.kubernetes.io/master": ""
   tolerations:
   - operator: Exists
-tolerations:
-- operator: Exists
