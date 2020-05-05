@@ -1,0 +1,14 @@
+controller:
+  hostNetwork: true
+  nodeSelector:
+    run: prometheus-server
+  service:
+    enabled: false
+  updateStrategy:
+    type: Recreate
+defaultBackend:
+  nodeSelector:
+    run: prometheus-server
+rbac:
+  create: true
+
