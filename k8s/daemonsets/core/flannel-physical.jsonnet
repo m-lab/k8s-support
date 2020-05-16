@@ -60,7 +60,7 @@
               },
             ],
             image: 'quay.io/coreos/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
-            name: 'flannel-physical',
+            name: 'flannel',
             resources: {
               limits: {
                 cpu: '100m',
