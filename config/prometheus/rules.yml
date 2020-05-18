@@ -171,8 +171,14 @@ groups:
         [1h]) * 8
       )
 
-## Pusher Daily Volume metrics
-#
-# This rule optimizes the alert query used for PusherDailyDataVolumeTooLow.
+  ## Pusher Daily Volume metrics
+  #
+  # This rule optimizes the alert query used for PusherDailyDataVolumeTooLow.
   - record: datatype:pusher_bytes_per_tarfile:increase24h
     expr: sum by(datatype) (increase(pusher_bytes_per_tarfile_sum[1d]))
+
+  ## Ops: Tactical & SRE Overview Dashboard.
+  #
+  # This rule speeds up the probably OOM query used by the SRE overview dashboard.
+  - record: err:dmesg_logs:increase_24h
+    expr: increase(dmesg_logs{priority="err"}[24h]) > 0
