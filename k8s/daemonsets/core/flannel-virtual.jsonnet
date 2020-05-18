@@ -15,7 +15,7 @@
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'kube-flannel-ds-virtual',
+    name: 'flannel-virtual',
     namespace: 'kube-system',
   },
   spec: {
@@ -63,7 +63,7 @@
               },
             ],
             image: 'quay.io/coreos/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
-            name: 'kube-flannel',
+            name: 'flannel',
             resources: {
               limits: {
                 cpu: '100m',
