@@ -3,7 +3,7 @@ local PROJECT_ID = std.extVar('PROJECT_ID');
 
 local uuid = {
   initContainer: {
-    // Write out the UUID prefix to a well-known location.
+    // Write out the UUID prefix to a well-known location. 
     // more on this, see DESIGN.md
     // https://github.com/m-lab/uuid/
     name: 'set-up-uuid-prefix-file',
