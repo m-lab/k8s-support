@@ -28,16 +28,6 @@ if ! [[ "${CLOUD_SITE}" =~ $SITE_REGEX ]]; then
   exit 1
 fi
 
-# TODO(kinkade): Remove usage of BASE_DOMAIN and NAME_SEPARATOR once we have
-# fully migrated to v2 hostnames, at which point it won't be needed.
-#
-# The base domain to use. e.g., mlab-staging.measurement-lab.org
-BASE_DOMAIN_VAR="BASE_DOMAIN_${PROJECT//-/_}"
-BASE_DOMAIN=${!BASE_DOMAIN_VAR}
-
-# Should the host part of names be separated by a dash or dot. e.g., mlab1-den05
-NAME_SEPARATOR_VAR="NAME_SEPARATOR_${PROJECT//-/_}"
-
 # Determine the region based on $CLOUD_ZONE.
 GCE_REGION="${CLOUD_ZONE%-*}"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
@@ -50,8 +40,8 @@ else
   MLAB_MACHINE="mlab1"
 fi
 
-GCE_NAME="${MLAB_MACHINE}-${CLOUD_SITE}-${BASE_DOMAIN//./-}"
-K8S_NAME="${MLAB_MACHINE}${!NAME_SEPARATOR_VAR}${CLOUD_SITE}.${BASE_DOMAIN}"
+GCE_NAME="${MLAB_MACHINE}-${CLOUD_SITE}-${PROJECT}-measurement-lab-org"
+K8S_NAME="${MLAB_MACHINE}-${CLOUD_SITE}.${PROJECT}.measurement-lab.org"
 
 # Create the static cloud public IP, if it doesn't already exist.
 CURRENT_CLOUD_IP=$(gcloud compute addresses list \
