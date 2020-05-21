@@ -168,7 +168,9 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.6.0',
+    image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
+         then 'measurementlab/traceroute-caller:v0.7.0'
+         else  'measurementlab/traceroute-caller:v0.6.0'),
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
