@@ -5,6 +5,11 @@ local expName = 'neubot';
 exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
+      metadata+: {
+        annotations+: {
+          'prometheus.io/scrape': 'false',
+        },
+      },
       spec+: {
         containers+: [
             {
