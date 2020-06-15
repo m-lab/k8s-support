@@ -24,7 +24,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
-              '-txcontroller.device=net1',
+              # '-txcontroller.device=net1', -- TODO: re-enable after load testing.
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
