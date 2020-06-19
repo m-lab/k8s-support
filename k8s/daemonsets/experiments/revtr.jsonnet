@@ -12,12 +12,12 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', ['traff
                             '/root.crt',
                             '/plvp.config',
                         ],
+			volumeMounts: [
+			  exp.VolumeMount('revtr/traffic'),
+			],
                     }
                 ],
                 [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
-		volumeMounts: [
-		  exp.VolumeMount('revtr/traffic'),
-		],
             }
         }
     }
