@@ -57,7 +57,7 @@ local discoConfig = import '../../../config/disco.jsonnet';
             name: expName,
             ports: [
               {
-                containerPorts: 9990,
+                containerPort: 9990,
               },
             ],
             volumeMounts: [
