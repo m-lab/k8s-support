@@ -37,6 +37,11 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
             ],
+            command: [
+              // Calcuates the local switch FQDN for the -target flag.
+              "/bin/sh", "-c",
+              "t=s1-${HOSTNAME:6:5}.measurement-lab.org; /disco -target=$t $@", "--",
+            ],
             env: [
               {
                 name: 'HOSTNAME',
