@@ -34,7 +34,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
             args: [
               '-datadir=/var/spool/' + expName,
               '-write-interval=5m',
-              '-prometheusx.listen-address=$(PRIVATE_IP):8888',
+              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
             ],
             command: [
@@ -73,7 +73,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
             name: expName,
             ports: [
               {
-                containerPort: 8888,
+                containerPort: 9990,
               },
             ],
             volumeMounts: [
@@ -85,12 +85,11 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
               },
             ],
           }] + std.flattenArrays([
-            //exp.Pusher(expName, 9988, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
+            exp.Pusher(expName, 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
         },
-        hostNetwork: true,
         volumes: [
           {
             name: 'pusher-credentials',
