@@ -1,5 +1,6 @@
 local exp = import '../templates.jsonnet';
 local expName = 'disco';
+local discoConfig = import '../../../config/disco.jsonnet';
 
 {
   apiVersion: 'apps/v1',
@@ -54,6 +55,11 @@ local expName = 'disco';
             ],
             image: 'measurementlab/' + expName + ':v0.1.0',
             name: expName,
+            ports: [
+              {
+                containerPorts: 9990,
+              },
+            ],
             volumeMounts: [
               exp.VolumeMount(expName),
               {
@@ -85,7 +91,7 @@ local expName = 'disco';
           {
             name: expName + '-config',
             configMap: {
-              name: expName + '-config',
+              name: discoConfig.metadata.name
             },
           },
         ],
