@@ -1,6 +1,7 @@
 local exp = import '../templates.jsonnet';
 local expName = 'disco';
-local discoConfig = import '../../../config/disco.jsonnet';
+local config = import '../../../config/disco.jsonnet';
+local version = 'v0.1.1'
 
 // Only deploy this to mlab-sandbox for now.
 if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
@@ -55,7 +56,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
                 },
               },
             ],
-            image: 'measurementlab/' + expName + ':v0.1.0',
+            image: 'measurementlab/' + expName + ':' + version
             name: expName,
             ports: [
               {
@@ -93,7 +94,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
           {
             name: expName + '-config',
             configMap: {
-              name: discoConfig.metadata.name
+              name: config.metadata.name
             },
           },
         ],
