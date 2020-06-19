@@ -34,7 +34,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
             args: [
               '-datadir=/var/spool/' + expName,
               '-write-interval=5m',
-              '-prometheusx.listen-address=127.0.0.1:9990',
+              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
             ],
             command: [
@@ -60,6 +60,14 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
                   },
                 },
               },
+              {
+                "name": "PRIVATE_IP",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "status.podIP"
+                  },
+                },
+              },
             ],
             image: 'measurementlab/' + expName + ':' + version,
             name: expName,
@@ -77,7 +85,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher(expName, 9988, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
+            //exp.Pusher(expName, 9988, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
