@@ -16,7 +16,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', ['traff
                 ],
                 [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
 		volumeMounts: [
-		  exp.VolumeMount(expName + '/traffic')
+		  exp.VolumeMount('revtr/traffic'),
 		],
             }
         }
