@@ -77,7 +77,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher(expName, 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
+            exp.Pusher(expName, 9988, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
