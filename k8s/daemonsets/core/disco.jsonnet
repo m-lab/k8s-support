@@ -82,6 +82,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
         nodeSelector: {
           'mlab/type': 'physical',
         },
+        hostNetwork: true,
         volumes: [
           {
             name: 'pusher-credentials',
