@@ -56,7 +56,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
                 },
               },
             ],
-            image: 'measurementlab/' + expName + ':' + version
+            image: 'measurementlab/' + expName + ':' + version,
             name: expName,
             ports: [
               {
