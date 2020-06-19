@@ -34,7 +34,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
             args: [
               '-datadir=/var/spool/' + expName,
               '-write-interval=5m',
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
+              '-prometheusx.listen-address=$(PRIVATE_IP):8888',
               '-metrics=/etc/' + expName + '/metrics.yaml',
             ],
             command: [
@@ -73,7 +73,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
             name: expName,
             ports: [
               {
-                containerPort: 9990,
+                containerPort: 8888,
               },
             ],
             volumeMounts: [
