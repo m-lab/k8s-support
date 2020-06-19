@@ -2,6 +2,8 @@ local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local discoConfig = import '../../../config/disco.jsonnet';
 
+// Only deploy this to mlab-sandbox for now.
+if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
