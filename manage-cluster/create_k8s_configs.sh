@@ -62,7 +62,6 @@ jsonnet \
    --ext-str K8S_CLUSTER_CIDR=${K8S_CLUSTER_CIDR} \
    --ext-str K8S_FLANNEL_VERSION=${K8S_FLANNEL_VERSION} \
    --ext-str PROJECT_ID=${PROJECT} \
-   --ext-str PROJECT_ID=${PROJECT} \
    --ext-str DEPLOYMENTSTAMP=$(date +%s) \
    --ext-str MAX_RATES_CONFIGMAP=${MAX_RATES_CONFIGMAP} \
    ../system.jsonnet > system.json
