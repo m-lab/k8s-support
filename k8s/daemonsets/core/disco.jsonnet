@@ -1,7 +1,7 @@
 local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
-local version = 'v0.1.2';
+local version = 'v0.1.3';
 
 // Only deploy this to mlab-sandbox for now.
 if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
@@ -36,11 +36,6 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
               '-write-interval=5m',
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
-            ],
-            command: [
-              // Calcuates the local switch FQDN for the -target flag.
-              "/bin/sh", "-c",
-              "t=s1-${HOSTNAME:6:5}.measurement-lab.org; /disco -target=$t $@", "--",
             ],
             env: [
               {
@@ -90,6 +85,7 @@ if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
         nodeSelector: {
           'mlab/type': 'physical',
         },
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
         volumes: [
           {
             name: 'pusher-credentials',
