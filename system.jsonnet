@@ -13,7 +13,12 @@
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
-    import 'k8s/daemonsets/core/disco.jsonnet',
+  ] + (
+    // Don't deploy disco to prod or staging yet.
+    if std.extVar('PROJECT_ID') == 'mlab-sandbox'
+    then [import 'k8s/daemonsets/core/disco.jsonnet']
+    else []
+  ) + [
     import 'k8s/daemonsets/core/dmesg-exporter.jsonnet',
     import 'k8s/daemonsets/core/flannel-virtual.jsonnet',
     import 'k8s/daemonsets/core/flannel-physical.jsonnet',

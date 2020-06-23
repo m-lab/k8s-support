@@ -3,8 +3,6 @@ local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
 local version = 'v0.1.4';
 
-// Only deploy this to mlab-sandbox for now.
-if std.extVar('PROJECT_ID') != 'mlab-sandbox' then {} else
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
