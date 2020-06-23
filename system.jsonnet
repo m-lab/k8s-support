@@ -3,6 +3,7 @@
   apiVersion: 'v1',
   items: [
     // Configmaps
+    import 'config/disco.jsonnet',
     import 'config/flannel.jsonnet',
     import 'config/fluentd.jsonnet',
     import 'config/nodeinfo.jsonnet',
@@ -12,6 +13,7 @@
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
+    import 'k8s/daemonsets/core/disco.jsonnet',
     import 'k8s/daemonsets/core/dmesg-exporter.jsonnet',
     import 'k8s/daemonsets/core/flannel-virtual.jsonnet',
     import 'k8s/daemonsets/core/flannel-physical.jsonnet',
