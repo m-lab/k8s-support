@@ -22,7 +22,7 @@
     spec: {
       containers: [
         {
-          image: 'stakater/reloader:v0.0.60'
+          image: 'stakater/reloader:v0.0.60',
           imagePullPolicy: 'IfNotPresent',
           name: 'reloader',
           serviceAccountName: 'reloader',
