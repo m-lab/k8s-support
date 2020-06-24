@@ -24,7 +24,7 @@
       {
         apiGroups: [
           'apps',
-        ]
+        ],
         resources: [
           'daemonsets',
           'deployments',
