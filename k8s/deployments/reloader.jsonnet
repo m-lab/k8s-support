@@ -3,7 +3,7 @@
   kind: 'Deployment',
   metadata: {
     name: 'reloader',
-  }
+  },
   spec: {
     replicas: 1,
     revisionHistoryLimit: 2,
@@ -28,7 +28,7 @@
           serviceAccountName: 'reloader',
         }
       ],
-    }
+    },
   },
 }
 
