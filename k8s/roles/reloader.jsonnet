@@ -3,8 +3,7 @@
     apiVersion: 'rbac.authorization.k8s.io/v1beta1',
     kind: 'ClusterRole',
     metadata: {
-      labels:
-        name: 'reloader',
+      name: 'reloader',
       namespace: 'default',
     },
     rules: [
@@ -20,7 +19,7 @@
           'get',
           'list',
           'watch',
-        ]
+        ],
       },
       {
         apiGroups: [
@@ -73,7 +72,7 @@
         name: 'reloader',
         namespace: 'default',
       },
-    ]
+    ],
   },
   {
     apiVersion: 'v1',
