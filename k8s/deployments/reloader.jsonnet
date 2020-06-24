@@ -26,7 +26,7 @@
           imagePullPolicy: 'IfNotPresent',
           name: 'reloader',
           serviceAccountName: 'reloader',
-        }
+        },
       ],
     },
   },
