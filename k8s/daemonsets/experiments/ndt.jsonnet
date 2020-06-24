@@ -7,7 +7,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
     template+: {
       metadata+: {
         annotations+: {
-          secret.reloader.stakater.com/reload: "measurement-lab-org-tls",
+          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
       },
       spec+: {
