@@ -40,7 +40,7 @@
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
     import 'k8s/deployments/prometheus.jsonnet',
-    importstr 'k8s/deployments/reloader.yaml',
+    import 'k8s/deployments/reloader.jsonnet',
     import 'k8s/deployments/update-operator.jsonnet',
     // Namespaces
     import 'k8s/namespaces/reboot-operator.jsonnet',
@@ -63,5 +63,6 @@
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
     import 'k8s/roles/rbac-prometheus.jsonnet',
+    import 'k8s/roles/reloader.jsonnet',
   ]),
 }
