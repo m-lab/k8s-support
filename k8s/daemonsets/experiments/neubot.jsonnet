@@ -5,6 +5,11 @@ local expName = 'neubot';
 exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
+      metadata+: {
+        annotations+: {
+          secret.reloader.stakater.com/reload: "measurement-lab-org-tls",
+        },
+      },
       spec+: {
         containers+: [
             {
