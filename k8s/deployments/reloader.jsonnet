@@ -12,22 +12,22 @@
         workload: 'reloader',
       },
     },
-  },
-  template: {
-    metadata: {
-      labels: {
-        workload: 'reloader',
-      },
-    },
-    spec: {
-      containers: [
-        {
-          image: 'stakater/reloader:v0.0.60',
-          imagePullPolicy: 'IfNotPresent',
-          name: 'reloader',
-          serviceAccountName: 'reloader',
+    template: {
+      metadata: {
+        labels: {
+          workload: 'reloader',
         },
-      ],
+      },
+      spec: {
+        containers: [
+          {
+            image: 'stakater/reloader:v0.0.60',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'reloader',
+          },
+        ],
+        serviceAccountName: 'reloader',
+      },
     },
   },
 }
