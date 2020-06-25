@@ -21,6 +21,12 @@
       spec: {
         containers: [
           {
+            env: [
+              {
+                name: 'KUBERNETES_NAMESPACE',
+                value: 'default',
+              },
+            ],
             image: 'stakater/reloader:v0.0.60',
             imagePullPolicy: 'IfNotPresent',
             name: 'reloader',
