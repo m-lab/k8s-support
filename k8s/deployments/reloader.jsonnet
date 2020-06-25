@@ -20,25 +20,27 @@
       },
       spec: {
         containers: [
-          args: [
-            '--resources-to-ignore=configMaps',
-          ],
-          env: [
-            {
-              name: 'KUBERNETES_NAMESPACE',
-              value: 'default',
-            },
-          ],
-          image: 'stakater/reloader:v0.0.60',
-          imagePullPolicy: 'IfNotPresent',
-          name: 'reloader',
-          ports: [
-            {
-              containerPort: 9090,
-            },
-          ],
+          {
+            args: [
+              '--resources-to-ignore=configMaps',
+            ],
+            env: [
+              {
+                name: 'KUBERNETES_NAMESPACE',
+                value: 'default',
+              },
+            ],
+            image: 'stakater/reloader:v0.0.60',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'reloader',
+            ports: [
+              {
+                containerPort: 9090,
+              },
+            ],
+          },
         ],
-      serviceAccountName: 'reloader',
+        serviceAccountName: 'reloader',
       },
     },
   },
