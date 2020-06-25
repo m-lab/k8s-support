@@ -14,6 +14,10 @@
     },
     template: {
       metadata: {
+        annotations: {
+          'prometheus.io/scrape': 'true',
+          'prometheus.io/scheme': 'http',
+        },
         labels: {
           workload: 'reloader',
         },
