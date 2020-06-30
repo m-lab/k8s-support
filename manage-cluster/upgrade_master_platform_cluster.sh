@@ -11,7 +11,7 @@ source k8s_deploy.conf
 # Issue a warning to the user and only continue if they agree.
 cat <<EOF
   WARNING: this script is going to upgrade the _entire_ ${PROJECT} kubernetes
-  cluster to version ${K8S_VERSION}. Problems could occur. Be 100% sure you
+  API cluster to version ${K8S_VERSION}. Problems could occur. Be 100% sure you
   have read the changelogs to be sure there are no breaking changes for the
   current configuration. Also be sure to the specific kubeadm documentation for
   upgrading from the existing version to the new version, as sometimes a couple
@@ -53,7 +53,7 @@ for zone in $GCE_ZONES; do
       "${GCP_ARGS[@]}")
 
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
-    UPGRADE_COMMAND="apply ${K8S_VERSION} --force"
+    UPGRADE_COMMAND="apply ${K8S_VERSION} --force --certificate-renewal=true"
   else
     UPGRADE_COMMAND="node experimental-control-plane"
   fi
