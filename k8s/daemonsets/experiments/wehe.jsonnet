@@ -57,9 +57,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
             ],
           },
-        ] + std.flattenArrays([
-          exp.Pusher(expName, 9995, ['replay'], false, 'pusher-' + std.extVar('PROJECT_ID')),
-        ]),
+        ],
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
           {
