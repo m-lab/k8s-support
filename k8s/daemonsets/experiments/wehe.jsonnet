@@ -47,9 +47,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             image: 'measurementlab/wehe-py3:v0.1.0',
             name: expName,
             volumeMounts: [
-              {
-                mountPath: '/data',
-                name: 'wehe-data',
+              exp.VolumeMount('wehe/replay') + {
+                mountPath: '/data/RecordReplay/ReplayDumps',
               },
               {
                 mountPath: '/wehe/ssl/',
@@ -60,19 +59,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
         ],
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes+: [
-          {
-            name: 'pusher-credentials',
-            secret: {
-              secretName: 'pusher-credentials',
-            },
-          },
-          {
-            hostPath: {
-              path: '/cache/data/' + expName,
-              type: 'DirectoryOrCreate',
-            },
-            name: expName + '-data',
-          },
           {
             emptyDir: {},
             name: 'wehe-ca-cache',
