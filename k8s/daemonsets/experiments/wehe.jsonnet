@@ -48,7 +48,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             name: expName,
             volumeMounts: [
               exp.VolumeMount('wehe/replay') + {
-                mountPath: '/data/RecordReplay/ReplayDumps',
+                mountPath: '/data/RecordReplay/ReplayDumpsTimestamped',
               },
               {
                 mountPath: '/wehe/ssl/',
