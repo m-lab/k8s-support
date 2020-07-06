@@ -30,6 +30,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
               '-txcontroller.device=net1',
+              '-htmldir=html/mlab',
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
