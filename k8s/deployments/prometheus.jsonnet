@@ -55,10 +55,6 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
                 mountPath: '/prometheus',
                 name: 'prometheus-storage',
               },
-              {
-                mountPath: '/etc/prometheus/tls/',
-                name: 'prometheus-etcd-tls',
-              },
             ],
           },
         ],
@@ -83,12 +79,6 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               type: 'Directory',
             },
             name: 'prometheus-storage',
-          },
-          {
-            name: 'prometheus-etcd-tls',
-            secret: {
-              secretName: 'prometheus-etcd-tls',
-            },
           },
         ],
       },
