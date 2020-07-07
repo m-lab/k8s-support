@@ -387,7 +387,7 @@ EOF
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     cache_control="Cache-Control:private, max-age=0, no-transform"
-    gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
+    gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_ubuntu/setup_k8s.sh
 
     # Apply all configs and workloads to the cluster. This only needs to happen
     # on the first master that is created.
