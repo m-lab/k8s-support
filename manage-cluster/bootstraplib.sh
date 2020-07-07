@@ -389,20 +389,6 @@ EOF
     cache_control="Cache-Control:private, max-age=0, no-transform"
     gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
 
-    # Copy the etcd peer cert and key from the first node to the local machine,
-    # and then push them to GCS. They will be used to create a k8s secret that
-    # Prometheus uses to authenticate with etcd so that it can scrape it.  Even
-    # though this certificate is only technically valid for this master node,
-    # it will work to authenticate to all master nodes because etcd only cares
-    # that the client certificate is signed by the right CA.
-    mkdir -p ./prometheus-etcd-tls
-    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.crt
-    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.key
-    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
-    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
-
     # Apply all configs and workloads to the cluster. This only needs to happen
     # on the first master that is created.
     ./create_k8s_configs.sh "${PROJECT}"
