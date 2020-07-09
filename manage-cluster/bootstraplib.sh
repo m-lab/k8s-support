@@ -291,14 +291,6 @@ EOF
 
       kubeadm init --config kubeadm-config.yml
 
-      # Modify the --advertise-address flag to point to the external IP,
-      # instead of the internal one that kubeadm populated. This is necessary
-      # because external nodes (and especially kube-proxy) need to know of the
-      # master node by its public IP, even though it is technically running in
-      # a private VPC.
-      sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
-          /etc/kubernetes/manifests/kube-apiserver.yaml
-
       # Copy the admin KUBECONFIG file to the GCS bucket.
       cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}
 
@@ -333,16 +325,39 @@ EOF
 
       # Join the master node to the existing cluster.
       kubeadm join --config kubeadm-config.yml
-
-      # Modify the --advertise-address flag to point to the external IP,
-      # instead of the internal one that kubeadm populated. This is necessary
-      # because external nodes (and especially kube-proxy) need to know of the
-      # master node by its public IP, even though it is technically running in
-      # a private VPC.
-      sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
-          /etc/kubernetes/manifests/kube-apiserver.yaml
 EOF
   fi
+
+  # Modify a few of the generated static manifests to suit our needs.
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+    set -euxo pipefail
+    sudo --login
+
+    # Bash options are not inherited by subshells. Reset them to exit on any error.
+    set -euxo pipefail
+
+    # Modify the --advertise-address flag to point to the external IP,
+    # instead of the internal one that kubeadm populated. This is necessary
+    # because external nodes (and especially kube-proxy) need to know of the
+    # master node by its public IP, even though it is technically running in
+    # a private VPC.
+    sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
+        /etc/kubernetes/manifests/kube-apiserver.yaml
+
+    # Modify the default --listen-metrics-urls flag to listen on the VPC internal
+    # IP address (the default is localhost). Sadly, this cannot currently be
+    # defined in the configuration file, since the only place to define etcd
+    # extraArgs is in the ClusterConfiguration, which applies to the entire
+    # cluster, not a single etcd instances in a cluster.
+    # https://github.com/kubernetes/kubeadm/issues/2036
+    sed -i -re '/listen-metrics-urls/ s|$|,http://${INTERNAL_IP}:2381|' \
+        /etc/kubernetes/manifests/etcd.yaml
+
+    # The above modifications to manifests will cause the api-server and etcd
+    # to be restarted by the kubelet. Stop and wait here for a little bit to
+    # give them time to restart before we continue.
+    sleep 60
+EOF
 
   # Configure root's account to be able to easily access kubectl as well as
   # etcdctl and locksmithctl.  As we productionize this process, this code
@@ -387,21 +402,7 @@ EOF
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
     cache_control="Cache-Control:private, max-age=0, no-transform"
-    gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_coreos/setup_k8s.sh
-
-    # Copy the etcd peer cert and key from the first node to the local machine,
-    # and then push them to GCS. They will be used to create a k8s secret that
-    # Prometheus uses to authenticate with etcd so that it can scrape it.  Even
-    # though this certificate is only technically valid for this master node,
-    # it will work to authenticate to all master nodes because etcd only cares
-    # that the client certificate is signed by the right CA.
-    mkdir -p ./prometheus-etcd-tls
-    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.crt" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.crt
-    gcloud compute ssh ${gce_name} --command "sudo cat /etc/kubernetes/pki/etcd/peer.key" \
-      "${GCE_ARGS[@]}" > ./prometheus-etcd-tls/client.key
-    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
-    gsutil -h "$cache_control" cp -R prometheus-etcd-tls/ gs://${!GCS_BUCKET_K8S}/
+    gsutil -h "$cache_control" cp setup_k8s.sh gs://${!GCS_BUCKET_EPOXY}/stage3_ubuntu/setup_k8s.sh
 
     # Apply all configs and workloads to the cluster. This only needs to happen
     # on the first master that is created.
