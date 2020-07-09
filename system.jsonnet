@@ -35,8 +35,12 @@
     if std.extVar('PROJECT_ID') == 'mlab-sandbox'
     then [import 'k8s/daemonsets/experiments/revtr.jsonnet']
     else []
+  ) + (
+    // Don't deploy wehe to prod until we understand what it does and why it's RAM usage is so high.
+    if std.extVar('PROJECT_ID') != 'mlab-oti'
+    then [import 'k8s/daemonsets/experiments/wehe.jsonnet']
+    else []
   ) + [
-    import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
     import 'k8s/deployments/prometheus.jsonnet',
