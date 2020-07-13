@@ -26,7 +26,7 @@
           {
             args: [
               '--reboot-sentinel=/var/run/mlab-reboot',
-              '--period=10m',
+              '--period=1m',
               //'--reboot-days=mon,tue,wed,thu,fri',
               //'--time-zone=America/New_York',
               //'--start-time=09:00',
