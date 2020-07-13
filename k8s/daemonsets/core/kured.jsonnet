@@ -50,15 +50,23 @@
               // Give permission to nsenter /proc/1/ns/mnt
               privileged: true
             },
+            volumeMounts: [
+              {
+                mountPath: '/var/run',
+                name: 'hostrun',
+              },
+            ],
           },
         ],
         hostPID: true,
         restartPolicy: 'Always',
         serviceAccountName: 'kured',
-        volumeMounts: [
+        volumes: [
           {
-            mountPath: '/var/run',
             name: 'hostrun',
+            hostPath: {
+              path: '/var/run',
+            },
           },
         ],
       },
@@ -66,13 +74,5 @@
     updateStrategy: {
       type: 'RollingUpdate',
     },
-    volumes: [
-      {
-        name: 'hostrun',
-        hostPath: {
-          path: '/var/run',
-        },
-      },
-    ],
   },
 }
