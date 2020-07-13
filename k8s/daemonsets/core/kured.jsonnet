@@ -13,6 +13,10 @@
     },
     template: {
       metadata: {
+        annotations: {
+          'prometheus.io/scrape': 'true',
+          'prometheus.io/scheme': 'http'
+        },
         labels: {
           name: 'kured',
         },
@@ -46,6 +50,11 @@
             image: 'weaveworks/kured:1.4.4',
             imagePullPolicy: 'IfNotPresent',
             name: 'kured',
+            ports: [
+              {
+                containerPort: 8080,
+              },
+            ],
             securityContext: {
               // Give permission to nsenter /proc/1/ns/mnt
               privileged: true
