@@ -55,10 +55,24 @@
         hostPID: true,
         restartPolicy: 'Always',
         serviceAccountName: 'kured',
+        volumeMounts: [
+          {
+            mountPath: '/var/run',
+            name: hostrun,
+          },
+        ],
       },
     },
     updateStrategy: {
       type: 'RollingUpdate',
     },
+    volumes: [
+      {
+        name: 'hostrun',
+        hostPath: {
+          path: '/var/run',
+        },
+      },
+    ],
   },
 }
