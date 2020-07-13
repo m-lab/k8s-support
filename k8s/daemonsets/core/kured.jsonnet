@@ -58,7 +58,7 @@
         volumeMounts: [
           {
             mountPath: '/var/run',
-            name: hostrun,
+            name: 'hostrun',
           },
         ],
       },
