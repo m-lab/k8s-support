@@ -60,7 +60,7 @@
     // Roles (which are in array form already).
     import 'k8s/roles/flannel.jsonnet',
     import 'k8s/roles/fluentd.jsonnet',
-    emport 'k8s/roles/kube-rbac-proxy.jsonnet',
+    import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
     import 'k8s/roles/kured.jsonnet',
     import 'k8s/roles/rbac-prometheus.jsonnet',
