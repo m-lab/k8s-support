@@ -48,11 +48,11 @@
             name: 'kured',
             securityContext: {
               // Give permission to nsenter /proc/1/ns/mnt
-              privileged: 'true'
+              privileged: true
             },
           },
         ],
-        hostPID: 'true',
+        hostPID: true,
         restartPolicy: 'Always',
         serviceAccountName: 'kured',
       },
