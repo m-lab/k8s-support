@@ -12,6 +12,7 @@
     group: 'k8s.cni.cncf.io',
     names: {
       kind: 'NetworkAttachmentDefinition',
+      listKind: 'NetworkAttachmentDefinitionList',
       plural: 'network-attachment-definitions',
       shortNames: [
         'network',
@@ -21,19 +22,27 @@
       singular: 'network-attachment-definition',
     },
     scope: 'Namespaced',
-    validation: {
-      openAPIV3Schema: {
-        properties: {
-          spec: {
+    versions: [
+      {
+        name: 'v1',
+        served: true,
+        storage: true,
+        schema: {
+          openAPIV3Schema: {
+            type: 'object',
             properties: {
-              config: {
-                type: 'string',
+              spec: {
+                type: 'object',
+                properties: {
+                  config: {
+                    type: 'string',
+                  },
+                },
               },
             },
           },
         },
       },
-    },
-    version: 'v1',
+    ],
   },
 }
