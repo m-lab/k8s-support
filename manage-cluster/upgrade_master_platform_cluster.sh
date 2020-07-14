@@ -32,6 +32,9 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
+# Set up project GCS bucket variables.
+GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+
 UPGRADE_STATE="new"
 
 for zone in $GCE_ZONES; do
@@ -112,18 +115,22 @@ for zone in $GCE_ZONES; do
     # Tell kubeadm to upgrade all k8s components.
     kubeadm upgrade $UPGRADE_COMMAND
 
-
-    # Mount the GCS bucket, if it is not already mounted. When a master node is
+    # If this is the first API server being upgraded (i.e., UPGRADE_STATE=new),
+    # mount the GCS bucket, if it is not already mounted. When a master node is
     # bootstrapped the GCS bucket will be mounted, but if the node get rebooted
     # for any reason then it will come back up without the bucket mounted.
-    if ! [[ $(ls -A ${K8S_PKI_DIR}) ]]; then
-      /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
-          ${!GCS_BUCKET_K8S} ${K8S_PKI_DIR}
-    fi
+    if [[ $UPGRADE_STATE == "new" ]]; then
+      # Create the mount point for the GCS bucket, if it doesn't already exist.
+      mkdir -p ${K8S_PKI_DIR}
+      if ! [[ \$(ls -A ${K8S_PKI_DIR}) ]]; then
+        /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
+            ${!GCS_BUCKET_K8S} ${K8S_PKI_DIR}
+      fi
 
-    # kubeadm-upgrade renews all certificates. Copy the renewed admin.conf
-    # file to the GCS bucket.
-    cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}/admin.conf
+      # kubeadm-upgrade renews all certificates. Copy the renewed admin.conf
+      # file to the GCS bucket.
+      cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}/admin.conf
+    fi
 
     # Stop the kubelet before we overwrite it, else curl may give "Text file
     # busy" error and fail to download the file.
@@ -134,9 +141,6 @@ for zone in $GCE_ZONES; do
     curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubelet,kubectl}
     chmod +x {kubelet,kubectl}
     popd
-
-    # Restart the kubelet.
-    systemctl start kubelet
 
     # Modify the --advertise-address flag to point to the external IP,
     # instead of the internal one that kubeadm populated. This is necessary
@@ -152,10 +156,20 @@ for zone in $GCE_ZONES; do
     # extraArgs is in the ClusterConfiguration, which applies to the entire
     # cluster, not a single etcd instances in a cluster.
     # https://github.com/kubernetes/kubeadm/issues/2036
-    sed -i -re '/listen-metrics-urls/ s|$|,http://${INTERNAL_IP}:2381|' \
-        /etc/kubernetes/manifests/etcd.yaml
+    #
+    # Only append a new listen-metrics-url on the internal interface if it
+    # doesn't already exist. This is a workaround to a bug in kubeadm which can
+    # cause an upgrade to not be idempotent:
+    # https://github.com/kubernetes/kubeadm/issues/2058
+    if ! grep listen-metrics-urls /etc/kubernetes/manifests/etcd.yaml | grep ${INTERNAL_IP}; then
+      sed -i -re '/listen-metrics-urls/ s|$|,http://${INTERNAL_IP}:2381|' \
+          /etc/kubernetes/manifests/etcd.yaml
+    fi
 
-    # The above modifications to manifests will cause the api-server and etcd
+    # Restart the kubelet.
+    systemctl start kubelet
+
+    # The above modifications to manifests should cause the api-server and etcd
     # to be restarted by the kubelet. Stop and wait here for a little bit to
     # give them time to restart before we continue.
     sleep 60
