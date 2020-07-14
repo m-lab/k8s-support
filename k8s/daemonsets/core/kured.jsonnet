@@ -29,7 +29,7 @@
               '--period=24h',
               // We may or may not want to enable something like the following
               // schedule for reboots. For now it is commented out until we can
-              // gather more experimence with Kured.
+              // gather more experience with Kured.
               //'--reboot-days=mon,tue,wed,thu,fri',
               //'--time-zone=America/New_York',
               //'--start-time=09:00',
