@@ -1,7 +1,7 @@
 [
   // Add a cluster role for access to the v1.6 node/metrics resource.
   {
-    apiVersion: 'rbac.authorization.k8s.io/v1beta1',
+    apiVersion: 'rbac.authorization.k8s.io/v1',
     kind: 'ClusterRole',
     metadata: {
       name: 'prometheus',
@@ -46,7 +46,7 @@
   // Bind the cluster role above to the service account, granting this account
   // permission to the resources defined by the role.
   {
-    apiVersion: 'rbac.authorization.k8s.io/v1beta1',
+    apiVersion: 'rbac.authorization.k8s.io/v1',
     kind: 'ClusterRoleBinding',
     metadata: {
       name: 'prometheus',

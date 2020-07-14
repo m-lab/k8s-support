@@ -3,7 +3,7 @@
 // This file must be applied first. Kubernetes does not support defining new
 // data types and new resources of that type at the same time.
 {
-  apiVersion: 'apiextensions.k8s.io/v1beta1',
+  apiVersion: 'apiextensions.k8s.io/v1',
   kind: 'CustomResourceDefinition',
   metadata: {
     name: 'network-attachment-definitions.k8s.cni.cncf.io',

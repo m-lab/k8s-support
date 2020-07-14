@@ -55,7 +55,7 @@ for zone in $GCE_ZONES; do
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
     UPGRADE_COMMAND="apply ${K8S_VERSION} --force --certificate-renewal=true"
   else
-    UPGRADE_COMMAND="node experimental-control-plane"
+    UPGRADE_COMMAND="node"
   fi
 
   # Copy kubeadm config template to the node.
@@ -71,7 +71,7 @@ for zone in $GCE_ZONES; do
 
     # All k8s binaries are located in /opt/bin
     export PATH=\$PATH:/opt/bin
-  
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
@@ -89,20 +89,20 @@ for zone in $GCE_ZONES; do
     sed -i -e 's|{{TOKEN}}|NOT_USED|' \
            -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
            kubeadm-config.yml
-  
+
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
     # The flag --delete-local-data causes the command to "continue even if
     # there are pods using emptyDir". In our case, the CoreDNS pods use
     # emptyDir volumes, but we don't care about the data in there.
     kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
-  
+
     # Upgrade CNI plugins.
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
     # Upgrade crictl.
     curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
-  
+
     # Upgrade kubeadm.
     pushd /opt/bin
     curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubeadm
@@ -111,6 +111,18 @@ for zone in $GCE_ZONES; do
 
     # Tell kubeadm to upgrade all k8s components.
     kubeadm upgrade $UPGRADE_COMMAND
+
+    # Mount the GCS bucket, if it is not already mounted. When a master node is
+    # bootstrapped the GCS bucket will be mounted, but if the node get rebooted
+    # for any reason then it will come back up without the bucket mounted.
+    if ! [[ $(ls -A ${K8S_PKI_DIR}) ]]; then
+      /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
+          ${!GCS_BUCKET_K8S} ${K8S_PKI_DIR}
+    fi
+
+    # kubeadm-upgrade renews all certificates. Copy the renewed admin.conf
+    # file to the GCS bucket.
+    cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}/admin.conf
 
     # Stop the kubelet before we overwrite it, else curl may give "Text file
     # busy" error and fail to download the file.
