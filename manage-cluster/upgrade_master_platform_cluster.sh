@@ -112,6 +112,7 @@ for zone in $GCE_ZONES; do
     # Tell kubeadm to upgrade all k8s components.
     kubeadm upgrade $UPGRADE_COMMAND
 
+
     # Mount the GCS bucket, if it is not already mounted. When a master node is
     # bootstrapped the GCS bucket will be mounted, but if the node get rebooted
     # for any reason then it will come back up without the bucket mounted.
@@ -144,6 +145,20 @@ for zone in $GCE_ZONES; do
     # a private VPC.
     sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
         /etc/kubernetes/manifests/kube-apiserver.yaml
+
+    # Modify the default --listen-metrics-urls flag to listen on the VPC internal
+    # IP address (the default is localhost). Sadly, this cannot currently be
+    # defined in the configuration file, since the only place to define etcd
+    # extraArgs is in the ClusterConfiguration, which applies to the entire
+    # cluster, not a single etcd instances in a cluster.
+    # https://github.com/kubernetes/kubeadm/issues/2036
+    sed -i -re '/listen-metrics-urls/ s|$|,http://${INTERNAL_IP}:2381|' \
+        /etc/kubernetes/manifests/etcd.yaml
+
+    # The above modifications to manifests will cause the api-server and etcd
+    # to be restarted by the kubelet. Stop and wait here for a little bit to
+    # give them time to restart before we continue.
+    sleep 60
 
     # Mark the node schedulable again.
     kubectl uncordon $gce_name
