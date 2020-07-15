@@ -32,6 +32,9 @@ GCE_ZONES="${!GCE_ZONES_VAR}"
 
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
+# Set up project GCS bucket variables.
+GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
+
 UPGRADE_STATE="new"
 
 for zone in $GCE_ZONES; do
@@ -55,7 +58,7 @@ for zone in $GCE_ZONES; do
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
     UPGRADE_COMMAND="apply ${K8S_VERSION} --force --certificate-renewal=true"
   else
-    UPGRADE_COMMAND="node experimental-control-plane"
+    UPGRADE_COMMAND="node"
   fi
 
   # Copy kubeadm config template to the node.
@@ -71,7 +74,7 @@ for zone in $GCE_ZONES; do
 
     # All k8s binaries are located in /opt/bin
     export PATH=\$PATH:/opt/bin
-  
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
@@ -89,20 +92,20 @@ for zone in $GCE_ZONES; do
     sed -i -e 's|{{TOKEN}}|NOT_USED|' \
            -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
            kubeadm-config.yml
-  
+
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
     # The flag --delete-local-data causes the command to "continue even if
     # there are pods using emptyDir". In our case, the CoreDNS pods use
     # emptyDir volumes, but we don't care about the data in there.
     kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
-  
+
     # Upgrade CNI plugins.
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
     # Upgrade crictl.
     curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
-  
+
     # Upgrade kubeadm.
     pushd /opt/bin
     curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubeadm
@@ -111,6 +114,26 @@ for zone in $GCE_ZONES; do
 
     # Tell kubeadm to upgrade all k8s components.
     kubeadm upgrade $UPGRADE_COMMAND
+
+    # If this is the first API server being upgraded (i.e., UPGRADE_STATE=new),
+    # mount the GCS bucket, if it is not already mounted. When a master node is
+    # bootstrapped the GCS bucket will be mounted, but if the node gets
+    # rebooted for any reason then it will come back up without the bucket
+    # mounted and maybe even without the local directory existing.
+    if [[ $UPGRADE_STATE == "new" ]]; then
+      # Create the mount point for the GCS bucket, if it doesn't already exist.
+      # If the directory already exists, then this is a benign noop.
+      mkdir -p ${K8S_PKI_DIR}
+      # If the GCS bucket is not mounted on the directory, then mount it.
+      if ! findmnt ${K8S_PKI_DIR}; then
+        /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
+            ${!GCS_BUCKET_K8S} ${K8S_PKI_DIR}
+      fi
+
+      # kubeadm-upgrade renews all certificates. Copy the renewed admin.conf
+      # file to the GCS bucket.
+      cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}/admin.conf
+    fi
 
     # Stop the kubelet before we overwrite it, else curl may give "Text file
     # busy" error and fail to download the file.
@@ -122,9 +145,6 @@ for zone in $GCE_ZONES; do
     chmod +x {kubelet,kubectl}
     popd
 
-    # Restart the kubelet.
-    systemctl start kubelet
-
     # Modify the --advertise-address flag to point to the external IP,
     # instead of the internal one that kubeadm populated. This is necessary
     # because external nodes (and especially kube-proxy) need to know of the
@@ -132,6 +152,30 @@ for zone in $GCE_ZONES; do
     # a private VPC.
     sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
         /etc/kubernetes/manifests/kube-apiserver.yaml
+
+    # Modify the default --listen-metrics-urls flag to listen on the VPC internal
+    # IP address (the default is localhost). Sadly, this cannot currently be
+    # defined in the configuration file, since the only place to define etcd
+    # extraArgs is in the ClusterConfiguration, which applies to the entire
+    # cluster, not a single etcd instances in a cluster.
+    # https://github.com/kubernetes/kubeadm/issues/2036
+    #
+    # Only append a new listen-metrics-url on the internal interface if it
+    # doesn't already exist. This is a workaround to a bug in kubeadm which can
+    # cause an upgrade to not be idempotent:
+    # https://github.com/kubernetes/kubeadm/issues/2058
+    if ! grep listen-metrics-urls /etc/kubernetes/manifests/etcd.yaml | grep ${INTERNAL_IP}; then
+      sed -i -re '/listen-metrics-urls/ s|$|,http://${INTERNAL_IP}:2381|' \
+          /etc/kubernetes/manifests/etcd.yaml
+    fi
+
+    # Restart the kubelet.
+    systemctl start kubelet
+
+    # The above modifications to manifests should cause the api-server and etcd
+    # to be restarted by the kubelet. Stop and wait here for a little bit to
+    # give them time to restart before we continue.
+    sleep 60
 
     # Mark the node schedulable again.
     kubectl uncordon $gce_name
