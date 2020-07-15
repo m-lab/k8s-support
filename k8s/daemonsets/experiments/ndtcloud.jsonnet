@@ -33,7 +33,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
           exp.RBACProxy(expName, 9990),
 
         ],
-        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds ,
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds,
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
