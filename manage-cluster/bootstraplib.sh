@@ -360,7 +360,7 @@ EOF
 EOF
 
   # Configure root's account to be able to easily access kubectl as well as
-  # etcdctl and locksmithctl.  As we productionize this process, this code
+  # etcdctl. As we productionize this process, this code
   # should be deleted.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
@@ -390,6 +390,9 @@ EOF
 
     kubectl annotate node ${gce_name} flannel.alpha.coreos.com/public-ip-overwrite=${EXTERNAL_IP}
     kubectl label node ${gce_name} mlab/type=virtual
+
+    # As a final step, unmount the GCS bucket, as it is no longer needed.
+    umount ${K8S_PKI_DIR}
 EOF
 
   if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then

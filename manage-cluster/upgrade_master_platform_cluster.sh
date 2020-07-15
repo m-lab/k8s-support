@@ -116,10 +116,8 @@ for zone in $GCE_ZONES; do
     kubeadm upgrade $UPGRADE_COMMAND
 
     # If this is the first API server being upgraded (i.e., UPGRADE_STATE=new),
-    # mount the GCS bucket, if it is not already mounted. When a master node is
-    # bootstrapped the GCS bucket will be mounted, but if the node gets
-    # rebooted for any reason then it will come back up without the bucket
-    # mounted and maybe even without the local directory existing.
+    # mount the GCS bucket, if it is not already mounted, which it shouldn't
+    # be, but we check just to be sure.
     if [[ $UPGRADE_STATE == "new" ]]; then
       # Create the mount point for the GCS bucket, if it doesn't already exist.
       # If the directory already exists, then this is a benign noop.
