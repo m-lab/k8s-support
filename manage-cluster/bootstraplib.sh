@@ -169,6 +169,10 @@ function create_master {
     # reboot the node.
     echo -n "${reboot_day}" > /etc/reboot-node-day
 
+    # Enable and start the timer which periodically reboots master nodes.
+    systemctl enable reboot-node.timer
+    systemctl start reboot-node.timer
+
     # Install CNI plugins.
     mkdir -p /opt/cni/bin
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz

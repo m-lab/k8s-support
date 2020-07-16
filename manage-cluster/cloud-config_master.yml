@@ -110,19 +110,23 @@ write_files:
     fs.inotify.max_user_watches=131072
 
 # The smallest of scripts to reboot the machine.
-- path: /var/lib/mlab/bin/reboot-node
+- path: /opt/bin/reboot-node
   permissions: 0744
   owner: root:root
   content: |
     #!/bin/bash
-    REBOOT_DAY=$(cat /var/lib/mlab/etc/reboot-node-day)
+    REBOOT_DAY=$(cat /etc/reboot-node-day)
     TODAY=$(date +%a)
     source /root/.profile
     # Members are listed whether they are healthy or not.
-    ETCD_ENDPOINTS=$(/usr/bin/etcdctl member list | awk '{print $5}' | paste -s -d, -)
-    # Currently healthy endpoints are reported on stderr, along with true
-    # errors: https://github.com/etcd-io/etcd/pull/11322
-    ETCD_HEALTHY_COUNT=$(/usr/bin/etcdctl endpoint health --endpoints "${ETCD_ENDPOINTS}" 2>&1 \
+    ETCD_ENDPOINTS=$(/opt/bin/etcdctl member list | egrep -o 'https://[0-9.]+:2379' | paste -s -d, -)
+    export ETCDCTL_ENDPOINTS="${ETCD_ENDPOINTS}"
+    # Currently healthy endpoints are reported on stderr, along with actual
+    # errors: https://github.com/etcd-io/etcd/pull/11322. That issue is closed
+    # and a related PR merged, but the fix is not yet part of the current
+    # Ubuntu version 3.4.7 (2020-07-16). When it is in the curernt Ubuntu
+    # release then this code can be refactored.
+    ETCD_HEALTHY_COUNT=$(/opt/bin/etcdctl endpoint health 2>&1 \
         | grep -P '(?<!un)healthy' | wc -l)
     if [[ "${REBOOT_DAY}" != "${TODAY}" ]]; then
       echo "Reboot day ${REBOOT_DAY} doesn't equal today: ${TODAY}. Not rebooting."
