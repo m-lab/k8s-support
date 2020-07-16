@@ -14,7 +14,7 @@
     issuerRef: {
       group: 'cert-manager.io',
       kind: 'ClusterIssuer',
-      name: if std.extVar('PROJECT_ID') == 'mlab-sandbox' then 'letsencrypt-staging' else 'letsencrypt',
+      name: 'letsencrypt',
     },
     secretName: 'measurement-lab-org-tls',
   },

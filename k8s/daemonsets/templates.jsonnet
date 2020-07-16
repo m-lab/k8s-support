@@ -1,6 +1,22 @@
 local ndtVersion = 'v0.20.1';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
+// The default grace period after k8s sends SIGTERM is 30s. We
+// extend the grace period to give time for the following
+// shutdown sequence. After the grace period, kubernetes sends
+// SIGKILL.
+//
+// Expected container shutdown sequence:
+//
+//  * k8s sends SIGTERM to container
+//  * container enables lame duck status
+//  * monitoring reads lame duck status (60s max)
+//  * mlab-ns updates server status (60s max)
+//  * all currently running tests complete. (30s max)
+//  * give everything an additional 30s to be safe
+//  * 60s + 60s + 30s + 30s = 180s grace period
+local terminationGracePeriodSeconds = 180;
+
 local uuid = {
   initContainer: {
     // Write out the UUID prefix to a well-known location.
@@ -266,7 +282,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-bucket=' + bucket,
       '-experiment=' + expName,
       '-archive_size_threshold=50MB',
-      '-sigterm_wait_time=120s',
+      '-sigterm_wait_time=' + std.toString(terminationGracePeriodSeconds - 60) + 's',
       '-directory=/var/spool/' + expName,
       '-metadata=MLAB.server.name=$(MLAB_NODE_NAME)',
       '-metadata=MLAB.experiment.name=' + expName,
@@ -477,6 +493,8 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
             ],
           },
         ],
+        // Only enable extended grace period where production traffic is possible.
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
       },
     },
   },
@@ -515,4 +533,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // The NDT tag to use for containers.
   ndtVersion: ndtVersion,
+
+  // How long k8s should give a pod to shut itself down cleanly.
+  terminationGracePeriodSeconds: terminationGracePeriodSeconds,
 }
