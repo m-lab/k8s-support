@@ -26,7 +26,7 @@
           {
             args: [
               '--reboot-sentinel=/var/run/mlab-reboot',
-              '--period=24h',
+              '--period=1h',
               // We may or may not want to enable something like the following
               // schedule for reboots. For now it is commented out until we can
               // gather more experience with Kured.
