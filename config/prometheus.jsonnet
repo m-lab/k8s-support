@@ -2,7 +2,7 @@ local cmutil = import 'configmap.jsonnet';
 
 local data = {
     'rules.yml': importstr 'prometheus/rules.yml',
-    'prometheus.yml': importstr 'prometheus/prometheus.yml',
+    'prometheus.yml': std.strReplace(importstr 'prometheus/prometheus.yml', '{{PROJECT}}', std.extVar('PROJECT_ID')),
 };
 
 {

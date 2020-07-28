@@ -284,3 +284,13 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_container_name]
         action: replace
         target_label: container
+
+  # Scrape the token-server. The address we are scraping is actually a GCP
+  # internal load balancer. Scraping the load balancer address won't guarantee
+  # that all token-server instances are up and running, but more importantly
+  # will let us know whether enough are up to satisfy a booting machine.
+  - job_name: 'token-server'
+    scheme: http
+    static_configs:
+      - targets: ['token-server.{{PROJECT}}.measurementlab.net:8800']
+
