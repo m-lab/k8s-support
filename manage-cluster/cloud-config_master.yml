@@ -168,3 +168,5 @@ runcmd:
 - systemctl start token-server.service
 - systemctl start gcp-loadbalancer-proxy.service
 - systemctl enable reboot-node.service
+- systemctl enable token-server.service
+
