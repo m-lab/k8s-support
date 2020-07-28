@@ -165,8 +165,10 @@ runcmd:
 - systemctl daemon-reload
 - systemctl enable docker
 - systemctl start docker
-- systemctl start token-server.service
+- systemctl enable gcp-loadbalancer-proxy.service
 - systemctl start gcp-loadbalancer-proxy.service
-- systemctl enable reboot-node.service
+- systemctl enable reboot-node.timer
+- systemctl start reboot-node.timer
 - systemctl enable token-server.service
+- systemctl start token-server.service
 
