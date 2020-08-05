@@ -29,13 +29,8 @@
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
+    import 'k8s/daemonsets/experiments/revtr.jsonnet',
   ] + (
-    // Don't deploy revtr to prod until all privacy i's and t's are dotted and crossed.
-    // Don't deploy outside of sandbox until we are done debugging with Ege
-    if std.extVar('PROJECT_ID') == 'mlab-sandbox'
-    then [import 'k8s/daemonsets/experiments/revtr.jsonnet']
-    else []
-  ) + (
     // Don't deploy wehe to prod until we understand what it does and why it's RAM usage is so high.
     if std.extVar('PROJECT_ID') != 'mlab-oti'
     then [import 'k8s/daemonsets/experiments/wehe.jsonnet']
