@@ -27,7 +27,9 @@
             args: [
               '--reboot-sentinel=/var/run/mlab-reboot',
               '--period=1h',
-              '--annotation-ttl=4h',
+              // Annotation TTL should stay disabled until this bug is close:
+              // https://github.com/weaveworks/kured/issues/143
+              // '--annotation-ttl=4h',
               // We may or may not want to enable something like the following
               // schedule for reboots. For now it is commented out until we can
               // gather more experience with Kured.
