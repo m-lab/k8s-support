@@ -33,6 +33,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
           {
             args: [
               'wehe.$(MLAB_NODE_NAME)',
+              'net1',
             ],
             env: [
               {
@@ -44,7 +45,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.1.0',
+            image: 'measurementlab/wehe-py3:v0.1.7',
             name: expName,
             volumeMounts: [
               exp.VolumeMount('wehe/replay') + {
