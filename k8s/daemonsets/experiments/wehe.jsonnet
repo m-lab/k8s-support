@@ -37,8 +37,9 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
         containers+: [
           {
             args: [
-              '-envelope.key=/certs/tls.key',
-              '-envelope.cert=/certs/tls.crt',
+              # TODO: undo file name swap when fixed upstream.
+              '-envelope.cert=/certs/tls.key',
+              '-envelope.key=/certs/tls.crt',
               '-envelope.listen-address=:4443',
               '-envelope.device=net1',
               // TODO: require tokens after clients support envelope.
