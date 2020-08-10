@@ -39,7 +39,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             args: [
               '-envelope.key=/certs/tls.key',
               '-envelope.cert=/certs/tls.crt',
-              '-envelope.listen-address=:8443',
+              '-envelope.listen-address=:4443',
               '-envelope.device=net1',
               // TODO: require tokens after clients support envelope.
               '-envelope.token-required=false',
