@@ -37,17 +37,17 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
         containers+: [
           {
             args: [
-              # TODO: undo file name swap when fixed upstream.
-              '-envelope.cert=/certs/tls.key',
-              '-envelope.key=/certs/tls.crt',
+              '-envelope.key=/certs/tls.key',
+              '-envelope.cert=/certs/tls.crt',
               '-envelope.listen-address=:4443',
               '-envelope.device=net1',
               // TODO: require tokens after clients support envelope.
               '-envelope.token-required=false',
               // NOTE: only support ipv4 connections to the envelope.
+              // NOTE: TODO: this does not block ipv6 connections to the service.
               '-httpx.tcp-network=tcp4',
             ],
-            image: 'measurementlab/access:v-1',
+            image: 'measurementlab/access:v0.0.1',
             name: 'access',
             securityContext: {
               capabilities: {
