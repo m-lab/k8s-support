@@ -4,6 +4,11 @@ local expName = 'wehe';
 exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
   spec+: {
     template+: {
+      metadata+: {
+        annotations+: {
+          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+        },
+      },
       spec+: {
         initContainers+: [
           {
@@ -30,6 +35,35 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
           },
         ],
         containers+: [
+          {
+            args: [
+              '-envelope.key=/certs/tls.key',
+              '-envelope.cert=/certs/tls.crt',
+              '-envelope.listen-address=:4443',
+              '-envelope.device=net1',
+              // TODO: require tokens after clients support envelope.
+              '-envelope.token-required=false',
+              // NOTE: only support ipv4 connections to the envelope.
+              // NOTE: TODO: this does not block ipv6 connections to the service.
+              '-httpx.tcp-network=tcp4',
+            ],
+            image: 'measurementlab/access:v0.0.1',
+            name: 'access',
+            securityContext: {
+              capabilities: {
+                add: [
+                  'NET_ADMIN',
+                ],
+              },
+            },
+            volumeMounts: [
+              {
+                mountPath: '/certs',
+                name: 'measurement-lab-org-tls',
+                readOnly: true,
+              },
+            ],
+          },
           {
             args: [
               'wehe.$(MLAB_NODE_NAME)',
@@ -59,6 +93,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
           },
         ],
         volumes+: [
+          {
+            name: 'measurement-lab-org-tls',
+            secret: {
+              secretName: 'measurement-lab-org-tls',
+            },
+          },
           {
             emptyDir: {},
             name: 'wehe-ca-cache',
