@@ -14,8 +14,8 @@
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
   ] + (
-    // Don't deploy disco to prod or staging yet.
-    if std.extVar('PROJECT_ID') == 'mlab-sandbox'
+    // Don't deploy disco to production yet.
+    if std.extVar('PROJECT_ID') != 'mlab-oti'
     then [import 'k8s/daemonsets/core/disco.jsonnet']
     else [import 'k8s/daemonsets/core/utilization.jsonnet']
   ) + [
