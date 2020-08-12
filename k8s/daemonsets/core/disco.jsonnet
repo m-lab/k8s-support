@@ -70,7 +70,7 @@ local version = 'v0.1.7';
               },
             ],
             volumeMounts: [
-              exp.VolumeMount(expName),
+              exp.VolumeMount('utilization'),
               {
                 mountPath: '/etc/' + expName,
                 name: expName + '-config',
@@ -92,9 +92,9 @@ local version = 'v0.1.7';
             },
           },
           {
-            name: expName + '-data',
+            name: 'utilization' + '-data',
             hostPath: {
-              path: '/cache/data/' + expName,
+              path: '/cache/data/utilization',
               type: 'DirectoryOrCreate',
             },
           },
