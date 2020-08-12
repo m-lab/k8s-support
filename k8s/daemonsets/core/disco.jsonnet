@@ -30,7 +30,7 @@ local version = 'v0.1.7';
         containers: [
           {
             args: [
-              '-datadir=/var/spool/utilization,
+              '-datadir=/var/spool/utilization',
               '-write-interval=5m',
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
