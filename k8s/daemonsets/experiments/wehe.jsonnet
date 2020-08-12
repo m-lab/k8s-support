@@ -43,11 +43,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               '-envelope.device=net1',
               // TODO: require tokens after clients support envelope.
               '-envelope.token-required=false',
-              // NOTE: only support ipv4 connections to the envelope.
-              // NOTE: TODO: this does not block ipv6 connections to the service.
-              '-httpx.tcp-network=tcp4',
+              // Maximum timeout for a client to hold the envelope open.
+              '-timeout=10m',
             ],
-            image: 'measurementlab/access:v0.0.1',
+            image: 'measurementlab/access:v0.0.2',
             name: 'access',
             securityContext: {
               capabilities: {
