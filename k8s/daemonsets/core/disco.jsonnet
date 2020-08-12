@@ -30,7 +30,7 @@ local version = 'v0.1.7';
         containers: [
           {
             args: [
-              '-datadir=/var/spool/' + expName,
+              '-datadir=/var/spool/utilization,
               '-write-interval=5m',
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-metrics=/etc/' + expName + '/metrics.yaml',
@@ -78,7 +78,7 @@ local version = 'v0.1.7';
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher(expName, 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
+            exp.Pusher('utilization', 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
