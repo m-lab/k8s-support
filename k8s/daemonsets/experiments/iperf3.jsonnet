@@ -18,7 +18,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['t
               '-envelope.listen-address=:443',
               '-envelope.device=net1',
               // TODO: require tokens after clients support envelope.
-              '-envelope.token-required=false',
+              // '-envelope.token-required=false',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=2m',
             ],
