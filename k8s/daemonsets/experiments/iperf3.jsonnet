@@ -17,10 +17,22 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['t
               '-envelope.cert=/certs/tls.crt',
               '-envelope.listen-address=:443',
               '-envelope.device=net1',
+              '-envelope.subject=iperf3',
+              '-envelope.machine=$(MLAB_NODE_NAME)',
               // TODO: require tokens after clients support envelope.
               // '-envelope.token-required=false',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=2m',
+            ],
+            env: [
+              {
+                name: 'MLAB_NODE_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
             ],
             image: 'measurementlab/access:v0.0.2',
             name: 'access',
