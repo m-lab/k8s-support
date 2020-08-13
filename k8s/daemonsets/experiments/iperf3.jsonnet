@@ -20,8 +20,6 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['t
               '-envelope.subject=iperf3',
               '-envelope.machine=$(MLAB_NODE_NAME)',
               '-envelope.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              // TODO: require tokens after clients support envelope.
-              // '-envelope.token-required=false',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=2m',
             ],
