@@ -35,6 +35,11 @@
     if std.extVar('PROJECT_ID') != 'mlab-oti'
     then [import 'k8s/daemonsets/experiments/wehe.jsonnet']
     else []
+  ) + (
+    // Only deploy iperf3 to sandbox.
+    if std.extVar('PROJECT_ID') == 'mlab-sandbox'
+    then [import 'k8s/daemonsets/experiments/iperf3.jsonnet']
+    else []
   ) + [
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
