@@ -33,7 +33,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['t
                 },
               },
             ],
-            image: 'measurementlab/access:v0.0.3',
+            image: 'soltesz/access:v0.4',
             name: 'access',
             securityContext: {
               capabilities: {
