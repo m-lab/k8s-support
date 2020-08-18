@@ -21,9 +21,9 @@ sinks:
     inputs: ["kubernetes_logs"]
     rawConfig: |
       resource.type = "generic_node"
-      resource.projectId = "mlab-oti"
-      resource.location = "mlab-oti"
-      resource.namespace = "mlab-oti"
+      resource.projectId = "{{PROJECT}}"
+      resource.location = "{{PROJECT}}"
+      resource.namespace = "{{PROJECT}}"
       resource.node_id = "${VECTOR_SELF_NODE_NAME}"
-      project_id = "mlab-oti"
+      project_id = "{{PROJECT}}"
       log_id = "${VECTOR_SELF_NODE_NAME}"
