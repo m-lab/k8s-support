@@ -1,0 +1,29 @@
+env:
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /etc/fluent/keys/fluentd.json
+extraVolumes:
+- name: docker
+  hostPath:
+    path: /cache/docker/containers
+- name: credentials
+  secret:
+    defaultMode: 420
+    secretName: fluentd-credentials
+extraVolumeMounts:
+- name: docker
+  mountPath: /cache/docker/containers
+- mountPath: /etc/fluent/keys
+  name: credentials
+  readOnly: true
+sinks:
+  stackdriver:
+    type: gcp_stackdriver_logs
+    inputs: ["kubernetes_logs"]
+    rawConfig: |
+      resource.type = "generic_node"
+      resource.projectId = "mlab-oti"
+      resource.location = "mlab-oti"
+      resource.namespace = "mlab-oti"
+      resource.node_id = "${VECTOR_SELF_NODE_NAME}"
+      project_id = "mlab-oti"
+      log_id = "${VECTOR_SELF_NODE_NAME}"

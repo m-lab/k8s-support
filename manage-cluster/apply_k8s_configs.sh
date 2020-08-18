@@ -46,11 +46,12 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 # Add the required Helm repositories.
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-./linux-amd64/helm repo update
+./linux-amd64/helm repo add vector https://packages.timber.io/helm/nightly
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager --dry-run -o json | kubectl apply -f -
 kubectl create namespace nginx-ingress --dry-run -o json | kubectl apply -f -
+kubectl create namespace logging --dry-run -o json | kubectl apply -f -
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install nginx-ingress \
@@ -67,6 +68,13 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
   --version ${K8S_CERTMANAGER_VERSION} \
   --values ../config/cert-manager/helm-values-overrides.yaml \
   jetstack/cert-manager
+
+# Install Vector and configure to export to Google Stackdriver.
+# TODO(roberto) update to a non-nightly version as soon as it's available.
+./linux-amd64/helm upgrade --install vector \
+  --version 0.11.0-nightly-2020-08-18 \
+  --values ../config/vector/helm-values-overrides.yml \
+  vector/vector
 
 # Apply the configuration
 
