@@ -73,7 +73,7 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 # TODO(roberto) update to a non-nightly version as soon as it's available.
 ./linux-amd64/helm upgrade --install vector \
   --version 0.11.0-nightly-2020-08-18 \
-  --values ../config/vector/helm-values-overrides.yml \
+  --values ../config/vector/${PROJECT}.yml \
   vector/vector
 
 # Apply the configuration
