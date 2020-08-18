@@ -71,11 +71,13 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 
 # Install Vector and configure to export to Google Stackdriver.
 # TODO(roberto) update to a non-nightly version as soon as it's available.
+
+# Replace per-project variables in Vector's values.yaml.
 sed -i "s/{{PROJECT}}/${PROJECT}/" ../config/vector/values.yaml
 
 ./linux-amd64/helm upgrade --install vector \
   --version 0.11.0-nightly-2020-08-18 \
-  --values ../config/vector/${PROJECT}.yml \
+  --values ../config/vector/values.yml \
   vector/vector
 
 # Apply the configuration
