@@ -4,7 +4,6 @@ ndt-tls/
 flannel.yml
 flannel-virtual.yml
 flannel-physical.yml
-fluentd.json
 kube-config
 output.conf
 pusher.json
