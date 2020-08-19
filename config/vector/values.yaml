@@ -1,6 +1,6 @@
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
-  value: /etc/fluent/keys/fluentd.json
+  value: /etc/vector/keys/vector.json
 extraVolumes:
 - name: docker
   hostPath:
@@ -8,11 +8,11 @@ extraVolumes:
 - name: credentials
   secret:
     defaultMode: 420
-    secretName: fluentd-credentials
+    secretName: vector-credentials
 extraVolumeMounts:
 - name: docker
   mountPath: /cache/docker/containers
-- mountPath: /etc/fluent/keys
+- mountPath: /etc/vector/keys
   name: credentials
   readOnly: true
 sinks:
