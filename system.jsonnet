@@ -5,7 +5,6 @@
     // Configmaps
     import 'config/disco.jsonnet',
     import 'config/flannel.jsonnet',
-    import 'config/fluentd.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
     import 'config/nodes-max-rate.json',
@@ -22,7 +21,6 @@
     import 'k8s/daemonsets/core/dmesg-exporter.jsonnet',
     import 'k8s/daemonsets/core/flannel-virtual.jsonnet',
     import 'k8s/daemonsets/core/flannel-physical.jsonnet',
-    import 'k8s/daemonsets/core/fluentd.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/kured.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
@@ -54,7 +52,6 @@
     import 'k8s/networks/networks.jsonnet',
     // Roles (which are in array form already).
     import 'k8s/roles/flannel.jsonnet',
-    import 'k8s/roles/fluentd.jsonnet',
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
     import 'k8s/roles/kured.jsonnet',
