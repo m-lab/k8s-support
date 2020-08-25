@@ -81,6 +81,13 @@ sed -e "s/{{PROJECT}}/${PROJECT}/" ../config/vector/values.yaml.template \
   --values ../config/vector/values.yaml \
   vector/vector
 
+# TODO(kinkade) Currently, the helm template for the Vector DaemonSet does not
+# allow you to modify Pod labels. This patch command adds M-Lab's standard
+# `workload` label. It would seem reasonable to consider submitting a PR
+# upstream to add the ability to modify Pod labels via values.yaml.
+kubectl patch daemonset vector --type='json' \
+  --patch='[{"op":"add", "path":"/spec/template/metadata/labels/workload", "value":"vector"}]'
+
 # Apply the configuration
 
 # The configurations of the secrets for the cluster happen in a separate
