@@ -12,9 +12,11 @@ extraVolumes:
 extraVolumeMounts:
 - name: docker
   mountPath: /cache/docker/containers
-- mountPath: /etc/vector/keys
-  name: credentials
+- name: credentials
+  mountPath: /etc/vector/keys
   readOnly: true
+podAnnotations:
+  prometheus.io/scrape: true
 sinks:
   stackdriver:
     type: gcp_stackdriver_logs
