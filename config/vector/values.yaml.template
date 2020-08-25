@@ -15,8 +15,6 @@ extraVolumeMounts:
 - name: credentials
   mountPath: /etc/vector/keys
   readOnly: true
-podAnnotations:
-  prometheus.io/scrape: "true"
 sinks:
   stackdriver:
     type: gcp_stackdriver_logs
