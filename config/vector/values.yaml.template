@@ -22,7 +22,7 @@ sinks:
     rawConfig: |
       resource.type = "generic_node"
       resource.projectId = "{{PROJECT}}"
-      resource.location = "${VECTOR_SELF_NODE_NAME}"
+      resource.location = "{{PROJECT}}"
       resource.namespace = "${VECTOR_SELF_NODE_NAME}"
       resource.node_id = "${VECTOR_SELF_NODE_NAME}"
       project_id = "{{PROJECT}}"
