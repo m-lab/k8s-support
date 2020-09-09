@@ -72,6 +72,11 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 name: 'measurement-lab-org-tls',
                 readOnly: true,
               },
+              {
+                mountPath: '/verify',
+                name: 'locate-verify-keys',
+                readOnly: true,
+              },
             ],
           },
           {
