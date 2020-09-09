@@ -47,6 +47,16 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=10m',
             ],
+            env: [
+              {
+                name: 'MLAB_NODE_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+            ],
             image: 'measurementlab/access:v0.0.3',
             name: 'access',
             securityContext: {
