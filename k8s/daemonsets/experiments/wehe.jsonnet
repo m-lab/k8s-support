@@ -124,6 +124,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               secretName: 'wehe-ca',
             },
           },
+          {
+            name: 'locate-verify-keys',
+            secret: {
+              secretName: 'locate-verify-keys',
+            },
+          },
         ],
       },
     },
