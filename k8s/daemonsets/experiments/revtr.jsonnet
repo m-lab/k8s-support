@@ -6,7 +6,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', []) + {
       spec+: {
         containers+: [
           {
-            name: 'revtr',
+            name: 'revtrvp',
             image: 'measurementlab/revtrvp:v0.1.4',
             args: [
               '/root.crt',
