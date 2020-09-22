@@ -131,6 +131,16 @@ scrape_configs:
         action: replace
         target_label: machine
 
+      # Add a site label for SNMP metrics from DISCO. DISCOv2 collects switch
+      # metrics from each machine in a pod, and hence there is not site label
+      # by default, but rather only a machine label, from which we can extract
+      # the site.
+      - source_labels: [__meta_kubernetes_pod_container_name, __meta_kubernetes_pod_node_name]
+        action: replace
+        regex: disco;mlab[1-4]-([a-z]{3}[0-9t]{2}).*
+        replacement: $1
+        target_label: site
+
       # Identify the deployment name for replica set or daemon set.  Pods
       # created by deployments or daemon sets are processed here. The
       # following two rules recognize these two cases.
