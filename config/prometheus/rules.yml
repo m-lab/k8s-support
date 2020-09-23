@@ -251,7 +251,7 @@ groups:
   - record: machine:node_filesystem_used_ratio_12h_prediction:90th_quantile_30m
     expr: quantile_over_time(0.9, machine:node_filesystem_ratio_bytes:predict_linear3h_12h[30m])
 
-	# 90th percentiles @ 1h.
+  # 90th percentiles @ 1h.
   - record: candidate_site:uplink:90th_quantile_1h
     expr: quantile_over_time(0.9, switch:ifHCOutOctets:bps2m{ifAlias="uplink", machine=~"mlab2.*"}[1h])
   # k8s
@@ -264,7 +264,7 @@ groups:
   - record: machine:node_filesystem_used_ratio_12h_prediction:90th_quantile_1h
     expr: quantile_over_time(0.9, machine:node_filesystem_used_ratio:predict_linear3h_12h[1h])
 
-	# 90th percentiles @ 2h.
+  # 90th percentiles @ 2h.
   - record: candidate_site:uplink:90th_quantile_2h
     expr: quantile_over_time(0.9, switch:ifHCOutOctets:bps2m{ifAlias="uplink", machine=~"mlab2.*"}[2h])
   # k8s
@@ -277,7 +277,7 @@ groups:
   - record: machine:node_filesystem_used_ratio_12h_prediction:90th_quantile_2h
     expr: quantile_over_time(0.9, machine:node_filesystem_used_ratio:predict_linear3h_12h[2h])
 
-	# 90th percentiles @ 6h.
+  # 90th percentiles @ 6h.
   - record: candidate_site:uplink:90th_quantile_6h
     expr: quantile_over_time(0.9, switch:ifHCOutOctets:bps2m{ifAlias="uplink", machine=~"mlab2.*"}[6h])
   # k8s
@@ -290,7 +290,7 @@ groups:
   - record: machine:node_filesystem_used_ratio_12h_prediction:90th_quantile_6h
     expr: quantile_over_time(0.9, machine:node_filesystem_used_ratio:predict_linear3h_12h[6h])
 
-	# 98th percentiles @ 2h.
+  # 98th percentiles @ 2h.
   - record: candidate_site:uplink:98th_quantile_2h
     expr: quantile_over_time(0.98, switch:ifHCOutOctets:bps2m{ifAlias="uplink", machine=~"mlab2.*"}[2h])
   # k8s
@@ -303,7 +303,7 @@ groups:
   - record: machine:node_filesystem_used_ratio_12h_prediction:98th_quantile_2h
     expr: quantile_over_time(0.98, machine:node_filesystem_used_ratio:predict_linear3h_12h[2h])
 
-	# 98th percentiles @ 6h.
+  # 98th percentiles @ 6h.
   - record: candidate_site:uplink:98th_quantile_6h
     expr: quantile_over_time(0.98, switch:ifHCOutOctets:bps2m{ifAlias="uplink", machine=~"mlab2.*"}[6h])
   # k8s
