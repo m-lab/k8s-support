@@ -1,7 +1,7 @@
 local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
-local version = 'v0.1.9';
+local version = 'v0.1.10';
 
 {
   apiVersion: 'apps/v1',
