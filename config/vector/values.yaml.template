@@ -16,7 +16,7 @@ extraVolumeMounts:
   mountPath: /etc/vector/keys
   readOnly: true
 podLabels:
-- workload: vector
+  workload: vector
 sinks:
   stackdriver:
     type: gcp_stackdriver_logs
