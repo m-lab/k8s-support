@@ -34,24 +34,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
           },
         ],
-        startupProbe+: {
-          httpGet: {
-            path: '/metrics',
-            port: 9090,
-          },
-          // Allow up to 5min for the service to startup: 30*10.
-          failureThreshold: 30,
-          periodSeconds: 10,
-        },
-        livenessProbe+: {
-          httpGet: {
-            path: '/metrics',
-            port: 9090,
-          },
-          // After startup, the liveness should never fail.
-          failureThreshold: 1,
-          periodSeconds: 30,
-        },
         containers+: [
           {
             args: [
@@ -114,6 +96,24 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
             image: 'measurementlab/wehe-py3:v0.1.10',
             name: expName,
+            startupProbe+: {
+              httpGet: {
+                path: '/metrics',
+                port: 9090,
+              },
+              // Allow up to 5min for the service to startup: 30*10.
+              failureThreshold: 30,
+              periodSeconds: 10,
+            },
+            livenessProbe+: {
+              httpGet: {
+                path: '/metrics',
+                port: 9090,
+              },
+              // After startup, the liveness should never fail.
+              failureThreshold: 1,
+              periodSeconds: 30,
+            },
             volumeMounts: [
               exp.VolumeMount('wehe/replay') + {
                 mountPath: '/data/RecordReplay/ReplayDumpsTimestamped',
