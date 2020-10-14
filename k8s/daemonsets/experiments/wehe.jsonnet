@@ -113,9 +113,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 port: 9090,
               },
               // After startup, liveness should never fail.
-              // NOTE: allow several failures until k8s v1.18+.
-              // TODO: once startupProbe is available, failureThreshold should be 1.
-              failureThreshold: 5,
+              initialDelaySeconds: 300, // TODO: eliminate with k8s v1.18+
+              failureThreshold: 1,
               timeoutSeconds: 10,
               periodSeconds: 30,
             },
