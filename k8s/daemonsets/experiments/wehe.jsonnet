@@ -96,6 +96,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
             image: 'measurementlab/wehe-py3:v0.1.10',
             name: expName,
+            /* TODO: enable with k8s v1.18+
             startupProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -105,13 +106,17 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               failureThreshold: 30,
               periodSeconds: 10,
             },
+            */
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
                 port: 9090,
               },
-              // After startup, the liveness should never fail.
-              failureThreshold: 1,
+              // After startup, liveness should never fail.
+              // NOTE: allow several failures until k8s v1.18+.
+              // TODO: once startupProbe is available, failureThreshold should be 1.
+              failureThreshold: 5,
+              timeoutSeconds: 10,
               periodSeconds: 30,
             },
             volumeMounts: [
