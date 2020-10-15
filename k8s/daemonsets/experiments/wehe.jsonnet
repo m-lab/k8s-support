@@ -94,8 +94,30 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.1.9',
+            image: 'measurementlab/wehe-py3:v0.1.10',
             name: expName,
+            /* TODO: enable with k8s v1.18+
+            startupProbe+: {
+              httpGet: {
+                path: '/metrics',
+                port: 9090,
+              },
+              // Allow up to 5min for the service to startup: 30*10.
+              failureThreshold: 30,
+              periodSeconds: 10,
+            },
+            */
+            livenessProbe+: {
+              httpGet: {
+                path: '/metrics',
+                port: 9090,
+              },
+              // After startup, liveness should never fail.
+              initialDelaySeconds: 300, // TODO: eliminate with k8s v1.18+.
+              failureThreshold: 1,
+              timeoutSeconds: 10,
+              periodSeconds: 30,
+            },
             volumeMounts: [
               exp.VolumeMount('wehe/replay') + {
                 mountPath: '/data/RecordReplay/ReplayDumpsTimestamped',
