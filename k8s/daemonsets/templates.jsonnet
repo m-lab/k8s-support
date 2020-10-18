@@ -1,4 +1,4 @@
-local ndtVersion = 'v0.20.3';
+local ndtVersion = 'v0.20.4';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
