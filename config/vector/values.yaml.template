@@ -29,3 +29,6 @@ sinks:
       resource.node_id = "${VECTOR_SELF_NODE_NAME}"
       project_id = "{{PROJECT}}"
       log_id = "${VECTOR_SELF_NODE_NAME}"
+tolerations:
+- key: node-role.kubernetes.io/master
+  effect: NoSchedule
