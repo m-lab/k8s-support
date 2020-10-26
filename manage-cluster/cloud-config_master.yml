@@ -34,6 +34,28 @@ write_files:
     [Install]
     WantedBy=multi-user.target
 
+- path: /etc/systemd/system/bmc-store-password.service
+  permissions: 0644
+  owner: root
+  content: |
+    [Unit]
+    Description=bmc-store-password
+    After=docker.service
+    Requires=docker.service
+
+    [Service]
+    TimeoutStartSec=120
+    Restart=always
+    ExecStartPre=-/usr/bin/docker stop %N
+    ExecStartPre=-/usr/bin/docker rm %N
+    ExecStart=/usr/bin/docker run --publish 8801:8801 \
+                                  --name %N -- \
+                                  measurementlab/epoxy-extensions:bmc-store-password-v0.1.1
+    ExecStop=/usr/bin/docker stop %N
+
+    [Install]
+    WantedBy=multi-user.target
+
 - path: /etc/systemd/system/gcp-loadbalancer-proxy.service
   permissions: 0644
   owner: root
@@ -171,4 +193,5 @@ runcmd:
 - systemctl start reboot-node.timer
 - systemctl enable token-server.service
 - systemctl start token-server.service
-
+- systemctl enable bmc-store-password.service
+- systemctl start bmc-store-password.service
