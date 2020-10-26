@@ -187,6 +187,14 @@ if [[ -n "${EXISTING_TOKEN_SERVER_FW}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
+EXISTING_BMC_STORE_PASSWORD_FW=$(gcloud compute firewall-rules list \
+    --filter "name=${GCE_BASE_NAME}-bmc-store-password" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_BMC_STORE_PASSWORD_FW}" ]]; then
+  gcloud compute firewall-rules delete "${GCE_BASE_NAME}-bmc-store-password" \
+      "${GCP_ARGS[@]}"
+fi
+
 EXISTING_NDT_CLOUD_FW=$(gcloud compute firewall-rules list \
     --filter "name=${GCE_BASE_NAME}-ndt-cloud" \
     "${GCP_ARGS[@]}" || true)
@@ -196,44 +204,94 @@ if [[ -n "${EXISTING_NDT_CLOUD_FW}" ]]; then
 fi
 
 
-
-# Delete any existing forwarding rule for the internal load balancer.
-EXISTING_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
+# Delete any existing forwarding rule for the token-server ePoxy extension
+# internal load balancer.
+EXISTING_TOKEN_SERVER_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_FWD}" ]]; then
+if [[ -n "${EXISTING_TOKEN_SERVER_INTERNAL_FWD}" ]]; then
   gcloud compute forwarding-rules delete "${TOKEN_SERVER_BASE_NAME}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 fi
 
-# Delete any existing backend service for the token-server.
-EXISTING_BACKEND_SERVICE=$(gcloud compute backend-services list \
+# Delete any existing backend service for the token-server ePoxy extension
+# service.
+EXISTING_TOKEN_SERVER_BACKEND_SERVICE=$(gcloud compute backend-services list \
     --filter "name=${TOKEN_SERVER_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_BACKEND_SERVICE}" ]]; then
+if [[ -n "${EXISTING_TOKEN_SERVER_BACKEND_SERVICE}" ]]; then
   gcloud compute backend-services delete "${TOKEN_SERVER_BASE_NAME}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 fi
 
-# Delete any existing  TCP health check for the token-server service.
-EXISTING_TOKEN_HEALTH_CHECK=$(gcloud compute health-checks list \
+# Delete any existing TCP health check for the token-server ePoxy extension
+# service.
+EXISTING_TOKEN_SERVER_HEALTH_CHECK=$(gcloud compute health-checks list \
     --filter "name=${TOKEN_SERVER_BASE_NAME}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_TOKEN_HEALTH_CHECK}" ]]; then
+if [[ -n "${EXISTING_TOKEN_SERVER_HEALTH_CHECK}" ]]; then
   gcloud compute health-checks delete "${TOKEN_SERVER_BASE_NAME}" "${GCP_ARGS[@]}"
 fi
 
-EXISTING_INTERNAL_LB_IP=$(gcloud compute addresses list \
+# Delete any existing load balancer IP for the token-server ePoxy extension
+# service.
+EXISTING_TOKEN_SERVER_INTERNAL_LB_IP=$(gcloud compute addresses list \
     --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
     --format "value(address)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_INTERNAL_LB_IP}" ]]; then
+if [[ -n "${EXISTING_TOKEN_SERVER_INTERNAL_LB_IP}" ]]; then
   gcloud compute addresses delete "${TOKEN_SERVER_BASE_NAME}-lb" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing forwarding rule for the bmc-store-password internal load
+# balancer.
+EXISTING_BMC_STORE_PASSWORD_INTERNAL_FWD=$(gcloud compute forwarding-rules list \
+    --filter "name=${BMC_STORE_PASSWORD_BASE_NAME} AND region:${GCE_REGION}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_BMC_STORE_PASSWORD_INTERNAL_FWD}" ]]; then
+  gcloud compute forwarding-rules delete "${BMC_STORE_PASSWORD_BASE_NAME}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing backend service for the bmc-store-password ePoxy
+# extension service.
+EXISTING_BMC_STORE_PASSWORD_BACKEND_SERVICE=$(gcloud compute backend-services list \
+    --filter "name=${BMC_STORE_PASSWORD_BASE_NAME} AND region:${GCE_REGION}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_BMC_STORE_PASSWORD_BACKEND_SERVICE}" ]]; then
+  gcloud compute backend-services delete "${BMC_STORE_PASSWORD_BASE_NAME}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing TCP health check for the bmc-store-password ePoxy
+# extension service.
+EXISTING_BMC_STORE_PASSWORD_HEALTH_CHECK=$(gcloud compute health-checks list \
+    --filter "name=${BMC_STORE_PASSWORD_BASE_NAME}" \
+    --format "value(name)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_BMC_STORE_PASSWORD_HEALTH_CHECK}" ]]; then
+  gcloud compute health-checks delete "${BMC_STORE_PASSWORD_BASE_NAME}" "${GCP_ARGS[@]}"
+fi
+
+# Delete any existing load balancer IP for the bmc-store-password ePoxy
+# extension service.
+EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_IP=$(gcloud compute addresses list \
+    --filter "name=${BMC_STORE_PASSWORD_BASE_NAME}-lb AND region:${GCE_REGION}" \
+    --format "value(address)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_IP}" ]]; then
+  gcloud compute addresses delete "${BMC_STORE_PASSWORD_BASE_NAME}-lb" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 fi
@@ -414,11 +472,20 @@ if [[ -z "${EPOXY_SUBNET}" ]]; then
 fi
 
 # Create firewall rule allowing the ePoxy server to communicate with the
-# token-server
+# token-server extension
 gcloud compute firewall-rules create "${GCE_BASE_NAME}-token-server" \
     --network "${GCE_NETWORK}" \
     --action "allow" \
-    --rules "tcp:8800" \
+    --rules "tcp:${TOKEN_SERVER_PORT}" \
+    --source-ranges "${EPOXY_SUBNET}" \
+    "${GCP_ARGS[@]}"
+
+# Create firewall rule allowing the ePoxy server to communicate with the
+# bmc-store-password extension.
+gcloud compute firewall-rules create "${GCE_BASE_NAME}-bmc-store-password" \
+    --network "${GCE_NETWORK}" \
+    --action "allow" \
+    --rules "tcp:${BMC_STORE_PASSWORD_PORT}" \
     --source-ranges "${EPOXY_SUBNET}" \
     "${GCP_ARGS[@]}"
 
@@ -440,7 +507,7 @@ gcloud compute addresses create "${TOKEN_SERVER_BASE_NAME}-lb" \
     --region "${GCE_REGION}" \
     --subnet "${GCE_K8S_SUBNET}" \
     "${GCP_ARGS[@]}"
-INTERNAL_LB_IP=$(gcloud compute addresses list \
+INTERNAL_TOKEN_SERVER_LB_IP=$(gcloud compute addresses list \
     --filter "name=${TOKEN_SERVER_BASE_NAME}-lb AND region:${GCE_REGION}" \
     --format "value(address)" \
     "${GCP_ARGS[@]}")
@@ -448,44 +515,44 @@ INTERNAL_LB_IP=$(gcloud compute addresses list \
 # Check the value of the existing IP address associated with the internal load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
-TS_DOMAIN_NAME="token-server-${GCE_BASE_NAME}"
-EXISTING_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
+TOKEN_SERVER_DOMAIN_NAME="token-server-${GCE_BASE_NAME}"
+EXISTING_TOKEN_SERVER_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
     --zone "${PROJECT}-measurementlab-net" \
-    --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+    --name "${TOKEN_SERVER_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
     --format "value(rrdatas[0])" \
     "${GCP_ARGS[@]}" || true)
-if [[ -z "${EXISTING_INTERNAL_LB_DNS_IP}" ]]; then
+if [[ -z "${EXISTING_TOKEN_SERVER_INTERNAL_LB_DNS_IP}" ]]; then
   # Add the record.
   gcloud dns record-sets transaction start \
       --zone "${PROJECT}-measurementlab-net" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TOKEN_SERVER_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${INTERNAL_LB_IP}" \
+      "${INTERNAL_TOKEN_SERVER_LB_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction execute \
       --zone "${PROJECT}-measurementlab-net" \
       "${GCP_ARGS[@]}"
-elif [[ "${EXISTING_INTERNAL_LB_DNS_IP}" != "${INTERNAL_LB_IP}" ]]; then
+elif [[ "${EXISTING_TOKEN_SERVER_INTERNAL_LB_DNS_IP}" != "${INTERNAL_TOKEN_SERVER_LB_IP}" ]]; then
   gcloud dns record-sets transaction start \
       --zone "${PROJECT}-measurementlab-net" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction remove \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TOKEN_SERVER_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${EXISTING_INTERNAL_LB_DNS_IP}" \
+      "${EXISTING_TOKEN_SERVER_INTERNAL_LB_DNS_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction add \
       --zone "${PROJECT}-measurementlab-net" \
-      --name "${TS_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --name "${TOKEN_SERVER_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
       --type A \
       --ttl 300 \
-      "${INTERNAL_LB_IP}" \
+      "${INTERNAL_TOKEN_SERVER_LB_IP}" \
       "${GCP_ARGS[@]}"
   gcloud dns record-sets transaction execute \
       --zone "${PROJECT}-measurementlab-net" \
@@ -508,12 +575,97 @@ gcloud compute backend-services create "${TOKEN_SERVER_BASE_NAME}" \
 # Create the forwarding rule for the token-server load balancer.
 gcloud compute forwarding-rules create "${TOKEN_SERVER_BASE_NAME}" \
     --load-balancing-scheme internal \
-    --address "${INTERNAL_LB_IP}" \
+    --address "${INTERNAL_TOKEN_SERVER_LB_IP}" \
     --ports "${TOKEN_SERVER_PORT}" \
     --network "${GCE_NETWORK}" \
     --subnet "${GCE_K8S_SUBNET}" \
     --region "${GCE_REGION}" \
     --backend-service "${TOKEN_SERVER_BASE_NAME}" \
+    "${GCP_ARGS[@]}"
+
+#
+# INTERNAL LOAD BALANCING for the bmc-store-password ePoxy extension.
+#
+
+# Create a static IP for the extension's internal load balancer.
+gcloud compute addresses create "${BMC_STORE_PASSWORD_BASE_NAME}-lb" \
+    --region "${GCE_REGION}" \
+    --subnet "${GCE_K8S_SUBNET}" \
+    "${GCP_ARGS[@]}"
+INTERNAL_BMC_STORE_PASSWORD_LB_IP=$(gcloud compute addresses list \
+    --filter "name=${BMC_STORE_PASSWORD_BASE_NAME}-lb AND region:${GCE_REGION}" \
+    --format "value(address)" \
+    "${GCP_ARGS[@]}")
+
+# Check the value of the existing IP address associated with the internal load
+# balancer name. If it's the same as the current/existing IP, then leave DNS
+# alone, else delete the existing DNS RR and create a new one.
+BMC_STORE_PASSWORD_DOMAIN_NAME="bmc-store-password-${GCE_BASE_NAME}"
+EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
+    --zone "${PROJECT}-measurementlab-net" \
+    --name "${BMC_STORE_PASSWORD_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+    --format "value(rrdatas[0])" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -z "${EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_DNS_IP}" ]]; then
+  # Add the record.
+  gcloud dns record-sets transaction start \
+      --zone "${PROJECT}-measurementlab-net" \
+      "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction add \
+      --zone "${PROJECT}-measurementlab-net" \
+      --name "${BMC_STORE_PASSWORD_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --type A \
+      --ttl 300 \
+      "${INTERNAL_BMC_STORE_PASSWORD_LB_IP}" \
+      "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction execute \
+      --zone "${PROJECT}-measurementlab-net" \
+      "${GCP_ARGS[@]}"
+elif [[ "${EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_DNS_IP}" != "${INTERNAL_BMC_STORE_PASSWORD_LB_IP}" ]]; then
+  gcloud dns record-sets transaction start \
+      --zone "${PROJECT}-measurementlab-net" \
+      "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction remove \
+      --zone "${PROJECT}-measurementlab-net" \
+      --name "${BMC_STORE_PASSWORD_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --type A \
+      --ttl 300 \
+      "${EXISTING_BMC_STORE_PASSWORD_INTERNAL_LB_DNS_IP}" \
+      "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction add \
+      --zone "${PROJECT}-measurementlab-net" \
+      --name "${BMC_STORE_PASSWORD_DOMAIN_NAME}.${PROJECT}.measurementlab.net." \
+      --type A \
+      --ttl 300 \
+      "${INTERNAL_BMC_STORE_PASSWORD_LB_IP}" \
+      "${GCP_ARGS[@]}"
+  gcloud dns record-sets transaction execute \
+      --zone "${PROJECT}-measurementlab-net" \
+      "${GCP_ARGS[@]}"
+fi
+
+# Create the TCP health check for the bmc-store-password backend service.
+gcloud compute health-checks create tcp "${BMC_STORE_PASSWORD_BASE_NAME}" \
+    --port "${BMC_STORE_PASSWORD_PORT}" \
+    "${GCP_ARGS[@]}"
+
+# Create the backend service.
+gcloud compute backend-services create "${BMC_STORE_PASSWORD_BASE_NAME}" \
+    --load-balancing-scheme internal \
+    --region "${GCE_REGION}" \
+    --health-checks "${BMC_STORE_PASSWORD_BASE_NAME}" \
+    --protocol tcp \
+    "${GCP_ARGS[@]}"
+
+# Create the forwarding rule for the bmc-store-password load balancer.
+gcloud compute forwarding-rules create "${BMC_STORE_PASSWORD_BASE_NAME}" \
+    --load-balancing-scheme internal \
+    --address "${INTERNAL_BMC_STORE_PASSWORD_LB_IP}" \
+    --ports "${BMC_STORE_PASSWORD_PORT}" \
+    --network "${GCE_NETWORK}" \
+    --subnet "${GCE_K8S_SUBNET}" \
+    --region "${GCE_REGION}" \
+    --backend-service "${BMC_STORE_PASSWORD_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
 # Determine the internal CIDR of the k8s subnet.

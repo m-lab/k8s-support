@@ -95,7 +95,8 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
 EOF
 
 # If they exist, delete the node name from various loadbalancer group resources.
-delete_token_server_backend "${GCE_NAME}" "${GCE_ZONE}"
+delete_server_backend "${GCE_NAME}" "${GCE_ZONE}" "${TOKEN_SERVER_BASE_NAME}"
+delete_server_backend "${GCE_NAME}" "${GCE_ZONE}" "${BMC_STORE_PASSWORD_BASE_NAME}"
 delete_target_pool_instance "${GCE_NAME}" "${GCE_ZONE}"
 delete_instance_group "${GCE_NAME}" "${GCE_ZONE}"
 

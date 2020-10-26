@@ -133,7 +133,7 @@ function create_master {
 
   # Create an instance group for our internal load balancer, add this GCE
   # instance to the group, then attach the instance group to our backend
-  # service.
+  # services for ePoxy extension.
   gcloud compute instance-groups unmanaged create "${gce_name}" \
       --zone "${gce_zone}" \
       "${GCP_ARGS[@]}"
@@ -146,9 +146,13 @@ function create_master {
       --instance-group-zone "${gce_zone}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
+  gcloud compute backend-services add-backend "${BMC_STORE_PASSWORD_BASE_NAME}" \
+      --instance-group "${gce_name}" \
+      --instance-group-zone "${gce_zone}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 
-  # Become root, install and configure all the k8s components, and launch the
-  # k8s-token-server and gcp-loadbalancer-proxy.
+  # Become root, install and configure all the k8s components.
   gcloud compute ssh "${GCE_ARGS[@]}" "${gce_name}" <<-EOF
     set -euxo pipefail
     sudo --login
@@ -219,7 +223,7 @@ EOF
     # while in there, install the fuse package so we can extract the fusermount
     # binary
     docker run --rm --volume /opt/bin:/tmp/go/bin --env "GOPATH=/tmp/go" \
-        golang:1.13 \
+        golang:1.15 \
         /bin/bash -c \
         "go get -u github.com/googlecloudplatform/gcsfuse &&
         apt-get update --quiet=2 &&
@@ -467,18 +471,19 @@ function delete_target_pool_instance {
   fi
 }
 
-# Removes a backend from the token-server backend service.
-function delete_token_server_backend {
+# Removes a backend from a backend service.
+function delete_server_backend {
   local name=$1
   local zone=$2
+  local backend=$3
   local existing_backends
 
-  existing_backends=$(gcloud compute backend-services describe "${TOKEN_SERVER_BASE_NAME}" \
+  existing_backends=$(gcloud compute backend-services describe "${backend}" \
       --format "value(backends)" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}" || true)
   if echo "${existing_backends}" | grep "${name}"; then
-    gcloud compute backend-services remove-backend "${TOKEN_SERVER_BASE_NAME}" \
+    gcloud compute backend-services remove-backend "${backend}" \
         --instance-group "${name}" \
         --instance-group-zone "${zone}" \
         --region "${GCE_REGION}" \
