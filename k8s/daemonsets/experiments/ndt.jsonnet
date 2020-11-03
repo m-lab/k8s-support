@@ -35,9 +35,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              # TODO(ooni/probe-engine/issues/562): require access tokens from NDT7
-              #  clients after ooni is migrated to locate/v2.
-              # '-ndt7.token.required=true',
+              '-ndt7.token.required=true',
             ],
             env: [
               {
