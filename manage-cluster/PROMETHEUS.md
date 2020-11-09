@@ -9,7 +9,7 @@ cluster, and is always scheduled to run on a dedicated GCE VM named
 [prometheus-platform-cluster](https://console.cloud.google.com/compute/instancesDetail/zones/us-east1-b/instances/prometheus-platform-cluster?project=mlab-oti).
 The VM has a dedicated persistent disk (PD) which is only used for Prometheus
 data. The PD is _not_ a boot disk. The disk should be exposed to the OS as
-`/dev/sdb` and is mounted at `/mnt/local`. Resizing a PD attached to VM in
+`/dev/sdb` and is mounted at `/mnt/local`. Resizing a PD attached to a VM in
 GCP is very easy, and the [Google
 documentation](https://cloud.google.com/compute/docs/disks/regional-persistent-disk#resize_repd)
 for how to do this is very straightforward. Once the PD has been resized in
