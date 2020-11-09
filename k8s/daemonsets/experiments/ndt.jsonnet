@@ -34,8 +34,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
-              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-ndt7.token.required=true',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub'
+              # TODO: enable after migrating users of all ndt7-client-* repos.
+              # '-ndt7.token.required=true',
             ],
             env: [
               {
