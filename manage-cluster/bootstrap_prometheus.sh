@@ -42,11 +42,11 @@ case $PROJECT in
     ;;
   mlab-staging)
     MACHINE_TYPE="n1-standard-8"
-    DISK_SIZE="1000GB"
+    DISK_SIZE="1500GB"
     ;;
   mlab-oti)
     MACHINE_TYPE="n1-highmem-16"
-    DISK_SIZE="2000GB"
+    DISK_SIZE="2500GB"
     ;;
   *)
     echo "Unknown GCP project: ${PROJECT}"
