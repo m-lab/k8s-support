@@ -185,8 +185,8 @@ groups:
   # The platform cluster has tens of thousands of containers, which makes
   # calculating container restarts very expensive, even prohibitive over a long
   # enough period. This recording rule should help speed things up.
-  - record: container:kube_pod_container_status_restarts:sum1d
-    exp: (kube_pod_container_status_restarts_total - (kube_pod_container_status_restarts_total offset 1d)) > 0
+  - record: container:kube_pod_container_status_restarts:increase1d
+    expr: (kube_pod_container_status_restarts_total - (kube_pod_container_status_restarts_total offset 1d)) > 0
 
 ## NDT Early Warning aggregation rules.
 #
