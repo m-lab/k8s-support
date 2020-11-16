@@ -45,7 +45,7 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 
 # Add the required Helm repositories.
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
-./linux-amd64/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+./linux-amd64/helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ./linux-amd64/helm repo add vector https://packages.timber.io/helm/nightly
 
 # Helm 3 does not automatically create namespaces anymore.
@@ -54,10 +54,10 @@ kubectl create namespace nginx-ingress --dry-run -o json | kubectl apply -f -
 kubectl create namespace logging --dry-run -o json | kubectl apply -f -
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
-./linux-amd64/helm upgrade --install nginx-ingress \
+./linux-amd64/helm upgrade --install ingress-nginx \
   --namespace nginx-ingress \
   --values ../config/nginx-ingress/helm-values-overrides.yaml \
-  stable/nginx-ingress
+  ingress-nginx/ingress-nginx
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
 # by default.
