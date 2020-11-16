@@ -20,7 +20,7 @@ podLabels:
 sinks:
   stackdriver:
     type: gcp_stackdriver_logs
-    inputs: ["kubernetes_logs"]
+    inputs: ["kernel_log", "kubernetes_logs"]
     rawConfig: |
       resource.type = "generic_node"
       resource.projectId = "{{PROJECT}}"
@@ -29,6 +29,17 @@ sinks:
       resource.node_id = "${VECTOR_SELF_NODE_NAME}"
       project_id = "{{PROJECT}}"
       log_id = "${VECTOR_SELF_NODE_NAME}"
+sources:
+  journald:
+    type: "journald"
 tolerations:
 - key: node-role.kubernetes.io/master
   effect: NoSchedule
+transforms:
+  kernel_log:
+    type: "filter"
+    inputs: ["journald"]
+    rawConfig: |
+      condition."SYSLOG_IDENTIFIER.eq" = "kernel"
+      # This catches anything with priority warning (4) to critical (0).
+      condition."PRIORITY.eq" = ["0", "1", "2", "3", "4"]
