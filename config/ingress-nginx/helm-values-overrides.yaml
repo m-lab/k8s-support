@@ -1,4 +1,6 @@
 controller:
+  admissionWebhooks:
+    enabled: false
   hostNetwork: true
   nodeSelector:
     run: prometheus-server
