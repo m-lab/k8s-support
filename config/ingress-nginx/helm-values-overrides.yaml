@@ -4,7 +4,8 @@ controller:
   hostNetwork: true
   nodeSelector:
     run: prometheus-server
-  reportNodeInternalIp: true
+  publishService:
+    enabled: false
   service:
     enabled: false
   updateStrategy:
