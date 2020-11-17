@@ -9,11 +9,17 @@ extraVolumes:
   secret:
     defaultMode: 420
     secretName: vector-credentials
+- name: machine-id
+  hostPath:
+    path: /etc/machine-id
 extraVolumeMounts:
 - name: docker
   mountPath: /cache/docker/containers
 - name: credentials
   mountPath: /etc/vector/keys
+  readOnly: true
+- name: machine-id
+  mountPath: /etc/machine-id
   readOnly: true
 podLabels:
   workload: vector
