@@ -18,6 +18,10 @@ extraVolumeMounts:
 - name: credentials
   mountPath: /etc/vector/keys
   readOnly: true
+# The Vector journald source uses journalctl inside the container to read logs.
+# journalctl constructs the path to the system journal using the contents of
+# /etc/machine-id, so it must be mounted in the container, else journalctl will
+# fail to find any log files.
 - name: machine-id
   mountPath: /etc/machine-id
   readOnly: true
