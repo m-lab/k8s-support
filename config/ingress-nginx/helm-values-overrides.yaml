@@ -1,14 +1,18 @@
 controller:
+  admissionWebhooks:
+    enabled: false
   hostNetwork: true
   nodeSelector:
     run: prometheus-server
+  publishService:
+    enabled: false
   service:
     enabled: false
   updateStrategy:
     type: Recreate
 defaultBackend:
+  enabled: true
   nodeSelector:
     run: prometheus-server
 rbac:
   create: true
-
