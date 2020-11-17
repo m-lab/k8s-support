@@ -56,7 +56,7 @@ kubectl create namespace logging --dry-run -o json | kubectl apply -f -
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install ingress-nginx \
   --namespace ingress-nginx \
-  --values ../config/nginx-ingress/helm-values-overrides.yaml \
+  --values ../config/ingress-nginx/helm-values-overrides.yaml \
   ingress-nginx/ingress-nginx
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer

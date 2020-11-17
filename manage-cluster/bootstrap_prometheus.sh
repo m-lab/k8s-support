@@ -150,7 +150,7 @@ fi
 
 # Create a firewall rule allowing external access to ports:
 #   TCP 22: SSH
-#   TCP 80/443: nginx-ingress
+#   TCP 80/443: ingress-nginx
 gcloud compute firewall-rules create "${PROM_BASE_NAME}-external" \
     --network "${GCE_NETWORK}" \
     --action "allow" \
