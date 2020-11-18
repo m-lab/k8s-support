@@ -178,10 +178,6 @@ groups:
 
 ## Ops: Tactical & SRE Overview Dashboard.
 
-  # This rule speeds up the probably OOM query used by the SRE overview dashboard.
-  - record: err:dmesg_logs:increase_24h
-    expr: increase(dmesg_logs{priority="err"}[24h]) > 0
-
   # The platform cluster has tens of thousands of containers, which makes
   # calculating container restarts very expensive, even prohibitive over a long
   # enough period. This recording rule should help speed things up.
