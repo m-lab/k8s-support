@@ -94,7 +94,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.1.10',
+            image: 'measurementlab/wehe-py3:v0.1.11',
             name: expName,
             /* TODO: enable with k8s v1.18+
             startupProbe+: {
