@@ -48,8 +48,8 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
           },
           {
             hostPath: {
-              path: /etc/os-release,
-              type: File,
+              path: '/etc/os-release',
+              type: 'File',
             },
             name: 'etc-os-release',
           },
