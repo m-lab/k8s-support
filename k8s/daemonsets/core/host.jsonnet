@@ -26,6 +26,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
                 name: 'nodeinfo-config',
                 readOnly: true,
               },
+              {
+                mountPath: '/etc/os-release',
+                name: 'etc-os-release',
+                readOnly: true,
+              },
               exp.VolumeMount(expName),
             ],
           },
@@ -40,6 +45,13 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
               name: nodeinfoConfig.metadata.name,
             },
             name: 'nodeinfo-config',
+          },
+          {
+            hostPath: {
+              path: /etc/os-release,
+              type: File,
+            },
+            name: 'etc-os-release',
           },
         ],
       },
