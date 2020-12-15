@@ -37,10 +37,11 @@ local virtualCNIConf = {
 // It should not contain any index2ip stuff. It is the backup config for when
 // multus isn't working or a pod is not tagged with any network annotations.
 //
-// cniVersion:0.2.0 is the CNI version that index2ip knows about.
+// cniVersion:0.3.1 is a CNI version that multus knows about. The index2ip IPAM
+// plugin only knows about 0.2.0, but multus handles this.
 local physicalCNIConf = {
   name: 'multus-network',
-  cniVersion: '0.2.0',
+  cniVersion: '0.3.1',
   type: 'multus',
   kubeconfig: '/etc/kubernetes/kubelet.conf',
   multusNamespace: 'default',
