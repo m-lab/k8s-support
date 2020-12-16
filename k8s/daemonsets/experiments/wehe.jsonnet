@@ -127,6 +127,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 name: 'wehe-ca-cache',
               },
             ],
+            // Advertise the prometheus port so it can be discovered by Prometheus.
+            ports: [
+              {
+                containerPort: 9990,
+              },
+            ],
           },
         ],
         volumes+: [
