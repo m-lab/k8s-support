@@ -21,6 +21,10 @@ controlPlane:
     bindPort: 6443
 nodeRegistration:
   name: "{{MASTER_NAME}}"
+  kubeletExtraArgs:
+    container-runtime: "remote"
+    container-runtime-endpoint: "/run/containerd/containerd.sock"
+    resolv-conf: "/run/systemd/resolve/resolv.conf"
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration

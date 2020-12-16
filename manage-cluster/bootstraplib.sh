@@ -202,6 +202,12 @@ function create_master {
     cp etcd-${ETCDCTL_VERSION}-linux-amd64/etcdctl /opt/bin
     rm -rf etcd-${ETCDCTL_VERSION}-linux-amd64
 
+    # Configure containerd. We only need to make one change to the default
+    # configuration, which is to configure runc to use the systemd cgroup
+    # driver.
+    containerd config default | \
+      sed -e '/containerd\.runtimes\.runc/a \          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]\n            SystemdCgroup = true'
+
     # Enable and start the kubelet service
     systemctl enable --now kubelet.service
     systemctl daemon-reload
