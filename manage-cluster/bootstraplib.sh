@@ -392,7 +392,7 @@ EOF
 	export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
 	export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 	export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-  export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
+	export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
 EOF2
     ) | tee -a /root/.profile /root/.bashrc"
 EOF
