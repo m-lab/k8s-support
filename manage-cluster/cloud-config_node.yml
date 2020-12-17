@@ -1,7 +1,7 @@
 #cloud-config
 
 packages:
-- docker.io
+- containerd
 - ebtables
 - iptables
 - socat
@@ -29,23 +29,21 @@ write_files:
   permissions: 0644
   owner: root:root
   content: |
+    overlay
     br_netfilter
 
-- path: /etc/docker/daemon.json
+# The odd number of 999 because GCE nodes already have a file named
+# 99-gce.conf, which, among other things, disables ip forwarding.
+- path: /etc/sysctl.d/999-containerd.conf
   permissions: 0644
   owner: root:root
   content: |
-    {
-      "exec-opts": [
-        "native.cgroupdriver=systemd"
-      ],
-      "log-driver": "json-file",
-      "log-opts": {
-        "max-size": "100m"
-      },
-      "storage-driver": "overlay2"
-    }
+    net.ipv4.ip_forward                 = 1
+    net.bridge.bridge-nf-call-iptables  = 1
+    net.bridge.bridge-nf-call-ip6tables = 1
 
 runcmd:
-- systemctl enable docker
-- systemctl start docker
+- sysctl --system
+- systemctl restart systemd-modules-load.service
+- systemctl enable containerd
+- systemctl start containerd
