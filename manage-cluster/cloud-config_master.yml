@@ -50,7 +50,7 @@ write_files:
     ExecStartPre=-/usr/bin/docker rm %N
     ExecStart=/usr/bin/docker run --publish 8801:8801 \
                                   --name %N -- \
-                                  measurementlab/epoxy-extensions:bmc-store-password-v0.2.0
+                                  measurementlab/epoxy-extensions:bmc_store_password-v0.2.0
     ExecStop=/usr/bin/docker stop %N
 
     [Install]
