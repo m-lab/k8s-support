@@ -27,7 +27,7 @@ write_files:
                                   --volume /etc:/etc:ro \
                                   --volume /:/ro:ro \
                                   --name %N -- \
-                                  measurementlab/k8s-token-server:v2.9.0 \
+                                  measurementlab/epoxy-extensions:token_server-v0.2.0 \
                                   -command /ro/opt/bin/kubeadm
     ExecStop=/usr/bin/docker stop %N
 
@@ -50,7 +50,7 @@ write_files:
     ExecStartPre=-/usr/bin/docker rm %N
     ExecStart=/usr/bin/docker run --publish 8801:8801 \
                                   --name %N -- \
-                                  measurementlab/epoxy-extensions:bmc-store-password-v0.1.1
+                                  measurementlab/epoxy-extensions:bmc-store-password-v0.2.0
     ExecStop=/usr/bin/docker stop %N
 
     [Install]
