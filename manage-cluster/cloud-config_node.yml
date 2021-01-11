@@ -14,7 +14,6 @@ write_files:
   permissions: 0600
   owner: root:root
   content: |
-    UsePrivilegeSeparation sandbox
     Subsystem sftp internal-sftp
     ClientAliveInterval 180
     UseDNS no
