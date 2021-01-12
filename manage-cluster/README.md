@@ -33,7 +33,7 @@ These steps must be done manually before running the cluster bootstrap script.
 $ ./bootstrap_k8s_master_cluster.sh <gcp-project-name>
 ```
 
-# The ./bootstrap\_k8s\_master\_cluster.sh script
+# The ./bootstrap\_platform\_cluster.sh script
 This is a ridiculously long bash script, but it is not complicated; there are
 just a lot of steps to take and commands to be run. Additionally, line wrapping
 for readability makes is a good deal longer than it might otherwise be.  The
@@ -53,7 +53,7 @@ basic flow of the script boils down to this:
    target-pool. In essence, this forwarding-rule is the load balancer.
 5. Create a firewall rule allowing access to sshd and the k8s-api-server from
    anywhere.
- 
+
 ## Configure internal load balancing
 1. Determine/create an internal IP for the internal load balancer, and update
    Google Cloud DNS accordingly.
@@ -74,21 +74,3 @@ basic flow of the script boils down to this:
 5. Login to the GCE instance and install any necessary packages and
    configurations.
 6. Configure k8s and etcd using `kubeadm`.
-
-# gcp-loadbalancer-proxy
-Our k8s api servers only run over HTTPS, but currently the TCP network load
-balancer in GCP only supports HTTP health checks. Therefore we must run a
-container that will expose an HTTP port and will run an HTTPS request on the
-api-server on the localhost. From
-https://cloud.google.com/load-balancing/docs/network/:
-
-> Network Load Balancing relies on legacy HTTP Health checks for determining
-> instance health. Even if your service does not use HTTP, you'll need to at least
-> run a basic web server on each instance that the health check system can
-> query.
-
-https://github.com/kubernetes/kubernetes/issues/43784#issuecomment-415090237
-
-For this purpose a special purpose
-[gcp-loadbalancer-proxy](https://github.com/m-lab/gcp-loadbalancer-proxy) was
-created. It gets installed automatically in bootstrap\_k8s\_master\_cluster.sh.

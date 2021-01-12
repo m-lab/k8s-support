@@ -123,42 +123,54 @@ fi
 # This script assumes you want to start totally fresh.
 
 # Delete any existing forwarding rule for our external load balancer.
-EXISTING_FWD=$(gcloud compute forwarding-rules list \
+EXISTING_API_FWD=$(gcloud compute forwarding-rules list \
     --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
     --format "value(creationTimestamp)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_FWD}" ]]; then
+if [[ -n "${EXISTING_API_FWD}" ]]; then
   gcloud compute forwarding-rules delete "${GCE_BASE_NAME}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 fi
 
-# Delete any existing target pool for the external load balancer.
-EXISTING_TARGET_POOL=$(gcloud compute target-pools list \
+# Delete any existing backend service for the API cluster.
+EXISTING_API_BACKEND_SERVICE=$(gcloud compute backend-services list \
     --filter "name=${GCE_BASE_NAME} AND region:${GCE_REGION}" \
-    --format "value(creationTimestamp)" \
+    --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "$EXISTING_TARGET_POOL" ]]; then
-  gcloud compute target-pools delete "${GCE_BASE_NAME}" \
+if [[ -n "${EXISTING_API_BACKEND_SERVICE}" ]]; then
+  gcloud compute backend-services delete "${GCE_BASE_NAME}" \
       --region "${GCE_REGION}" \
       "${GCP_ARGS[@]}"
 fi
 
-# Delete any existing HTTP health checks for the external load balanced target
-# pool.
-EXISTING_HEALTH_CHECK=$(gcloud compute http-health-checks list \
+# Delete any existing TCP health check for the API cluster.
+EXISTING_API_HEALTH_CHECK=$(gcloud compute health-checks list \
     --filter "name=${GCE_BASE_NAME}" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_HEALTH_CHECK}" ]]; then
-  gcloud compute http-health-checks delete "${GCE_BASE_NAME}" "${GCP_ARGS[@]}"
+if [[ -n "${EXISTING_API_HEALTH_CHECK}" ]]; then
+  gcloud compute health-checks delete "${GCE_BASE_NAME}" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
 fi
 
-EXISTING_EXTERNAL_FW=$(gcloud compute firewall-rules list \
+# Delete any existing load balancer IP for the API cluster.
+EXISTING_API_LB_IP=$(gcloud compute addresses list \
+    --filter "name=${GCE_BASE_NAME}-lb AND region:${GCE_REGION}" \
+    --format "value(address)" \
+    "${GCP_ARGS[@]}" || true)
+if [[ -n "${EXISTING_API_LB_IP}" ]]; then
+  gcloud compute addresses delete "${GCE_BASE_NAME}-lb" \
+      --region "${GCE_REGION}" \
+      "${GCP_ARGS[@]}"
+fi
+
+EXISTING_API_FW=$(gcloud compute firewall-rules list \
     --filter "name=${GCE_BASE_NAME}-external" \
     --format "value(name)" \
     "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_EXTERNAL_FW}" ]]; then
+if [[ -n "${EXISTING_API_FW}" ]]; then
   gcloud compute firewall-rules delete "${GCE_BASE_NAME}-external" \
       "${GCP_ARGS[@]}"
 fi
@@ -354,22 +366,14 @@ gcloud compute networks subnets create "${GCE_K8S_SUBNET}" \
 
 # EXTERNAL LOAD BALANCER
 #
-# Create or determine a static IP for the external k8s api-server load balancer.
-EXISTING_EXTERNAL_LB_IP=$(gcloud compute addresses list \
+# Create a static IP for the external k8s api-server load balancer.
+gcloud compute addresses create "${GCE_BASE_NAME}-lb" \
+    --region "${GCE_REGION}" \
+    "${GCP_ARGS[@]}"
+EXTERNAL_LB_IP=$(gcloud compute addresses list \
     --filter "name=${GCE_BASE_NAME}-lb AND region:${GCE_REGION}" \
     --format "value(address)" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -n "${EXISTING_EXTERNAL_LB_IP}" ]]; then
-  EXTERNAL_LB_IP="${EXISTING_EXTERNAL_LB_IP}"
-else
-  gcloud compute addresses create "${GCE_BASE_NAME}-lb" \
-      --region "${GCE_REGION}" \
-      "${GCP_ARGS[@]}"
-  EXTERNAL_LB_IP=$(gcloud compute addresses list \
-      --filter "name=${GCE_BASE_NAME}-lb AND region:${GCE_REGION}" \
-      --format "value(address)" \
-      "${GCP_ARGS[@]}")
-fi
+    "${GCP_ARGS[@]}")
 
 # Check the value of the existing IP address associated with the external load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
@@ -418,25 +422,27 @@ elif [[ "${EXISTING_EXTERNAL_LB_DNS_IP}" != "${EXTERNAL_LB_IP}" ]]; then
       "${GCP_ARGS[@]}"
 fi
 
-# Create the http-health-check for the nodes in the target pool.
-gcloud compute http-health-checks create "${GCE_BASE_NAME}" \
-    --port 8080 \
+# Create the https health-check for the API backend-service nodes.
+gcloud compute health-checks create https "${GCE_BASE_NAME}" \
+    --region "${GCE_REGION}" \
+    --port 6443 \
     --request-path "/healthz" \
     "${GCP_ARGS[@]}"
 
-# Create the target pool for our load balancer.
-gcloud compute target-pools create "${GCE_BASE_NAME}" \
+# Create the backend service for the API load balancer
+gcloud compute backend-services create "${GCE_BASE_NAME}" \
     --region "${GCE_REGION}" \
-    --http-health-check \
-    "${GCE_BASE_NAME}" \
+    --health-checks "${GCE_BASE_NAME}" \
+    --health-checks-region "${GCE_REGION}" \
+    --protocol tcp \
     "${GCP_ARGS[@]}"
 
-# Create the forwarding rule using the target pool we just created.
+# Create the forwarding rule for the API load balancer.
 gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
-    --region "${GCE_REGION}" \
+    --address "${EXTERNAL_LB_IP}" \
     --ports 6443 \
-    --address "${GCE_BASE_NAME}-lb" \
-    --target-pool "${GCE_BASE_NAME}" \
+    --region "${GCE_REGION}" \
+    --backend-service "${GCE_BASE_NAME}" \
     "${GCP_ARGS[@]}"
 
 # Create a firewall rule allowing external access to ports:

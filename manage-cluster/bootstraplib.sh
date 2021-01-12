@@ -121,19 +121,10 @@ function create_master {
       --format "value(networkInterfaces[0].networkIP)" \
       "${GCP_ARGS[@]}" || true)
 
-  # If this is the first instance being created, it must be added to the target
-  # pool now, else creating the initial cluster will fail. Subsequent instances
-  # will be added later in this process.
-  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
-    gcloud compute target-pools add-instances "${GCE_BASE_NAME}" \
-        --instances "${gce_name}" \
-        --instances-zone "${gce_zone}" \
-        "${GCP_ARGS[@]}"
-  fi
 
-  # Create an instance group for our internal load balancer, add this GCE
-  # instance to the group, then attach the instance group to our backend
-  # services for ePoxy extension.
+  # Create an instance group for our load balancers, internal and external, add
+  # this GCE instance to the group, then attach the instance group to our
+  # various backend services.
   gcloud compute instance-groups unmanaged create "${gce_name}" \
       --zone "${gce_zone}" \
       "${GCP_ARGS[@]}"
@@ -141,6 +132,16 @@ function create_master {
       --instances "${gce_name}" \
       --zone "${gce_zone}" \
       "${GCP_ARGS[@]}"
+  # If this is the first instance being created, it must be added to the
+  # backend service now, else creating the initial cluster will fail.
+  # Subsequent instances will be added later in this process.
+  if [[ "${ETCD_CLUSTER_STATE}" == "new" ]]; then
+    gcloud compute backend-services add-backend "${GCE_BASE_NAME}" \
+        --instance-group "${gce_name}" \
+        --instance-group-zone "${gce_zone}" \
+        --region "${GCE_REGION}" \
+        "${GCP_ARGS[@]}"
+  fi
   gcloud compute backend-services add-backend "${TOKEN_SERVER_BASE_NAME}" \
       --instance-group "${gce_name}" \
       --instance-group-zone "${gce_zone}" \
@@ -433,9 +434,10 @@ EOF
 
   # Now that the instance should be functional, add it to our load balancer target pool.
   if [[ "${ETCD_CLUSTER_STATE}" == "existing" ]]; then
-    gcloud compute target-pools add-instances "${GCE_BASE_NAME}" \
-        --instances "${gce_name}" \
-        --instances-zone "${gce_zone}" \
+    gcloud compute backend-services add-backend "${GCE_BASE_NAME}" \
+        --instance-group "${gce_name}" \
+        --instance-group-zone "${gce_zone}" \
+        --region "${GCE_REGION}" \
         "${GCP_ARGS[@]}"
   fi
 
@@ -458,24 +460,6 @@ function delete_instance_group {
   if [[ -n "${existing_instance_group}" ]]; then
     gcloud compute instance-groups unmanaged delete "${name}" \
         --zone "${zone}" \
-        "${GCP_ARGS[@]}"
-  fi
-}
-
-# Removes an instance from the k8s master loadbalancer target pool.
-function delete_target_pool_instance {
-  local name=$1
-  local zone=$2
-  local existing_instances
-
-  existing_instances=$(gcloud compute target-pools describe "${GCE_BASE_NAME}" \
-      --format "value(instances)" \
-      --region "${GCE_REGION}" \
-      "${GCP_ARGS[@]}" || true)
-  if echo "${existing_instances}" | grep "${name}"; then
-    gcloud compute target-pools remove-instances "${GCE_BASE_NAME}" \
-        --instances "${name}" \
-        --instances-zone "${zone}" \
         "${GCP_ARGS[@]}"
   fi
 }

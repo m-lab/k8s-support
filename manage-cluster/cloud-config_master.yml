@@ -56,30 +56,6 @@ write_files:
     [Install]
     WantedBy=multi-user.target
 
-- path: /etc/systemd/system/gcp-loadbalancer-proxy.service
-  permissions: 0644
-  owner: root
-  content: |
-    [Unit]
-    Description=gcp-loadbalancer-proxy
-    After=docker.service
-    Requires=docker.service
-
-    [Service]
-    TimeoutStartSec=120
-    Restart=always
-    ExecStartPre=-/usr/bin/docker stop %N
-    ExecStartPre=-/usr/bin/docker rm %N
-    ExecStart=/usr/bin/docker run --publish 8080:8080 \
-                                  --network host \
-                                  --name %N -- \
-                                  measurementlab/gcp-loadbalancer-proxy:v1.0 \
-                                  -url https://localhost:6443
-    ExecStop=/usr/bin/docker stop %N
-
-    [Install]
-    WantedBy=multi-user.target
-
 - path: /etc/systemd/system/reboot-node.service
   permissions: 0644
   owner: root
@@ -186,8 +162,6 @@ runcmd:
 - systemctl daemon-reload
 - systemctl enable docker
 - systemctl start docker
-- systemctl enable gcp-loadbalancer-proxy.service
-- systemctl start gcp-loadbalancer-proxy.service
 - systemctl enable reboot-node.timer
 - systemctl start reboot-node.timer
 - systemctl enable token-server.service
