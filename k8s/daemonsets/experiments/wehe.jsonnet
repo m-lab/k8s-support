@@ -127,7 +127,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             // Advertise the prometheus port so it can be discovered by Prometheus.
             ports: [
               {
+                // Replay server
                 containerPort: 9090,
+              },
+              {
+                // Analyzer server
+                containerPort: 9091,
               },
             ],
             volumeMounts: [
