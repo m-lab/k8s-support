@@ -27,7 +27,7 @@ write_files:
                                   --volume /etc:/etc:ro \
                                   --volume /:/ro:ro \
                                   --name %N -- \
-                                  measurementlab/epoxy-extensions:token_server-v0.2.0 \
+                                  measurementlab/epoxy-extensions:token_server-v0.2.1 \
                                   -command /ro/opt/bin/kubeadm
     ExecStop=/usr/bin/docker stop %N
 
@@ -50,31 +50,7 @@ write_files:
     ExecStartPre=-/usr/bin/docker rm %N
     ExecStart=/usr/bin/docker run --publish 8801:8801 \
                                   --name %N -- \
-                                  measurementlab/epoxy-extensions:bmc_store_password-v0.2.0
-    ExecStop=/usr/bin/docker stop %N
-
-    [Install]
-    WantedBy=multi-user.target
-
-- path: /etc/systemd/system/gcp-loadbalancer-proxy.service
-  permissions: 0644
-  owner: root
-  content: |
-    [Unit]
-    Description=gcp-loadbalancer-proxy
-    After=docker.service
-    Requires=docker.service
-
-    [Service]
-    TimeoutStartSec=120
-    Restart=always
-    ExecStartPre=-/usr/bin/docker stop %N
-    ExecStartPre=-/usr/bin/docker rm %N
-    ExecStart=/usr/bin/docker run --publish 8080:8080 \
-                                  --network host \
-                                  --name %N -- \
-                                  measurementlab/gcp-loadbalancer-proxy:v1.0 \
-                                  -url https://localhost:6443
+                                  measurementlab/epoxy-extensions:bmc_store_password-v0.2.1
     ExecStop=/usr/bin/docker stop %N
 
     [Install]
@@ -117,6 +93,137 @@ write_files:
     PasswordAuthentication no
     ChallengeResponseAuthentication no
     PermitRootLogin no
+
+# This is the default containerd config, as produced by `container config
+# default` with two small changes. It changes the runc "runtime_type" to
+# "io.containerd.runc.v2" and adds:
+# [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+#    SystemdCgroup = true
+- path: /etc/containerd/config.toml
+  permissions: 0644
+  owner: root:root
+  content: |
+    version = 2
+    root = "/var/lib/containerd"
+    state = "/run/containerd"
+    plugin_dir = ""
+    disabled_plugins = []
+    required_plugins = []
+    oom_score = 0
+
+    [grpc]
+      address = "/run/containerd/containerd.sock"
+      tcp_address = ""
+      tcp_tls_cert = ""
+      tcp_tls_key = ""
+      uid = 0
+      gid = 0
+      max_recv_message_size = 16777216
+      max_send_message_size = 16777216
+
+    [ttrpc]
+      address = ""
+      uid = 0
+      gid = 0
+
+    [debug]
+      address = ""
+      uid = 0
+      gid = 0
+      level = ""
+
+    [metrics]
+      address = ""
+      grpc_histogram = false
+
+    [cgroup]
+      path = ""
+
+    [timeouts]
+      "io.containerd.timeout.shim.cleanup" = "5s"
+      "io.containerd.timeout.shim.load" = "5s"
+      "io.containerd.timeout.shim.shutdown" = "3s"
+      "io.containerd.timeout.task.state" = "2s"
+
+    [plugins]
+      [plugins."io.containerd.gc.v1.scheduler"]
+        pause_threshold = 0.02
+        deletion_threshold = 0
+        mutation_threshold = 100
+        schedule_delay = "0s"
+        startup_delay = "100ms"
+      [plugins."io.containerd.grpc.v1.cri"]
+        disable_tcp_service = true
+        stream_server_address = "127.0.0.1"
+        stream_server_port = "0"
+        stream_idle_timeout = "4h0m0s"
+        enable_selinux = false
+        sandbox_image = "k8s.gcr.io/pause:3.1"
+        stats_collect_period = 10
+        systemd_cgroup = false
+        enable_tls_streaming = false
+        max_container_log_line_size = 16384
+        disable_cgroup = false
+        disable_apparmor = false
+        restrict_oom_score_adj = false
+        max_concurrent_downloads = 3
+        disable_proc_mount = false
+        [plugins."io.containerd.grpc.v1.cri".containerd]
+          snapshotter = "overlayfs"
+          default_runtime_name = "runc"
+          no_pivot = false
+          [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+            runtime_type = ""
+            runtime_engine = ""
+            runtime_root = ""
+            privileged_without_host_devices = false
+          [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+            runtime_type = ""
+            runtime_engine = ""
+            runtime_root = ""
+            privileged_without_host_devices = false
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+              runtime_type = "io.containerd.runc.v2"
+              runtime_engine = ""
+              runtime_root = ""
+              privileged_without_host_devices = false
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                SystemdCgroup = true
+        [plugins."io.containerd.grpc.v1.cri".cni]
+          bin_dir = "/opt/cni/bin"
+          conf_dir = "/etc/cni/net.d"
+          max_conf_num = 1
+          conf_template = ""
+        [plugins."io.containerd.grpc.v1.cri".registry]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+              endpoint = ["https://registry-1.docker.io"]
+        [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
+          tls_cert_file = ""
+          tls_key_file = ""
+      [plugins."io.containerd.internal.v1.opt"]
+        path = "/opt/containerd"
+      [plugins."io.containerd.internal.v1.restart"]
+        interval = "10s"
+      [plugins."io.containerd.metadata.v1.bolt"]
+        content_sharing_policy = "shared"
+      [plugins."io.containerd.monitor.v1.cgroups"]
+        no_prometheus = false
+      [plugins."io.containerd.runtime.v1.linux"]
+        shim = "containerd-shim"
+        runtime = "runc"
+        runtime_root = ""
+        no_shim = false
+        shim_debug = false
+      [plugins."io.containerd.runtime.v2.task"]
+        platforms = ["linux/amd64"]
+      [plugins."io.containerd.service.v1.diff-service"]
+        default = ["walking"]
+      [plugins."io.containerd.snapshotter.v1.devmapper"]
+        root_path = ""
+        pool_name = ""
+        base_image_size = ""
 
 # We have run up against "no space left on device" errors, when clearly
 # there is plenty of free disk space. It seems this could likely be related
@@ -186,8 +293,6 @@ runcmd:
 - systemctl daemon-reload
 - systemctl enable docker
 - systemctl start docker
-- systemctl enable gcp-loadbalancer-proxy.service
-- systemctl start gcp-loadbalancer-proxy.service
 - systemctl enable reboot-node.timer
 - systemctl start reboot-node.timer
 - systemctl enable token-server.service
