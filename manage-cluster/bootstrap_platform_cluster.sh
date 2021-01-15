@@ -439,7 +439,7 @@ gcloud compute backend-services create "${GCE_BASE_NAME}" \
 
 # Create the forwarding rule for the API load balancer.
 gcloud compute forwarding-rules create "${GCE_BASE_NAME}" \
-    --address "${EXTERNAL_LB_IP}" \
+    --address "${GCE_BASE_NAME}-lb" \
     --ports 6443 \
     --region "${GCE_REGION}" \
     --backend-service "${GCE_BASE_NAME}" \
