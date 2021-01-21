@@ -480,19 +480,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
         },
       },
       spec+: {
-        initContainers+: [
-          // TODO: this is a hack. Remove the hack by fixing
-          // contents of resolv.
-          {
-            name: 'fix-resolv-conf',
-            image: 'busybox',
-            command: [
-              'sh',
-              '-c',
-              'echo "nameserver 8.8.8.8" > /etc/resolv.conf',
-            ],
-          },
-        ],
+        dnsPolicy: 'None',
+        dnsConfig: {
+          nameservers: ['8.8.8.8'],
+        },
         // Only enable extended grace period where production traffic is possible.
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
       },
