@@ -480,10 +480,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
         },
       },
       spec+: {
-        dnsPolicy: 'None',
-        dnsConfig: {
-          nameservers: ['8.8.8.8'],
-        },
+        //dnsPolicy: 'None',
+        //dnsConfig: {
+        //  nameservers: ['8.8.8.8'],
+        //},
         // Only enable extended grace period where production traffic is possible.
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
       },
