@@ -480,6 +480,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
         },
       },
       spec+: {
+        // NOTE(github.com/m-lab/k8s-support/issues/542): this overrides the
         // default kube-dns configuration because M-Lab pod networks bypass
         // kubernetes Services iptables rules.
         dnsPolicy: 'None',
