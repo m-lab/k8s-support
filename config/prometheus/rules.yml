@@ -11,11 +11,9 @@ groups:
       sum by (daemonset) (
         label_replace(
           rate (container_cpu_usage_seconds_total{
-            container_label_io_kubernetes_container_name != "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""}
-          [1h]),
+            machine=~"mlab[1-4].*"
+          }[1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
       )
@@ -33,11 +31,9 @@ groups:
       sum by (machine, daemonset) (
         label_replace(
           rate (container_cpu_usage_seconds_total{
-            container_label_io_kubernetes_container_name != "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""}
-          [1h]),
+            machine=~"mlab[1-4].*"
+          }[1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
       )
@@ -58,10 +54,8 @@ groups:
       sum by (daemonset) (
         label_replace(
           container_memory_working_set_bytes{
-            container_label_io_kubernetes_container_name != "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""
+            machine=~"mlab[1-4].*"
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
@@ -80,10 +74,8 @@ groups:
       sum by (machine, daemonset) (
         label_replace(
           container_memory_working_set_bytes{
-            container_label_io_kubernetes_container_name != "POD",
             container_label_io_kubernetes_container_name != "",
-            machine=~"mlab[1-4].*",
-            image != ""
+            machine=~"mlab[1-4].*"
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
         )
@@ -111,12 +103,9 @@ groups:
       sum by (container_label_workload) (
         rate(
           container_network_transmit_bytes_total{
-            container_label_io_kubernetes_container_name = "POD",
-            container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
-            machine =~ "mlab[1-4].*",
-            image != ""
+            machine =~ "mlab[1-4].*"
           }
         [1h]) * 8
       )
@@ -127,12 +116,9 @@ groups:
       sum by (container_label_workload) (
         rate(
           container_network_receive_bytes_total{
-            container_label_io_kubernetes_container_name = "POD",
-            container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
-            machine =~ "mlab[1-4].*",
-            image != ""
+            machine =~ "mlab[1-4].*"
           }
         [1h]) * 8
       )
@@ -143,12 +129,9 @@ groups:
       sum by (machine, container_label_workload) (
         rate(
           container_network_transmit_bytes_total{
-            container_label_io_kubernetes_container_name = "POD",
-            container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
-            machine =~ "mlab[1-4].*",
-            image != ""
+            machine =~ "mlab[1-4].*"
           }
         [1h]) * 8
       )
@@ -159,12 +142,9 @@ groups:
       sum by (machine, container_label_workload) (
         rate(
           container_network_receive_bytes_total{
-            container_label_io_kubernetes_container_name = "POD",
-            container_label_io_kubernetes_container_name != "",
             container_label_workload != "",
             container_label_workload !~ "(flannel-virutal|flannel-physical|host|node-exporter|utilization)",
-            machine =~ "mlab[1-4].*",
-            image != ""
+            machine =~ "mlab[1-4].*"
           }
         [1h]) * 8
       )
