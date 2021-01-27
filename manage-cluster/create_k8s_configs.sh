@@ -54,7 +54,7 @@ done
 # Create the nodes max rates ConfigMap
 kubectl create configmap "${MAX_RATES_CONFIGMAP}" \
     --from-file "${MAX_RATES_DIR}/" \
-    --dry-run -o json > "../config/nodes-max-rate.json"
+    --dry-run client -o json > "../config/nodes-max-rate.json"
 
 # Create the json configuration for the entire cluster (except for secrets)
 jsonnet \
@@ -83,25 +83,25 @@ gsutil cp -R gs://${!GCS_BUCKET_K8S}/locate secrets/.
 
 # Convert secret data into configs.
 kubectl create secret generic uuid-annotator-credentials --from-file secrets/uuid-annotator.json \
-    --dry-run -o json > secret-configs/uuid-annotator-credentials.json
+    --dry-run client -o json > secret-configs/uuid-annotator-credentials.json
 kubectl create secret generic pusher-credentials --from-file secrets/pusher.json \
-    --dry-run -o json > secret-configs/pusher-credentials.json
+    --dry-run client -o json > secret-configs/pusher-credentials.json
 kubectl create secret generic cert-manager-credentials --namespace cert-manager \
     --from-file secrets/cert-manager.json \
-    --dry-run -o json > secret-configs/cert-manager-credentials.json
+    --dry-run client -o json > secret-configs/cert-manager-credentials.json
 kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
-    --dry-run -o json > secret-configs/ndt-tls.json
+    --dry-run client -o json > secret-configs/ndt-tls.json
 kubectl create secret generic wehe-ca --from-file secrets/wehe-ca/ \
-    --dry-run -o json > secret-configs/wehe-ca.json
+    --dry-run client -o json > secret-configs/wehe-ca.json
 kubectl create secret generic vector-credentials --from-file secrets/vector.json \
-    --dry-run -o json > secret-configs/vector-credentials.json
+    --dry-run client -o json > secret-configs/vector-credentials.json
 kubectl create secret generic snmp-community --from-file secrets/snmp.community \
-    --dry-run -o json > secret-configs/snmp-community.json
+    --dry-run client -o json > secret-configs/snmp-community.json
 # NB: The file containing the user/password pair must be called 'auth'.
 kubectl create secret generic prometheus-htpasswd --from-file secrets/auth \
-    --dry-run -o json > secret-configs/prometheus-htpasswd.json
+    --dry-run client -o json > secret-configs/prometheus-htpasswd.json
 kubectl create secret generic locate-verify-keys --from-file secrets/locate/ \
-    --dry-run -o json > secret-configs/locate-verify-keys.json
+    --dry-run client -o json > secret-configs/locate-verify-keys.json
 
 # Download the platform cluster CA cert.
 gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
