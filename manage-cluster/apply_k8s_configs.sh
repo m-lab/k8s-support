@@ -34,6 +34,12 @@ else
   export KUBECONFIG=./kube-config
 fi
 
+# Upgrade kubectl the lastest version supported the SDK release. The specific
+# impetus for this is:
+# https://cert-manager.io/docs/installation/upgrading/upgrading-0.16-1.0/#issue-with-older-versions-of-kubectl
+# ... but otherwise it can't really hurt.
+gcloud --quiet components update kubectl
+
 # Upload the evaluated setup_k8s.sh template to GCS.
 cache_control="Cache-Control:private, max-age=0, no-transform"
 gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
