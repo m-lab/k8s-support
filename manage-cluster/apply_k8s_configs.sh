@@ -49,9 +49,9 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 ./linux-amd64/helm repo add vector https://packages.timber.io/helm/nightly
 
 # Helm 3 does not automatically create namespaces anymore.
-kubectl create namespace cert-manager --dry-run=client -o json | kubectl apply -f -
-kubectl create namespace ingress-nginx --dry-run=client -o json | kubectl apply -f -
-kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
+kubectl create namespace cert-manager --dry-run -o json | kubectl apply -f -
+kubectl create namespace ingress-nginx --dry-run -o json | kubectl apply -f -
+kubectl create namespace logging --dry-run -o json | kubectl apply -f -
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install ingress-nginx \
