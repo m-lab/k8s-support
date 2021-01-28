@@ -35,14 +35,8 @@ for r in $(jq -r 'keys[] as $k | "\($k):\(.[$k].uplink_speed)"' switches.json); 
   speed=$(echo $r | cut -d: -f2)
   for node in mlab1 mlab2 mlab3 mlab4; do
     if [[ "${speed}" == "1g" ]]; then
-      # Create both v1 and v2 keys, to ease transition from v1 to v2 names.
-      # TODO(kinkade): Once the migration to v2 names is complete, remove the v1 key.
-      echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}.${site}.measurement-lab.org"
       echo "${MAX_RATE_1G}" > "${MAX_RATES_DIR}/${node}-${site}.${PROJECT}.measurement-lab.org"
     elif [[ "${speed}" == "10g" ]]; then
-      # Create both v1 and v2 keys, to ease transition from v1 to v2 names.
-      # TODO(kinkade): Once the migration to v2 names is complete, remove the v1 key.
-      echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}.${site}.measurement-lab.org"
       echo "${MAX_RATE_10G}" > "${MAX_RATES_DIR}/${node}-${site}.${PROJECT}.measurement-lab.org"
     else
       echo "Site ${site} does not have a valid uplink_speed set: ${speed}"
