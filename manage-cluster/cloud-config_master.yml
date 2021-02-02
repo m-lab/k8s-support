@@ -283,6 +283,7 @@ write_files:
     }
 
 packages:
+- conntrack
 - docker.io
 - socat
 - vim
