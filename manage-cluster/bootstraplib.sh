@@ -192,10 +192,10 @@ function create_master {
     chmod +x {kubeadm,kubelet,kubectl}
 
     # Install kubelet systemd service and enable it.
-    curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/kubelet.service" \
+    curl -sSL "https://raw.githubusercontent.com/kubernetes/release/v0.7.0/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" \
         | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
     mkdir -p /etc/systemd/system/kubelet.service.d
-    curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
+    curl -sSL ""https://raw.githubusercontent.com/kubernetes/release/v0.7.0/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" \
         | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
     # Install etcdctl
