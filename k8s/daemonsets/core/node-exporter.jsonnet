@@ -33,7 +33,7 @@
               '--collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$',
               '--collector.netstat.fields=^(.*_(InErrors|InErrs)|Ip_Forwarding|Ip(6|Ext)_(InOctets|OutOctets)|Icmp6?_(InMsgs|OutMsgs)|TcpExt_(TCPDSACK.*|Listen.*|Syncookies.*|TCPSynRetrans)|Tcp_(ActiveOpens|InSegs|OutSegs|PassiveOpens|RetransSegs|CurrEstab)|Udp6?_(InDatagrams|OutDatagrams|NoPorts))$',
               '--collector.systemd',
-              '--collector.systemd.unit-include=^(setup-after-boot.service|system-cloudinit.+|docker.service|kubelet.service)',
+              '--collector.systemd.unit-include=^(setup-after-boot.service|containerd.service|configure-tc-fq.service|kubelet.service)',
               '--collector.processes',
               '--no-collector.arp',
               '--no-collector.bcache',
@@ -54,6 +54,9 @@
             ],
             image: 'quay.io/prometheus/node-exporter:v1.1.0',
             name: 'node-exporter',
+            nodeSelector: {
+              'mlab/type': 'physical',
+            },
             resources: {
               limits: {
                 cpu: '250m',
