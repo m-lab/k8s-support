@@ -54,9 +54,6 @@
             ],
             image: 'quay.io/prometheus/node-exporter:v1.1.0',
             name: 'node-exporter',
-            nodeSelector: {
-              'mlab/type': 'physical',
-            },
             resources: {
               limits: {
                 cpu: '250m',
@@ -133,6 +130,9 @@
         ],
         hostNetwork: true,
         hostPID: true,
+        nodeSelector: {
+          'mlab/type': 'physical',
+        },
         serviceAccountName: 'kube-rbac-proxy',
         tolerations: [
           {
