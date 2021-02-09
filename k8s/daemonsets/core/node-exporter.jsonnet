@@ -130,9 +130,6 @@
         ],
         hostNetwork: true,
         hostPID: true,
-        nodeSelector: {
-          'mlab/type': 'physical',
-        },
         serviceAccountName: 'kube-rbac-proxy',
         tolerations: [
           {
