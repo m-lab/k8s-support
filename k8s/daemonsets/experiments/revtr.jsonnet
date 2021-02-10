@@ -7,7 +7,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', []) + {
         containers+: [
           {
             name: 'revtrvp',
-            image: 'measurementlab/revtrvp:v0.1.4',
+            image: 'measurementlab/revtrvp:v0.1.5',
             args: [
               '/root.crt',
               '/plvp.config',
