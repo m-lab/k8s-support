@@ -50,6 +50,8 @@
               initialDelaySeconds: 5,
               timeoutSeconds: 5,
             },
+            // Resources based on:
+            // https://github.com/kubernetes/kube-state-metrics#resource-recommendation
             resources: {
               limits: {
                 cpu: '1',
