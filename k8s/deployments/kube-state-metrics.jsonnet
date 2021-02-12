@@ -30,7 +30,7 @@
             args: [
               '--collectors=daemonsets,deployments,nodes,pods,resourcequotas,services',
             ],
-            image: 'quay.io/coreos/kube-state-metrics:v1.8.0',
+            image: 'quay.io/coreos/kube-state-metrics:v1.9.7',
             name: 'kube-state-metrics',
             ports: [
               {
@@ -50,46 +50,12 @@
               initialDelaySeconds: 5,
               timeoutSeconds: 5,
             },
-          },
-          {
-            command: [
-              '/pod_nanny',
-              '--container=kube-state-metrics',
-              '--cpu=100m',
-              '--extra-cpu=1m',
-              '--memory=100Mi',
-              '--extra-memory=2Mi',
-              '--threshold=5',
-              '--deployment=kube-state-metrics',
-            ],
-            env: [
-              {
-                name: 'MY_POD_NAME',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'metadata.name',
-                  },
-                },
-              },
-              {
-                name: 'MY_POD_NAMESPACE',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'metadata.namespace',
-                  },
-                },
-              },
-            ],
-            image: 'k8s.gcr.io/addon-resizer:1.8.3',
-            name: 'addon-resizer',
+            // Resources based on:
+            // https://github.com/kubernetes/kube-state-metrics#resource-recommendation
             resources: {
               limits: {
-                cpu: '150m',
-                memory: '50Mi',
-              },
-              requests: {
-                cpu: '150m',
-                memory: '50Mi',
+                cpu: '1',
+                memory: '1500Mi',
               },
             },
           },
