@@ -17,6 +17,7 @@
       {
         hosts: [
           'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
+          'prometheus-platform-cluster-basicauth.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
         ],
         secretName: 'prometheus-tls',
       },
