@@ -2,7 +2,7 @@
   apiVersion: 'networking.k8s.io/v1beta1',
   kind: 'Ingress',
   metadata: {
-    name: 'prometheus-tls',
+    name: 'prometheus-tls-basic',
     namespace: 'default',
     annotations: {
       'kubernetes.io/tls-acme': 'true',
