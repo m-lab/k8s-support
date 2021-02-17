@@ -36,6 +36,7 @@
     // Services
     import 'k8s/services/prometheus-tls.jsonnet',
     import 'k8s/services/prometheus-tls-ingress.jsonnet',
+    import 'k8s/services/prometheus-tls-basic-ingress.jsonnet',
   ] + std.flattenArrays([
     // Networks (which are in array form already).
     import 'k8s/networks/networks.jsonnet',

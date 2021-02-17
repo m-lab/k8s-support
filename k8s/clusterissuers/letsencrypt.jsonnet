@@ -21,6 +21,7 @@
           selector: {
             dnsNames: [
               'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
+              'prometheus-platform-cluster-basicauth.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
             ],
           },
         },
