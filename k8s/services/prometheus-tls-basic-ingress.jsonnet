@@ -15,6 +15,11 @@
   spec: {
     tls: [
       {
+        // We generate a single certificate for the OAuth and the basic auth 
+        // domains. The reason for this is that LetsEncrypt's CN fields cannot
+        // be longer than 64 characters, and the -basicauth is just barely
+        // above that. By putting them together, only the first domain is used
+        // in the CN field.
         hosts: [
           'prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
           'prometheus-platform-cluster-basicauth.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
