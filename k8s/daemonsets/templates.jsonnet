@@ -185,14 +185,14 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.7.1'
+         then 'measurementlab/traceroute-caller:v0.7.2'
          else  'measurementlab/traceroute-caller:v0.6.0'),
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute3',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
@@ -399,7 +399,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
-      if anonMode == "none" then ['traceroute'] else [],
+      if anonMode == "none" then ['traceroute3'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
