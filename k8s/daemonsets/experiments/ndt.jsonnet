@@ -12,11 +12,11 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               key: ndt-canary,
               operator: NotIn,
               values: ["yes"],
-            }
-          ]
-        }
-      }
-    }
+            },
+          ],
+        },
+      },
+    },
     template+: {
       metadata+: {
         annotations+: {
