@@ -4,6 +4,19 @@ local expName = 'ndt';
 
 exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
+    affinity: {
+      nodeAffinity: {
+        requiredDuringSchedulingIgnoredDuringExecution: {
+          nodeSelectorTerms: [
+            {
+              key: ndt-canary,
+              operator: NotIn,
+              values: ["yes"],
+            }
+          ]
+        }
+      }
+    }
     template+: {
       metadata+: {
         annotations+: {

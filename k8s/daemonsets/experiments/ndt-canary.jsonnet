@@ -11,6 +11,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
+        nodeSelector: {
+          'ndt-canary': 'yes',
+        },
         containers+: [
           {
             name: 'ndt-server',
