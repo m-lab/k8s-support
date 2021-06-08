@@ -9,8 +9,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         requiredDuringSchedulingIgnoredDuringExecution: {
           nodeSelectorTerms: [
             {
-              key: ndt-canary,
-              operator: NotIn,
+              key: 'ndt-canary',
+              operator: 'NotIn',
               values: ["yes"],
             },
           ],
