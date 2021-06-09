@@ -8,6 +8,16 @@ rule_files:
   - /etc/prometheus/rules.yml
 #  - /etc/prometheus/alerts.yml
 
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager.{{PROJECT}}.measurementlab.net:9093
+      api_version: v2
+      basic_auth:
+        username: mlab
+        password_file: /etc/alertmanager/password
+
 # Scrape configurations.
 scrape_configs:
 
@@ -317,4 +327,3 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets: ['token-server.{{PROJECT}}.measurementlab.net:8800']
-
