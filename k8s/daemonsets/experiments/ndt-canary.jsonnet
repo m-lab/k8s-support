@@ -1,8 +1,8 @@
 local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
-local expName = 'ndt-canary';
+local expName = 'ndt';
 
-exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+exp.Experiment(expName + '-canary', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
       metadata+: {
