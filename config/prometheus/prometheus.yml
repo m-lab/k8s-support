@@ -12,7 +12,7 @@ alerting:
   alertmanagers:
     - static_configs:
       - targets:
-        - alertmanager.{{PROJECT}}.measurementlab.net:9093
+        - alertmanager.{{PROJECT}}.measurementlab.net
       api_version: v2
       basic_auth:
         username: mlab
