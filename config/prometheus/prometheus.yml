@@ -17,6 +17,7 @@ alerting:
       basic_auth:
         username: mlab
         password_file: /etc/alertmanager/password
+      scheme: https
 
 # Scrape configurations.
 scrape_configs:
