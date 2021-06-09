@@ -529,6 +529,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // The NDT tag to use for containers.
   ndtVersion: ndtVersion,
 
+  // The NDT tag to use for canary nodes.
+  ndtCanaryVersion: ndtCanaryVersion,
+
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,
 }
