@@ -185,7 +185,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.7.2'
+         then 'measurementlab/traceroute-caller:v0.7.3'
          else  'measurementlab/traceroute-caller:v0.6.0'),
     args: [
       if hostNetwork then
