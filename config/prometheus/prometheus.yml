@@ -328,3 +328,9 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets: ['token-server.{{PROJECT}}.measurementlab.net:8800']
+
+  # Scrape the Github Maintenance Exporter.
+  - job_name: 'github-maintenance-exporter'
+    scheme: https
+    static_configs:
+      - targets: ['gmx.{{PROJECT}}.measurementlab.net']
