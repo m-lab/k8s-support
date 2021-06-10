@@ -1,13 +1,3 @@
 groups:
 - name: alerts.yml
   rules:
-  - alert: TestAlert
-    expr: kube_node_info{ready="true"}
-    for: 1m
-    labels:
-      repo: ops-tracker
-      severity: ticket
-    annotations:
-      summary: The test site is ready.
-      description: Test description.
-      dashboard: https://example.com/test
