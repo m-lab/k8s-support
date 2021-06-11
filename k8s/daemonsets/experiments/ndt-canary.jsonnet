@@ -18,7 +18,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
         labels+: {
-          workload: name + '-canary',
+          workload: expName + '-canary',
         },
       },
       spec+: {
