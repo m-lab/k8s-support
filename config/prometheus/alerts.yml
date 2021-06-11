@@ -20,8 +20,7 @@ groups:
         Maybe the switch is down? Is DISCO using the right community
         string? Is the IP/prefix of the node where DISCO is running
         whitelisted on the switch?
-      dashboard:
-      'https://grafana.mlab-oti.measurementlab.net/d/SuqnZ6Hiz/?orgId=1&var-site_name={{$labels.site}}'
+      dashboard: 'https://grafana.mlab-oti.measurementlab.net/d/SuqnZ6Hiz/?orgId=1&var-site_name={{$labels.site}}'
 
 # Check for missing workloads.
 
@@ -447,8 +446,7 @@ groups:
         taking too long to complete.  Check that there are no problems with the
         disk on the master node, and that disk I/O throughput is not becoming a
         bottleneck.
-      dashboard:
-      https://grafana.mlab-oti.measurementlab.net/d/K8-zAIuik/k8s-master-cluster
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/K8-zAIuik/k8s-master-cluster
 
   # The desired number of pods for a DaemonSet are not equal to the current
   # number scheduled.
@@ -466,8 +464,7 @@ groups:
       description: DaemonSet {{ $labels.daemonset }} has fewer pods scheduled than desired.
         Check the status of the DaemonSet for clues with
         `kubectl describe daemonset {{ $labels.daemonset }} -n {{ $labels.namespace }}`
-      dashboard:
-      https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   # The desired number of replicas for a Deployment are not equal to the
   # current number scheduled.
@@ -515,8 +512,7 @@ groups:
         happens exceeds the maxUnavailable setting for a RollingUpdate. Look
         for {{ $labels.daemonset }} pods with a status other than Running and
         inspect them to figure out why they are in that state.
-      dashboard:
-      https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_PusherDailyDataVolumeTooLow
     expr: |
