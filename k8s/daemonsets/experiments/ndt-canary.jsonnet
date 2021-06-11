@@ -2,12 +2,23 @@ local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'ndt';
 
-exp.Experiment(expName + '-canary', 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+  metadata+: {
+    name: expName + '-canary',
+  },
   spec+: {
+    selector+: {
+      matchLabels+: {
+        workload: expName + '-canary',
+      },
+    },
     template+: {
       metadata+: {
         annotations+: {
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+        },
+        labels+: {
+          workload: name + '-canary',
         },
       },
       spec+: {
