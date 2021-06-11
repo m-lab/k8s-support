@@ -135,8 +135,7 @@ groups:
       summary: The Wehe DaemonSet is missing or has no metrics.
       description: The Wehe DaemonSet is missing or has no metrics. Verify that
         the DaemonSet is healthy (`kubectl describe ds wehe`).
-      dashboard:
-      https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
 # Some SNMP metrics are missing from Prometheus. These should always be present.
   - alert: PlatformCluster_SnmpMetricsMissing
