@@ -92,7 +92,7 @@ sed -e "s/{{PROJECT}}/${PROJECT}/" ../config/vector/values.yaml.template \
 # Apply the configuration
 
 # The configurations of the secrets for the cluster happen in a separate
-# directory. We might publicly aechive system.json. We should never make any
+# directory. We might publicly archive system.json. We should never make any
 # part of secret-configs public.  They are our passwords and private keys!
 kubectl apply -f secret-configs/
 

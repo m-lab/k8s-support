@@ -73,6 +73,9 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/cert-manager-credentials.json secrets/cert-man
 gsutil cp gs://${!GCS_BUCKET_K8S}/vector-credentials.json secrets/vector.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.community
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
+# The alertmanager-basicauth.yaml file is already a valid k8s YAML Secret
+# specification, so copy it directly to the secret-configs/ directory.
+gsutil cp gs://${!GCS_BUCKET_K8S}/alertmanager-basicauth.yaml secret-configs/.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/locate secrets/.
 
 # Convert secret data into configs.
