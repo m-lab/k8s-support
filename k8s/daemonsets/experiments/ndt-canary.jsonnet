@@ -22,8 +22,8 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
-        nodeSelector: {
-          'mlab/type': 'canary',
+        nodeSelector+: {
+          'mlab/ndt-version': 'canary',
         },
         containers+: [
           {

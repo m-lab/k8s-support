@@ -11,6 +11,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
+        nodeSelector+: {
+          'mlab/ndt-version': 'production',
+        },
         containers+: [
           {
             name: 'ndt-server',
