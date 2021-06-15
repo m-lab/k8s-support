@@ -6,7 +6,18 @@ global:
 
 rule_files:
   - /etc/prometheus/rules.yml
-#  - /etc/prometheus/alerts.yml
+  - /etc/prometheus/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets:
+        - alertmanager.{{PROJECT}}.measurementlab.net
+      api_version: v2
+      basic_auth:
+        username: mlab
+        password_file: /etc/alertmanager/password
+      scheme: https
 
 # Scrape configurations.
 scrape_configs:
@@ -318,3 +329,8 @@ scrape_configs:
     static_configs:
       - targets: ['token-server.{{PROJECT}}.measurementlab.net:8800']
 
+  # Scrape the Github Maintenance Exporter.
+  - job_name: 'github-maintenance-exporter'
+    scheme: https
+    static_configs:
+      - targets: ['gmx.{{PROJECT}}.measurementlab.net']

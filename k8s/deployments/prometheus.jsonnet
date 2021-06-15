@@ -55,6 +55,10 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
                 mountPath: '/prometheus',
                 name: 'prometheus-storage',
               },
+              {
+                mountPath: '/etc/alertmanager/',
+                name: 'alertmanager-basicauth',
+              },
             ],
           },
         ],
@@ -71,6 +75,12 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               name: prometheusConfig.metadata.name,
             },
             name: 'prometheus-config',
+          },
+          {
+            name: 'alertmanager-basicauth',
+            secret: {
+              secretName: 'alertmanager-basicauth',
+            },
           },
           // TODO: use native k8s persistent volume claims, if possible.
           {

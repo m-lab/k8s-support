@@ -22,7 +22,7 @@
 set -euxo pipefail
 
 PROJECTS="mlab-sandbox mlab-staging mlab-oti"
-TMP_DIR=$(mktemp --directory)
+TMP_DIR=$(mktemp -d)
 
 for project in ${PROJECTS}; do
   kubeconfig="${TMP_DIR}/${project}_admin.confg"
@@ -60,8 +60,8 @@ for project in ${PROJECTS}; do
   kubectl config set-context ${project} \
       --cluster "${project}-cluster" \
       --user "${project}-admin"
-  
+
 done
-  
+
 rm -rf ${TMP_DIR}
 
