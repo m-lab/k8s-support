@@ -184,9 +184,13 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
+    // Although from time to time we may be running the same version
+    // of traceroute-caller in all projects, let's leave the check for
+    // mlab-oti here so we can easily configure different versions of
+    // traceroute-caller in production and non-production projects.
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
          then 'measurementlab/traceroute-caller:v0.8.0'
-         else  'measurementlab/traceroute-caller:v0.6.0'),
+         else  'measurementlab/traceroute-caller:v0.8.0'),
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
