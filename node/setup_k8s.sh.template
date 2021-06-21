@@ -40,7 +40,7 @@ MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
 # Capture K8S version for later usage.
 RELEASE=$(kubelet --version | awk '{print $2}')
 
-NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=physical,mlab/project=${GCP_PROJECT}"
+NODE_LABELS="mlab/machine=${MACHINE},mlab/site=${SITE},mlab/metro=${METRO},mlab/type=physical,mlab/project=${GCP_PROJECT},mlab/ndt-version=production"
 DYNAMIC_CONFIG_DIR="/var/lib/kubelet/dynamic-configs"
 sed -ie "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--node-labels=$NODE_LABELS --dynamic-config-dir=$DYNAMIC_CONFIG_DIR |g" \
   /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
