@@ -1,4 +1,5 @@
-local ndtVersion = 'v0.20.6';
+local ndtVersion = 'v0.20.5';
+local ndtCanaryVersion = 'v0.20.6';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -184,9 +185,13 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
+    // Although from time to time we may be running the same version
+    // of traceroute-caller in all projects, let's leave the check for
+    // mlab-oti here so we can easily configure different versions of
+    // traceroute-caller in production and non-production projects.
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.7.2'
-         else  'measurementlab/traceroute-caller:v0.6.0'),
+         then 'measurementlab/traceroute-caller:v0.8.0'
+         else  'measurementlab/traceroute-caller:v0.8.0'),
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -527,6 +532,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // The NDT tag to use for containers.
   ndtVersion: ndtVersion,
+
+  // The NDT tag to use for canary nodes.
+  ndtCanaryVersion: ndtCanaryVersion,
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,
