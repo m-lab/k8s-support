@@ -1,3 +1,634 @@
 groups:
 - name: alerts.yml
   rules:
+
+  # DISCO is reporting too many errors, which likely means errors when scraping
+  # SNMP metrics from the local switch. Since DISCO scrapes across the LAN the
+  # number of errors should be close to zero.
+  - alert: PlatformCluster_TooManyDiscoCollectionErrors
+    expr: |
+      increase(disco_collect_errors_total[10m]) > 10
+        unless on(site) gmx_site_maintenance == 1
+    for: 24h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: DISCO is reporting too many errors.
+      description: >
+        Maybe the switch is down? Is DISCO using the right community
+        string? Is the IP/prefix of the node where DISCO is running
+        whitelisted on the switch?
+      dashboard: 'https://grafana.mlab-oti.measurementlab.net/d/SuqnZ6Hiz/?orgId=1&var-site_name={{$labels.site}}'
+
+# Check for missing workloads.
+
+  - alert: PlatformCluster_DiscoMissing
+    expr: |
+      absent(up{container="disco"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The DISCO DaemonSet is missing or has no metrics.
+      description: The DISCO DaemonSet is missing or has no metrics. Verify
+       that the DaemonSet is healthy (`kubectl describe ds disco`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_CadvisorMissing
+    expr: absent(up{deployment="cadvisor"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The CAdvisor DaemonSet is missing or has no metrics.
+      description: The CAdvisor DaemonSet is missing or has no metrics. Verify that
+        the DaemonSet is healthy (`kubectl describe ds cadvisor`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  # NOTE: this alert is currently structured a bit differently than the other
+  # "DaemonSet Missing" alerts because Vector does not currently expose any
+  # metrics and cannot be auto-discovered by Prometheus as part of the
+  # kubernetes-pods job. Therefore, in this one case we use one known metric
+  # that is valid for Vector to determine if metrics are missing or not.
+  - alert: PlatformCluster_VectorMissing
+    expr: absent(kube_daemonset_status_desired_number_scheduled{daemonset="vector"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The Vector DaemonSet is missing or has no metrics.
+      description: The Vector DaemonSet is missing or has no metrics. Verify that
+        the DaemonSet is healthy (`kubectl describe ds vector`).
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_NdtMissing
+    expr: absent(up{deployment="ndt"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: page
+      cluster: platform
+      page_project: mlab-oti
+    annotations:
+      summary: The NDT DaemonSet is missing or has no metrics.
+      description: The NDT DaemonSet is missing or has no metrics. Verify that
+        the DaemonSet is healthy (`kubectl describe ds ndt`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_NeubotMissing
+    expr: absent(up{deployment="neubot"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The Neubot DaemonSet is missing or has no metrics.
+      description: The Neubot DaemonSet is missing or has no metrics. Verify that
+        the DaemonSet is healthy (`kubectl describe ds neubot`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_NodeExporterMissing
+    expr: absent(up{deployment="node-exporter"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The node_exporter DaemonSet is missing or has no metrics.
+      description: The node_exporter DaemonSet is missing or has no metrics.
+        Verify that the DaemonSet is healthy (`kubectl describe ds
+        node-exporter`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_HostExperimentMissing
+    expr: absent(up{deployment="host"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The host DaemonSet is missing or has no metrics.
+      description: The host DaemonSet is missing or has no metrics.
+        Verify that the DaemonSet is healthy (`kubectl describe ds
+        host`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_WeheMissing
+    expr: absent(up{deployment="wehe"})
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The Wehe DaemonSet is missing or has no metrics.
+      description: The Wehe DaemonSet is missing or has no metrics. Verify that
+        the DaemonSet is healthy (`kubectl describe ds wehe`).
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+# Some SNMP metrics are missing from Prometheus. These should always be present.
+  - alert: PlatformCluster_SnmpMetricsMissing
+    expr: absent(ifHCOutOctets)
+    for: 30m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Expected SNMP metrics are missing from Prometheus.
+      description: >
+        Make sure that the DISCO pod in the platform cluster is properly
+        running on all nodes. Is there a problem with the DISCO DaemonSet? Is
+        the federation job that scrapes the platform cluster down or
+        configured incorrectly.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/SuqnZ6Hiz/
+
+# Too many ifInErrors are occuring each day on a switch uplink for too may days in a row.
+# max-by is necessary here since DISCOv2 now collections swith uplink metrics
+# from every machine at a site, so we just take the max of the 3 (mlab[1-3]).
+  - alert: PlatformCluster_TooManySwitchIfInErrors
+    expr: max by (site) (increase(ifInErrors{ifAlias="uplink"}[1d]) > 100)
+    for: 7d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: There have been more than 100 ifInErrors per day for more than 7d.
+      description: ifInErrors are generally very low level, physical layer
+        errors. Some amount of errors is normal (e.g., even solar activity can
+        cause them), but over a certain threshold they should be investigated.
+        In the past, we have found that eleveated levels of errors is resolved
+        by having a tech visit the rack and clean and reseat the uplink optic
+        and fiber patch cable.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/SuqnZ6Hiz/ops-switch-overview
+
+# Platform Hardware alerts
+
+  # TODO(kinkade): this alert is only valid for R630s. R640s will have 32 or
+  # 64GB of RAM. We will need a way to distinguish between the two for the
+  # purposes of this alert.
+  - alert: PlatformCluster_RamBelowExpected
+    expr: |
+      node_memory_MemTotal_bytes{machine=~"^mlab[1-4].[a-z]{3}[0-9]{2}.*"} / 2^20 < 15000
+        unless on(node) gmx_machine_maintenance == 1
+    for: 1d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: System RAM is below the expected minimum value.
+      description: All M-Lab R630s have at least 16GB of RAM. The quantity
+        of RAM on one or more machines has gone below 15GB, which may indicate
+        a failed RAM module. Login to the machine and double check
+        the hardware and/or system messages.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
+  - alert: PlatformCluster_EdacUncorrectableErrors
+    expr: |
+      node_edac_uncorrectable_errors_total{machine=~"^mlab[1-4].[a-z]{3}[0-9tc]{2}.*"} > 0
+    for: 1d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Uncorrectable errors detected in RAM.
+      description: EDAC metrics are reporting uncorrectable memory errors.
+        This may indicate a DIMM module beginning to go bad or an issue with
+        the mainboard. Login to the machine and double check the hardware
+        and/or system messages.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
+  - alert: PlatformCluster_EdacCorrectableErrors
+    expr: |
+      node_edac_correctable_errors_total{machine=~"^mlab[1-4].[a-z]{3}[0-9tc]{2}.*"} > 0
+    for: 1d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Correctable errors detected in RAM.
+      description: EDAC metrics are reporting correctable memory errors.
+        While correctable, this may indicate some issue with a DIMM module or
+        the mainboard. Login to the machine and double check the hardware
+        and/or system messages.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
+  - alert: PlatformCluster_MachineUpTooLong
+    expr: |
+      (time() - node_boot_time_seconds{node=~"(master|mlab[1-4])-.+"}) / (60 * 60 * 24) > 90
+    for: 10m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: A machine has not been rebooted for too long
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformhardware_machineuptoolong
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview
+
+  # Too many kubelet or kernel versions on the platform for too long. This is
+  # an indication that a rolling reboot has stalled.
+  - alert: PlatformCluster_TooManyKubeletOrKernelVersions
+    expr: |
+      count(
+        count by (kubelet_version) (
+          kube_node_info and on(node) kube_node_labels{label_mlab_type="physical"}
+        )
+      ) > 1
+      or
+      count(
+        count by (kernel_version) (
+          kube_node_info and on(node) kube_node_labels{label_mlab_type="physical"}
+        )
+      ) > 1
+    for: 7d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Too many kubelet or kernel versions in the cluster for too long.
+      description: >
+        There has been more than one kubelet or kernel version running in the
+        platform cluster for too long. Probably the only reason there should be
+        more than one version in the cluster is when kubernetes and/or CoreOS
+        has been upgraded in epoxy-images and a rolling reboot has not
+        completed to apply those changes. Since CLUO will only reboot a single
+        node at a time, stalls of rolling reboots can be easily caused by a
+        node in a NotReady state.  Check for nodes in a NotReady state, and if
+        necessary delete them from the cluster so the rolling reboot can
+        continue. Looks at the log of the update-operator pod in the
+        reboot-coordinator namespace to see which node it may be stuck on.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  # There is version skew among the core k8s components on one or more API
+  # cluster servers.
+  - alert: PlatformCluster_ApiClusterComponentVersionSkew
+    expr: |
+      count(
+        count by (version) (
+          label_replace(kube_pod_container_info{exported_namespace="kube-system",
+            exported_container=~"(kube-apiserver|kube-controller-manager|kube-scheduler)"},
+            "version", "$1", "image", ".*:(v[0-9.]+$)")
+          or
+          label_replace(kube_node_info{node=~"master-platform-cluster.*"},
+            "version", "$1", "kubelet_version", "(.*)")
+        )
+      ) > 1
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: There is version skew between core k8s components in the API cluster.
+      description: >
+        There are 4 primary Kubernetes components on each API cluster server -
+        kubelet, kube-apiserver, kube-controller-manager, kube-scheduler. The
+        version of all these components should always be the same, since when
+        upgrading the API cluster all these components are supposed to be
+        updated at the same time. Was the upgrade_master_platform_script.sh in
+        the k8s-support repo run recently? Did something go wrong with the
+        upgrade? Perhaps an API server node was incorrectly upgraded _not_
+        using the ugprade script and not all components got updated?
+
+  # If any pod is down or otherwise broken, fire an alert, unless the node is
+  # in lame-duck mode, the node is NotReady, GMX maintenance mode, or the
+  # scrape job for the entire node is down.
+  - alert: PlatformCluster_PodDown
+    expr: |
+      kube_pod_info == 1 and on(exported_pod) kube_pod_status_ready{condition="true"} == 0 unless on(node) (
+          kube_node_spec_taint{key="lame-duck"} or
+          kube_node_status_condition{condition="Ready", status="false"} == 1 or
+          gmx_machine_maintenance == 1 or
+          up{job="kubernetes-nodes"} == 0
+        )
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: A {{ $labels.deployment }} pod is down or broken.
+      description: A {{ $labels.deployment }} pod is down or broken. Verify that the
+        DaemonSet or Deployment is healthy. Check the status of the node that the
+        pod is scheduled on. Check the status of the pod itself, if it exists.
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
+# Etcd alerts.
+# Mostly gleaned from:
+# https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/etcd3_alert.rules.yml
+
+  - alert: PlatformCluster_EtcdMetricsMissing
+    expr: absent(etcd_server_has_leader)
+    for: 5m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Metrics are missing for etcd.
+      description: Metrics are missing for etcd. Scraping of etcd
+        is probably failing, or Prometheus is having trouble scraping the
+        federated platform cluster instance. Check to be sure that the platform
+        cluster instance is running. Is there is a TLS certificate error
+        causing scraping to fail, or a network issue? Look at the "Error"
+        column of the targets page on the Prometheus Web interface for clues
+        http://prometheus-platform-cluster.mlab-oti.measurementlab.net:9090/targets#job-kubernetes-etcd
+
+  - alert: PlatformCluster_EtcdHasNoLeader
+    expr: etcd_server_has_leader == 0
+    for: 5m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: At least one etcd cluster member has no leader.
+      description: An etcd cluster member is reporting that it has no leader.
+        This should never happen. Find out which master server is hosting the
+        ectd instance(s) and make sure that node is healthy and has network
+        connectivity to the other masters.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/milv1PgZz/k8s-etcd-overview
+
+  - alert: PlatformCluster_EtcdTooManyLeaderChanges
+    expr: rate(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}[30m]) > 3
+    for: 30m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Too many leader changes in the etcd cluster.
+      description: etcd cluster members are changing leaders too frequently.
+        Leader changes are normal (e.g., a master node is rebooted), but they
+        should not happen too often. Look into networking, resource or other
+        issues on the master nodes.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/K8-zAIuik/k8s-master-cluster
+
+  - alert: PlatformCluster_EtcdTooManyProposalFailures
+    expr: rate(etcd_server_proposals_failed_total[30m]) > 5
+    for: 30m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Too many raft protocol proposal failures in the etcd cluster.
+      description: There are too many raft protocol proposal failures happening
+        in the etcd cluster. These type of errors are normally related to two
+        issues - temporary failures related to a leader election or longer
+        downtime caused by a loss of quorum in the cluster.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/milv1PgZz/k8s-etcd-overview
+
+  - alert: PlatformCluster_EtcdMemberCommunicationTooSlow
+    expr: |
+      histogram_quantile(0.99,
+        rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~".*etcd.*"}[30m])
+      ) > 0.15
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Network communication between etcd cluster members is too slow.
+      description: The members of the etcd cluster are on different master
+        nodes, and each node is in a different power zone. Communication
+        between the members is taking too long. Make sure that the VPC network
+        is working as intended, and that it isn't overloaded.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/milv1PgZz/k8s-etcd-overview
+
+  - alert: PlatformCluster_EtcdWalFsyncsTooSlow
+    expr: histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket[30m])) > 0.5
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: etcd write-ahead-log fsync operations are taking too long.
+      description: etcd uses a WAL (Write Ahead Log), and fsync operations to
+        it are taking too long. Check that there are no problems with the disk
+        on the master node, and that disk I/O throughput is not becoming a
+        bottleneck.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/K8-zAIuik/k8s-master-cluster
+
+  - alert: PlatformCluster_EtcdBackedCommitsTooSlow
+    expr: |
+      histogram_quantile(0.99,
+        rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~".*etcd.*"}[30m])
+      ) > 0.25
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: etcd backend commits are taking too long to complete.
+      description: etcd writes incremental snapshots to disk. These writes are
+        taking too long to complete.  Check that there are no problems with the
+        disk on the master node, and that disk I/O throughput is not becoming a
+        bottleneck.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/K8-zAIuik/k8s-master-cluster
+
+  # The desired number of pods for a DaemonSet are not equal to the current
+  # number scheduled.
+  - alert: PlatformCluster_DaemonSetHasTooFewPods
+    expr: |
+      kube_daemonset_status_desired_number_scheduled !=
+        kube_daemonset_status_current_number_scheduled
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: DaemonSet {{ $labels.daemonset }} has fewer pods scheduled than desired.
+      description: DaemonSet {{ $labels.daemonset }} has fewer pods scheduled than desired.
+        Check the status of the DaemonSet for clues with
+        `kubectl describe daemonset {{ $labels.daemonset }} -n {{ $labels.namespace }}`
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  # The desired number of replicas for a Deployment are not equal to the
+  # current number scheduled.
+  - alert: PlatformCluster_DeploymentHasTooFewReplicas
+    expr: |
+      kube_deployment_spec_replicas != kube_deployment_status_replicas
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Deployment {{ $labels.exported_deployment }} has less replicas than desired.
+      description: Deployment {{ $labels.exported_deployment }} has less replicas than desired.
+        Check the status of the deployment for clues with
+        `kubectl describe deployment {{ $labels.exported_deployment }}`
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  # A DaemonSet rollout is progressing too slowly. Unless 95% of a DaemonSet's
+  # pods are updated, then fire an alert if the rate of increase over the last
+  # hour is less than or equal to 2. This is pretty conservative since NDT pods
+  # should update at something more like ~24 per hour. The somewhat unusual
+  # toleration of 70m is because once a rollout starts, comparing the current
+  # value of updated_scheduled to the value from an hour ago (all pods) will
+  # yield a negative number for roughly the period of the offset (1h in this
+  # case). 70m just gives us a safe window to cross that inversion.
+  - alert: PlatformCluster_RolloutTooSlowOrStuck
+    expr: |
+      kube_daemonset_updated_number_scheduled - (kube_daemonset_updated_number_scheduled offset 1h) <= 2
+        unless (
+          kube_daemonset_updated_number_scheduled / kube_daemonset_status_desired_number_scheduled > 0.95 or
+          kube_daemonset_status_desired_number_scheduled == 0
+        )
+    for: 70m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: A {{ $labels.daemonset }} DaemonSet rollout is going too slowly.
+      description: Not enough pods were updated in the past hour for a
+        {{ $labels.daemonset }} DaemonSet rollout, which indicates that the
+        rollout is stuck in some way. Usually this happens when errors occur
+        updating a pod on a node, and the number of nodes on which this error
+        happens exceeds the maxUnavailable setting for a RollingUpdate. Look
+        for {{ $labels.daemonset }} pods with a status other than Running and
+        inspect them to figure out why they are in that state.
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
+
+  - alert: PlatformCluster_PusherDailyDataVolumeTooLow
+    expr: |
+      datatype:pusher_bytes_per_tarfile:increase24h
+        < (0.7 * quantile by(datatype)(0.5,
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 1d, "delay", "1d", "", ".*") or
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 3d, "delay", "3d", "", ".*") or
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 5d, "delay", "5d", "", ".*") or
+            label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 1w, "delay", "7d", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "ndt5", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "ndt5", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "pcap", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "pcap", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "switch", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "switch", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "tcpinfo", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "tcpinfo", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "traceroute", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "traceroute", "", ".*")
+            ))
+    for: 2h
+    labels:
+      repo: dev-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Test data volume today is less than 70% of nominal daily volume.
+      description: Are machines online? Is data being collected? Is pusher working?
+        Is mlab-ns working? A new rollout?
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
+
+# PusherSLO
+#
+# Pusher uploads archives for a machine every few hours. After every boot, a
+# machine starts with a "lower bound" mtime equal to the current time. As data
+# is written to disk, we expect the "lower bound" to gradually move forward in
+# time. If it does not, then data is not being successfully uploaded and
+# removed. That is a problem.
+#
+# The alert excludes nodes in maintenance or lame-duck.
+  - alert: PlatformCluster_PusherFinderMtimeLowerBoundIsTooOld
+    expr: |
+      (time() - pusher_finder_mtime_lower_bound) > (16 * 60 * 60)
+        unless on(machine) gmx_machine_maintenance == 1
+        unless on(machine) kube_node_spec_taint{key="lame-duck"}
+    for: 8h
+    labels:
+      repo: dev-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Data on disk are too old and should have been uploaded already
+      description: The min file mtime seen by pusher has been older than 16
+        hours for at least 8 hours. If uploads are failing then data will be lost
+        if the node reboots.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
+
+  - alert: PlatformCluster_TokenServerClusterDownOrMissing
+    expr: |
+      up{job="token-server"} == 0 OR absent(up{job="token-server"})
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: token-server metrics cannot be scraped or are missing.
+      description: The token-server is run as a Docker container on each API
+        server. The instsances sit behind a GCP internal load balancer.
+        Scraping the load balancer is failing, which means that something is
+        wrong with the load balancer, or possibly all three instances of the
+        token-server are down.  Login to one or all of the API servers to
+        discover why the token-server container is not running. Check the
+        status of the load balancer in the GCP console.
+
+# PlatformCluster_PrometheusPersistentDiskTooFull fires when the persistent
+# disk mounted on the Prometheus VM gets too full (less than 5% free).
+  - alert: PlatformCluster_PrometheusPersistentDiskTooFull
+    expr: |
+      node_filesystem_avail_bytes{node="prometheus-platform-cluster", mountpoint="/mnt/local"}
+        / node_filesystem_size_bytes < 0.05
+    for: 1m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The Prometheus persistent disk has less than 5% free space.
+      description: >
+        The Prometheus persistent disk has less than 5% free space.
+        Investigate filesystem usage on the VM, but most likely if this alert
+        fires it means that the size of the persistent disk is too small and
+        may need to be increased. GCE persistent disks can be resized, even on
+        a running VM. Please refer to the [instructions on how to do this][1].
+        [1]: https://github.com/m-lab/k8s-support/blob/master/manage-cluster/PROMETHEUS.md#resizing-the-prometheus-vms-disk
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/sVklmeHik/prometheus-self-monitoring?orgId=1&var-datasource=Platform%20Cluster%20(mlab-oti)
+
+  # The /cache/data mount point on a node has exceeded 95% of its capacity.
+  # This is where all pods write all experiment and core service data (shared
+  # pool of space). If this mount point fills up, all experiments and core
+  # services will fail in some way.
+  - alert: PlatformCluster_DataPartitionTooFull
+    expr: |
+      ((node_filesystem_size_bytes{mountpoint="/cache/data"} -
+          node_filesystem_free_bytes{mountpoint="/cache/data"})
+          / node_filesystem_size_bytes{mountpoint="/cache/data"})
+        > 0.95
+    for: 10m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The /cache/data mount point on a node is more than 95% full.
+      description: All experiment and core service data is written to a shared
+        pool of disk space on a partition mounted at /cache/data. The mount
+        point has exceed 95% usage. Check that the pusher sidecar container in
+        all pods is working. See which pod is using all the space with `df -sh
+        /cache/data/*`.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
