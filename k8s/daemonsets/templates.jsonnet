@@ -202,12 +202,13 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-tracetool=scamper-daemon',
-      '-IPCacheTimeout=5m',
-      '-IPCacheUpdatePeriod=1m',
-      '-scamper.timeout=90m',
-    ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then
-        ['-scamper.tracelb-W=15',]
-        else [],
+    ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+        '-IPCacheTimeout=5m',
+        '-IPCacheUpdatePeriod=1m',
+        '-scamper.timeout=90m',
+        '-scamper.tracelb-W=15',
+      ]
+      else [],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
