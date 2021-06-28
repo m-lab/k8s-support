@@ -205,9 +205,9 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-IPCacheTimeout=5m',
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=90m',
-      if std.extVar('PROJECT_ID') != 'mlab-oti' then
-        '-scamper.tracelb-W=15',
-    ],
+    ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then
+        ['-scamper.tracelb-W=15',]
+        else [],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
