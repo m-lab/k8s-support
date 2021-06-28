@@ -191,10 +191,10 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     // traceroute-caller in production and non-production projects.
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
          then 'measurementlab/traceroute-caller:v0.8.1-beta'
-         else  'measurementlab/traceroute-caller:v0.8.0'),
+         else 'measurementlab/traceroute-caller:v0.8.0'),
     args: [
       if hostNetwork then
-        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort,
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
@@ -204,9 +204,9 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-tracetool=scamper-daemon',
       '-IPCacheTimeout=5m',
       '-IPCacheUpdatePeriod=1m',
-      '-scamper.tracelb-W=15',
       '-scamper.timeout=90m',
-
+      if std.extVar('PROJECT_ID') != 'mlab-oti' then
+        '-scamper.tracelb-W=15',
     ],
     env: if hostNetwork then [] else [
       {
