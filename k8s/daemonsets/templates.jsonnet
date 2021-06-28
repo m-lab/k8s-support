@@ -194,7 +194,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
          else 'measurementlab/traceroute-caller:v0.8.0'),
     args: [
       if hostNetwork then
-        '-prometheusx.listen-address=127.0.0.1:' + tcpPort,
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
