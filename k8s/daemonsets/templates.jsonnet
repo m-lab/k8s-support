@@ -190,7 +190,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     // mlab-oti here so we can easily configure different versions of
     // traceroute-caller in production and non-production projects.
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.8.1-beta'
+         then 'measurementlab/traceroute-caller:v0.8.2'
          else 'measurementlab/traceroute-caller:v0.8.0'),
     args: [
       if hostNetwork then
@@ -201,14 +201,16 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
-      '-tracetool=scamper-daemon',
     ] + if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+        '-tracetool=scamper',
         '-IPCacheTimeout=5m',
         '-IPCacheUpdatePeriod=1m',
-        '-scamper.timeout=90m',
+        '-scamper.timeout=60m',
         '-scamper.tracelb-W=15',
       ]
-      else [],
+      else [
+        '-tracetool=scamper-daemon',
+      ],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
