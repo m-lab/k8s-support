@@ -40,3 +40,83 @@ To deploy NDT pod:
 1. ./bootstrap_k8s_workloads.sh
 1. kubectl get pods
 
+# Upgrading the API cluster
+
+As a general rule, we try to keep our clusters running a version of Kubernetes
+not more than two minor version numbers behind the latest stable release.
+Kubernetes development moves fast, and this means that we will be upgrading
+Kubernetes at least a couple times per year. kubeadm does not support upgrading
+an API cluster to more than the next minor version number. For these reasons it
+is advisable to not fall too far behind.
+
+The first step in the process of upgrading a cluster to a [newer version of
+Kubernetes](https://github.com/kubernetes/kubernetes/releases) is to carefully
+read the changelog for the version being upgraded to. It is probably not
+important to read all the changelogs for patch-level version upgrades of the
+minor version being upgraded to. For example, if the cluster is currently
+running v1.18.15 and you want to upgrade to v1.19.12, you probably only need to
+pay close attention to the changelog for v1.19.0, which should outline the
+changes between v1.18.x and v1.19.0. The changelog between minor version should
+have a section titled something like "Urgent Upgrade Notes (No, really, you
+MUST read this before you upgrade)". As implied in the message, you should pay
+extra close attention to changes noted in this section.  If you find any
+breaking changes, then you will need to fix those before upgrading the cluster.
+Also pay attention to non-breaking changes, such as deprecations, which might
+not break the upgrade, but should nevertheless be addressed at some point.
+
+Along with Kubernetes, during an upgrade we also update CNI plugins and crictl.
+The release pages for these components are these, respectively:
+
+* https://github.com/containernetworking/plugins/releases
+* https://github.com/kubernetes-sigs/cri-tools/releases
+
+Be sure to read the release notes for these as well, as breaking changes could
+exist in the newer versions of these.
+
+`kubeadm` also publishes [upgrade
+instructions](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/)
+between minor releases. You should review that carefully, as sometimes there
+are changes to Kubernetes or kubeadm itself that require additional steps.
+
+Once you feel confident that any breaking changes have been addressed (or don't
+exist), then you update the file `./manage-cluster/k8s_deploy.conf`, updating
+these variables with the proper version strings:
+
+```
+K8S_VERSION
+K8S_CNI_VERSION
+K8S_CRICTL_VERSION
+```
+
+Once that file is updated and saved you do this:
+
+```
+$ cd manage-cluster
+$ ./upgrade_master_platform_cluster.sh <project>
+```
+
+That command should upgrade the entire API cluster for the specified GCP
+project. The script should be idempotent, and if it failes for some transitory
+reason or is otherwise interrupted, you can safely rerun it. If the failure is
+persistent and rerunning the upgrade script does not fix it, then you will need
+to address the issue manually in some way. `kubeadm` also provides [some
+documentation](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#recovering-from-a-failure-state)
+on recovering from a failed state.
+
+Once the API cluster is successfully upgraded, you should check that all pods in
+the cluster are running normally. You can do this with something like:
+
+```
+$ kubectl --context <project> get pods --all-namespaces | grep -v Running
+```
+
+There should be no pods in a broken state that cannot be explained by some
+other known issue.
+
+It is advisable to upgrade the mlab-sandbox and mlab-staging clusters one week,
+and then let that settle for a while, and not upgrade the mlab-oti (production)
+cluster until at least the following week. Even if all the pods are ostensibly
+running normally, this bit of extra time will help to ensure that a more subtle
+problem isn't occuring. If something very subtle is wrong, then hopefully this
+extra time before hitting production will allow an mlab-staging alert to fire,
+or for someone to notice something is amiss.
