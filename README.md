@@ -62,11 +62,14 @@ MUST read this before you upgrade)". As implied in the message, you should pay
 extra close attention to changes noted in this section.  If you find any
 breaking changes, then you will need to fix those before upgrading the cluster.
 Also pay attention to non-breaking changes, such as deprecations, which might
-not break the upgrade, but should nevertheless be addressed at some point.
+not break the upgrade, but may affect the cluster later on. Even if you don't
+address such issues now, consider creating an issue to note that they should be
+addressed in the near future.
 
 Along with Kubernetes, during an upgrade we also update CNI plugins and crictl.
-The release pages for these components are these, respectively:
+The release pages for all components are these, respectively:
 
+* https://github.com/kubernetes/kubernetes/releases
 * https://github.com/containernetworking/plugins/releases
 * https://github.com/kubernetes-sigs/cri-tools/releases
 
@@ -82,11 +85,9 @@ Once you feel confident that any breaking changes have been addressed (or don't
 exist), then you update the file `./manage-cluster/k8s_deploy.conf`, updating
 these variables with the proper version strings:
 
-```
-K8S_VERSION
-K8S_CNI_VERSION
-K8S_CRICTL_VERSION
-```
+* K8S\_VERSION
+* K8S\_CNI\_VERSION
+* K8S\_CRICTL\_VERSION
 
 Once that file is updated and saved you do this:
 
@@ -96,17 +97,20 @@ $ ./upgrade_master_platform_cluster.sh <project>
 ```
 
 That command should upgrade the entire API cluster for the specified GCP
-project. The script should be idempotent, and if it failes for some transitory
-reason or is otherwise interrupted, you can safely rerun it. If the failure is
-persistent and rerunning the upgrade script does not fix it, then you will need
-to address the issue manually in some way. `kubeadm` also provides [some
+project. The script is designed to be idempotent, and if it failes for some
+transitory reason or is otherwise interrupted, you can safely rerun it. If the
+failure is persistent and rerunning the upgrade script does not fix it, then
+you will need to address the issue manually in some way. `kubeadm` also
+provides [some
 documentation](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#recovering-from-a-failure-state)
 on recovering from a failed state.
 
-Once the API cluster is successfully upgraded, you should check that all pods in
-the cluster are running normally. You can do this with something like:
+Once the API cluster is successfully upgraded, you should double check that the
+API cluster nodes report the correct version, and that all pods in the cluster
+are running normally. You can do this with something like:
 
 ```
+$ kubectl --context <project> get nodes | grep master-platform-cluster
 $ kubectl --context <project> get pods --all-namespaces | grep -v Running
 ```
 
@@ -120,3 +124,13 @@ running normally, this bit of extra time will help to ensure that a more subtle
 problem isn't occuring. If something very subtle is wrong, then hopefully this
 extra time before hitting production will allow an mlab-staging alert to fire,
 or for someone to notice something is amiss.
+
+**NOTE**: This process _only_ upgrades the API cluster. After the API cluster in
+a project is updated, then you will still need to upgrade all the cluster
+nodes. This is done in the [epoxy-images
+repository](https://github.com/m-lab/epoxy-images) by [editing the same version
+strings](https://github.com/m-lab/epoxy-images/blob/master/config.sh#L6) you
+did for this repository, and then pushing to the epoxy-images repository.
+Pushing to the repository (or tagging, for production) will cause all boot
+images to be rebuilt, after which a rolling reboot of the cluster nodes should
+cause them to boot with the upgraded versions of Kubernetes components.
