@@ -59,6 +59,8 @@ fi
 set -x
 
 for node in $NODES; do
+  # Replace the dots in the hostname with dashes.
+  node="${node//./-}"
   # Determine the zone of the node.
   ZONE=$(gcloud compute instances list --filter "name=${node}" \
       --project ${PROJECT} \
