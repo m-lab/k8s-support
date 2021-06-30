@@ -302,10 +302,10 @@ groups:
         kubelet, kube-apiserver, kube-controller-manager, kube-scheduler. The
         version of all these components should always be the same, since when
         upgrading the API cluster all these components are supposed to be
-        updated at the same time. Was the upgrade_master_platform_script.sh in
-        the k8s-support repo run recently? Did something go wrong with the
-        upgrade? Perhaps an API server node was incorrectly upgraded _not_
-        using the ugprade script and not all components got updated?
+        updated at the same time. Was the upgrade_api_cluster.sh in the
+        k8s-support repo run recently? Did something go wrong with the upgrade?
+        Perhaps an API server node was incorrectly upgraded _not_ using the
+        ugprade script and not all components got updated?
 
   # If any pod is down or otherwise broken, fire an alert, unless the node is
   # in lame-duck mode, the node is NotReady, GMX maintenance mode, or the

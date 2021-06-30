@@ -93,7 +93,7 @@ Once that file is updated and saved you do this:
 
 ```
 $ cd manage-cluster
-$ ./upgrade_master_platform_cluster.sh <project>
+$ ./upgrade_api_cluster.sh <project>
 ```
 
 That command should upgrade the entire API cluster for the specified GCP
