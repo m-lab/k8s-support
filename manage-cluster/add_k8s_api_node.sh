@@ -1,8 +1,13 @@
 #!/bin/bash
 #
 # Adds a new master node to an existing k8s cluster. This script assumes that
-# there are functional masters in the cluster for both of the other zones not
+# there are functional nodes in the API cluster for both of the other zones not
 # being added.
+#
+# IMPORTANT: This script is intended to be used _very_ infrequently. It's use
+# case is for when an API node is accidentally deleted or otherwise corrupted
+# and cannot be easily recovered. The expectation is that node was ungracefully
+# removed or broken without doing any sort of cluster cleanup first.
 
 set -euxo pipefail
 
@@ -28,6 +33,21 @@ GCP_ARGS=("--project=${PROJECT}" "--quiet")
 GCE_ARGS=("--zone=${GCE_ZONE}" "${GCP_ARGS[@]}")
 
 ETCD_CLUSTER_STATE="existing"
+
+# Issue a warning to the user and only continue if they agree.
+cat <<EOF
+  WARNING: this script is intended to be used to recreate an API node VM that
+  was accidentally deleted, corrupted beyond repair, or otherwise broken, and
+  the node was ungracefully removed without any cluster cleanup. If all you want
+  to do is to recreate an existing, healthy API node, then please use the
+  recreate_api_node.sh script.
+
+  Are you sure you want to continue? [y/N]:
+EOF
+read keepgoing
+if [[ "${keepgoing}" != "y" ]]; then
+  exit 0
+fi
 
 # The "bootstrap" zone will be the first zone in the list of zones for the
 # project that is _not_ the zone of the node being added.
