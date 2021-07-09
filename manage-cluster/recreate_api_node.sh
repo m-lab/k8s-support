@@ -48,16 +48,6 @@ if [[ "${keepgoing}" != "y" ]]; then
   exit 0
 fi
 
-# The "bootstrap" zone will be the first zone in the list of zones for the
-# project that is _not_ the zone of the node being recreated.
-for z in $GCE_ZONES; do
-  if [[ "$z" != "${ZONE}" ]]; then
-    BOOTSTRAP_MASTER="master-${GCE_BASE_NAME}-${GCE_REGION}-${z}"
-    BOOTSTRAP_MASTER_ZONE="${GCE_REGION}-${z}"
-    break
-  fi
-done
-
 # Use `kubeadm reset` to gracefully undo most of what `kubeadm join/init`
 # initially did. It also removes the node from the etcd cluster and removes it
 # from the ClusterStatus key of the kubeadm-config ConfigMap.
@@ -76,7 +66,7 @@ gcloud compute instances delete "${GCE_NAME}" "${GCE_ARGS[@]}"
 
 # `kubeadm reset` does not remove the node from the cluster, so take care of
 # that here, if the node is still part of the cluster.
-if kubectl --context "${PROJECT}" get nodes | grep ${GCE_NAME}; then
+if kubectl --context "${PROJECT}" get nodes | grep "${GCE_NAME}"; then
   kubectl --context "${PROJECT}" delete node "${GCE_NAME}"
 fi
 
