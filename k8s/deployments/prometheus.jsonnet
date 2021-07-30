@@ -37,7 +37,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--config.file=/etc/prometheus/prometheus.yml',
               '--storage.tsdb.path=/prometheus',
               '--web.enable-lifecycle',
-              '--web.external-url=https://prometheus-platform-cluster.{{PROJECT}}.measurementlab.net',
+              '--web.external-url=https://prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
               '--storage.tsdb.retention.time=2880h',
             ],
             image: 'prom/prometheus:v2.24.1',
