@@ -54,7 +54,9 @@ local sysctls = {
     command: [
       'sysctl', '-w',
       // Do not use IPv6 autoconfiguration (SLAAC), and reject RAs (Router
-      // Advertisements), which can muck with IPv6 config in a pod.
+      // Advertisements). When accept_ra=1, RAs can cause the IPv6 network
+      // stack to reconfigure itself, for example changing or removing the
+      // default route.
       'net.ipv6.conf.net1.accept_ra=0',
       'net.ipv6.conf.net1.autoconf=0',
     ],
