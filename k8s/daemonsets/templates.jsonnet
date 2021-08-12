@@ -52,16 +52,17 @@ local uuid = {
 local sysctls = {
   initContainer: {
     command: [
-      'sysctl', '-w',
       // Do not use IPv6 autoconfiguration (SLAAC), and reject RAs (Router
       // Advertisements). When accept_ra=1, RAs can cause the IPv6 network
       // stack to reconfigure itself, for example changing or removing the
       // default route.
-      'net.ipv6.conf.net1.accept_ra=0',
-      'net.ipv6.conf.net1.autoconf=0',
+      'sh', '-c', |||
+        for i in /proc/sys/net/ipv6/conf/*/accept_ra; do echo 0 > $i; done;
+        for i in /proc/sys/net/ipv6/conf/*/autoconf; do echo 0 > $i; done;
+      |||,
     ],
     image: 'busybox',
-    name: 'set-namespaced-sysctls',
+    name: 'set-pod-sysctls',
     securityContext: {
       privileged: true,
       runAsUser: 0,
