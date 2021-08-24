@@ -46,30 +46,6 @@ local uuid = {
   },
 };
 
-// An initContainer that can be used to set various sysctls in pods.
-// NOTE: do not set unnamespaced sysctls here!
-// https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/#setting-sysctls-for-a-pod
-local sysctls = {
-  initContainer: {
-    command: [
-      // Do not use IPv6 autoconfiguration (SLAAC), and reject RAs (Router
-      // Advertisements). When accept_ra=1, RAs can cause the IPv6 network
-      // stack to reconfigure itself, for example changing or removing the
-      // default route.
-      'sh', '-c', |||
-        for i in /proc/sys/net/ipv6/conf/*/accept_ra; do echo 0 > $i; done;
-        for i in /proc/sys/net/ipv6/conf/*/autoconf; do echo 0 > $i; done;
-      |||,
-    ],
-    image: 'busybox',
-    name: 'set-pod-sysctls',
-    securityContext: {
-      privileged: true,
-      runAsUser: 0,
-    },
-  },
-};
-
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
@@ -468,7 +444,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
-          sysctls.initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
