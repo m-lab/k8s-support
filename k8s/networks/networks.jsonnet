@@ -67,8 +67,8 @@
           {
             type: 'tuning',
             sysctl: {
-              net.ipv6.conf.net1.accept_ra: '0',
-              net.ipv6.conf.net1.autoconf: '0',
+              'net.ipv6.conf.net1.accept_ra': '0',
+              'net.ipv6.conf.net1.autoconf': '0',
             },
           },
         ],
