@@ -54,13 +54,24 @@
     spec: {
       local cniConfig = {
         cniVersion: '0.2.0',
-        name: "ipvlan-index-" + index,
-        type: "ipvlan",
-        master: "eth0",
-        ipam: {
-          type: "index2ip",
-          index: index
-        },
+        name: 'ipvlan-index-' + index,
+        plugins: [
+          {
+            type: 'ipvlan',
+            master: 'eth0',
+            ipam: {
+              type: 'index2ip',
+              index: index,
+            },
+          },
+          {
+            type: 'tuning',
+            sysctl: {
+              net.ipv6.conf.net1.accept_ra: '0',
+              net.ipv6.conf.net1.autoconf: '0',
+            },
+          },
+        ],
       },
       config: std.toString(cniConfig),
     },
