@@ -197,7 +197,10 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+      if std.extVar('PROJECT_ID') != 'mlab-oti' then
+        '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1'
+      else
+        '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
@@ -206,7 +209,9 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
-    ],
+    ] + if std.extVar('PROJECT_ID') != 'mlab-oti'
+          then [ '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1' ]
+          else [ ],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
