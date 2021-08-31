@@ -190,7 +190,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
     // mlab-oti here so we can easily configure different versions of
     // traceroute-caller in production and non-production projects.
     image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.8.4'
+         then 'measurementlab/traceroute-caller:v0.9.0'
          else 'measurementlab/traceroute-caller:v0.8.4'),
     args: [
       if hostNetwork then
