@@ -202,7 +202,6 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       else
         '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-tracetool=scamper',
       '-IPCacheTimeout=10m',
@@ -210,7 +209,10 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
     ] + if std.extVar('PROJECT_ID') != 'mlab-oti'
-          then [ '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1' ]
+          then [
+            '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+            '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename
+          ]
           else [ ],
     env: if hostNetwork then [] else [
       {
