@@ -202,7 +202,6 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       else
         '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-tracetool=scamper',
       '-IPCacheTimeout=10m',
