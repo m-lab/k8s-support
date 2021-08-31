@@ -201,8 +201,6 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
         '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1'
       else
         '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
-      if std.extVar('PROJECT_ID') != 'mlab-oti' then
-        '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
@@ -211,7 +209,9 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
-    ],
+    ] + if std.extVar('PROJECT_ID') != 'mlab-oti'
+          then [ '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1' ]
+          else [ ],
     env: if hostNetwork then [] else [
       {
         name: 'PRIVATE_IP',
