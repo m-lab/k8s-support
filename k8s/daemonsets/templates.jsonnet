@@ -415,7 +415,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
-      if anonMode == "none" then ['traceroute'] else [],
+      if anonMode == "none" then ['traceroute', 'scamper1', 'hopannotation1'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
