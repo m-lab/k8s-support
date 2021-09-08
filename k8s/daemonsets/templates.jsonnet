@@ -185,10 +185,6 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
-    // Although from time to time we may be running the same version
-    // of traceroute-caller in all projects, let's leave the check for
-    // mlab-oti here so we can easily configure different versions of
-    // traceroute-caller in production and non-production projects.
     image: 'measurementlab/traceroute-caller:v0.9.0',
     args: [
       if hostNetwork then
