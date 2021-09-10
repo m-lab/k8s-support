@@ -28,7 +28,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         containers+: [
           {
             name: 'ndt-server',
-            image: 'measurementlab/ndt-server:' + exp.ndtCanaryVersion,
+            image: 'measurementlab/ndt-server:' + exp.ndtGo116CanaryVersion,
             // This command section is somewhat of a workaround to get a value
             // to pass to the -max-rate flag of ndt-server. The default
             // ENTRYPOINT for the ndt-server image is /ndt-server, but this
