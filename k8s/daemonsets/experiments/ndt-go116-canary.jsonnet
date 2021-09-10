@@ -4,12 +4,12 @@ local expName = 'ndt';
 
 exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   metadata+: {
-    name: expName + '-canary',
+    name: expName + '-go116-canary',
   },
   spec+: {
     selector+: {
       matchLabels+: {
-        workload: expName + '-canary',
+        workload: expName + '-go116-canary',
       },
     },
     template+: {
@@ -18,12 +18,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
         labels+: {
-          workload: expName + '-canary',
+          workload: expName + '-go116-canary',
         },
       },
       spec+: {
         nodeSelector+: {
-          'mlab/ndt-version': 'canary',
+          'mlab/ndt-version': 'go116-canary',
         },
         containers+: [
           {
