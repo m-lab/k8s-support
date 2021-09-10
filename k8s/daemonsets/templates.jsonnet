@@ -1,5 +1,6 @@
 local ndtVersion = 'v0.20.5';
 local ndtCanaryVersion = 'v0.20.6';
+local ndtGo116CanaryVersion = 'v0.20.5-go1.16';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -534,6 +535,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // The NDT tag to use for canary nodes.
   ndtCanaryVersion: ndtCanaryVersion,
+
+  // The NDT tag to use for go1.16 canary nodes.
+  ndtGo116CanaryVersion: ndtGo116CanaryVersion,
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,
