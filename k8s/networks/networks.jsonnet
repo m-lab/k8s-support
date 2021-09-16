@@ -10,6 +10,7 @@
     spec: {
       local cniConfig = {
         cniVersion: '0.3.0',
+        name: 'flannel',
         type: 'flannel',
         delegate: {
           hairpinMode: true,
@@ -31,6 +32,7 @@
     spec: {
       local cniConfig = {
         cniVersion: '0.3.0',
+        name: 'flannel',
         type: 'flannel',
         delegate: {
           hairpinMode: true,
