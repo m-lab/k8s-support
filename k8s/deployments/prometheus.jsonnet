@@ -37,6 +37,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--config.file=/etc/prometheus/prometheus.yml',
               '--storage.tsdb.path=/prometheus',
               '--web.enable-lifecycle',
+              '--web.external-url=https://prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
               '--storage.tsdb.retention.time=2880h',
             ],
             image: 'prom/prometheus:v2.24.1',
@@ -55,6 +56,10 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
                 mountPath: '/prometheus',
                 name: 'prometheus-storage',
               },
+              {
+                mountPath: '/etc/alertmanager/',
+                name: 'alertmanager-basicauth',
+              },
             ],
           },
         ],
@@ -71,6 +76,12 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               name: prometheusConfig.metadata.name,
             },
             name: 'prometheus-config',
+          },
+          {
+            name: 'alertmanager-basicauth',
+            secret: {
+              secretName: 'alertmanager-basicauth',
+            },
           },
           // TODO: use native k8s persistent volume claims, if possible.
           {

@@ -1,4 +1,6 @@
-local ndtVersion = 'v0.20.6';
+local ndtVersion = 'v0.20.5';
+local ndtCanaryVersion = 'v0.20.6';
+local ndtGo116CanaryVersion = 'v0.20.5-go1.16';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -184,19 +186,22 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork) = [
   {
     name: 'traceroute-caller',
-    image: (if std.extVar('PROJECT_ID') != 'mlab-oti'
-         then 'measurementlab/traceroute-caller:v0.7.2'
-         else  'measurementlab/traceroute-caller:v0.6.0'),
+    image: 'measurementlab/traceroute-caller:v0.9.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-outputPath=' + VolumeMount(expName).mountPath + '/traceroute',
+      '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1',
       '-uuid-prefix-file=' + uuid.prefixfile,
-      '-poll=false',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
-      '-tracetool=scamper-daemon',
+      '-tracetool=scamper',
+      '-IPCacheTimeout=10m',
+      '-IPCacheUpdatePeriod=1m',
+      '-scamper.timeout=30m',
+      '-scamper.tracelb-W=15',
+      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+      '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
     ],
     env: if hostNetwork then [] else [
       {
@@ -335,7 +340,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.4.2',
+    image: 'measurementlab/uuid-annotator:v0.4.4',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -399,7 +404,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
-      if anonMode == "none" then ['traceroute'] else [],
+      if anonMode == "none" then ['traceroute', 'scamper1', 'hopannotation1'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -527,6 +532,12 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // The NDT tag to use for containers.
   ndtVersion: ndtVersion,
+
+  // The NDT tag to use for canary nodes.
+  ndtCanaryVersion: ndtCanaryVersion,
+
+  // The NDT tag to use for go1.16 canary nodes.
+  ndtGo116CanaryVersion: ndtGo116CanaryVersion,
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,

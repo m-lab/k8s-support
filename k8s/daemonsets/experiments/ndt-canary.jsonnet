@@ -3,21 +3,32 @@ local exp = import '../templates.jsonnet';
 local expName = 'ndt';
 
 exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+  metadata+: {
+    name: expName + '-canary',
+  },
   spec+: {
+    selector+: {
+      matchLabels+: {
+        workload: expName + '-canary',
+      },
+    },
     template+: {
       metadata+: {
         annotations+: {
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
+        labels+: {
+          workload: expName + '-canary',
+        },
       },
       spec+: {
         nodeSelector+: {
-          'mlab/ndt-version': 'production',
+          'mlab/ndt-version': 'canary',
         },
         containers+: [
           {
             name: 'ndt-server',
-            image: 'measurementlab/ndt-server:' + exp.ndtVersion,
+            image: 'measurementlab/ndt-server:' + exp.ndtCanaryVersion,
             // This command section is somewhat of a workaround to get a value
             // to pass to the -max-rate flag of ndt-server. The default
             // ENTRYPOINT for the ndt-server image is /ndt-server, but this

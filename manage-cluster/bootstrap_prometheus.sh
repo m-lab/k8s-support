@@ -41,7 +41,7 @@ case $PROJECT in
     DISK_SIZE="200GB"
     ;;
   mlab-staging)
-    MACHINE_TYPE="n1-standard-8"
+    MACHINE_TYPE="e2-highmem-8"
     DISK_SIZE="1500GB"
     ;;
   mlab-oti)
