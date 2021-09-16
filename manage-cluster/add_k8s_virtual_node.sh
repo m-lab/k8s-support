@@ -173,17 +173,23 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   mkdir -p /opt/bin
   curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
 
+  # Install conntrack.
+  apt install -y conntrack
+
   # Install kubeadm, kubelet and kubectl.
   cd /opt/bin
   curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
   chmod +x {kubeadm,kubelet,kubectl}
 
   # Install kubelet systemd service and enable it.
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/kubelet.service" \
-      | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service
+  curl -sSL \
+    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" \
+	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service
+
   mkdir -p /etc/systemd/system/kubelet.service.d
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${K8S_VERSION}/build/debs/10-kubeadm.conf" \
-      | sed "s:/usr/bin:/opt/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  curl -sSL \
+    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" \
+	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
   # Override the node name, which without this will be something like:
   #     ${K8S_NODE_NAME}.c.mlab-sandbox.internal
