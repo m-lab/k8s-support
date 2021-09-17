@@ -45,7 +45,7 @@ case $PROJECT in
     DISK_SIZE="1500GB"
     ;;
   mlab-oti)
-    MACHINE_TYPE="n2-highmem-16"
+    MACHINE_TYPE="n2-highmem-32"
     DISK_SIZE="2500GB"
     ;;
   *)
