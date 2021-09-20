@@ -1,4 +1,4 @@
-local ndtVersion = 'v0.20.5';
+local ndtVersion = 'v0.20.6';
 local ndtCanaryVersion = 'v0.20.6';
 local ndtGo116CanaryVersion = 'v0.20.5-go1.16';
 local PROJECT_ID = std.extVar('PROJECT_ID');
