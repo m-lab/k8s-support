@@ -529,8 +529,10 @@ groups:
             label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "switch", "", ".*") or
             label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "tcpinfo", "", ".*") or
             label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "tcpinfo", "", ".*") or
-            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "traceroute", "", ".*") or
-            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "traceroute", "", ".*")
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "scamper1", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "scamper1", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c1", "", ".*"), "datatype", "hopannotation1", "", ".*") or
+            label_replace(label_replace(vector(0), "delay", "c2", "", ".*"), "datatype", "hopannotation1", "", ".*")
             ))
     for: 2h
     labels:
