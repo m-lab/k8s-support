@@ -59,31 +59,19 @@
         name: 'ipvlan-index-' + index,
         plugins: [
           {
-            type: 'ipvlan',
-            master: 'eth0',
+            type: 'netctl',
             ipam: {
               type: 'index2ip',
               index: index,
             },
-          },
-          // For now, the tuning plugin needs to be run after ipvlan. This is
-          // because the index2ip plugin is still using CNI spec v0.2.0, and
-          // does not properly handle the 'prevResult' field. Putting tuning
-          // first, which we would like to do, results in the error: 'Required
-          // "prevResult" missing'. If a plugin is passed a 'prevResult' field,
-          // then it _must_ output the field, which the index2ip plugin surely
-          // does not do. Ultimately, we want tuning first, so that sysctls get
-          // set before the ipvlan interface is even created. See this issue:
-          // https://github.com/m-lab/index2ip/issues/8
-          //
-          // TODO(kinkade): when the above issue is resolved, move tuning to be
-          // the first plugin in the list.
-          {
-            type: 'tuning',
             sysctl: {
-              'net.ipv6.conf.net1.accept_ra': '0',
-              'net.ipv6.conf.net1.autoconf': '0',
+              'net.ipv6.conf.default.accept_ra': '0',
+              'net.ipv6.conf.default.autoconf': '0',
             },
+          },
+          {
+            type: 'ipvlan',
+            master: 'eth0',
           },
         ],
       },
