@@ -13,10 +13,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
         containers+: [
           {
             name: 'nodeinfo',
-            image: 'measurementlab/nodeinfo:v1.2',
+            image: 'measurementlab/nodeinfo:v1.2.1',
             args: [
               '-datadir=/var/spool/' + expName,
-              '-wait=1h',
+              '-wait=6h',
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-config=/etc/nodeinfo/config.json',
             ],
