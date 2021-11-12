@@ -29,8 +29,8 @@
               '--path.sysfs=/host/sys',
               '--path.rootfs=/host/root',
               '--collector.textfile.directory=/var/spool/node-exporter',
-              '--collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)',
-              '--collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$',
+              '--collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+)($|/)',
+              '--collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$',
               '--collector.netstat.fields=^(.*_(InErrors|InErrs)|Ip_Forwarding|Ip(6|Ext)_(InOctets|OutOctets)|Icmp6?_(InMsgs|OutMsgs)|TcpExt_(TCPDSACK.*|Listen.*|Syncookies.*|TCPSynRetrans)|Tcp_(ActiveOpens|InSegs|OutSegs|PassiveOpens|RetransSegs|CurrEstab)|Udp6?_(InDatagrams|OutDatagrams|NoPorts))$',
               '--collector.systemd',
               '--collector.systemd.unit-include=^(setup-after-boot.service|containerd.service|configure-tc-fq.service|kubelet.service)',
@@ -52,7 +52,7 @@
               '--no-collector.vmstat',
               '--no-collector.zfs',
             ],
-            image: 'quay.io/prometheus/node-exporter:v1.1.0',
+            image: 'prom/node-exporter:v1.2.2',
             name: 'node-exporter',
             resources: {
               limits: {
