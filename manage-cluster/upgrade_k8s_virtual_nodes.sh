@@ -33,7 +33,7 @@ export KUBECONFIG=$KUBECONFIG
 # Get a list of all the virtual nodes in the cluster that are not master nodes.
 NODES=$(
   kubectl get nodes \
-      --selector 'mlab/type=virtual,!node-role.kubernetes.io/master' \
+      --selector 'mlab/type=virtual,!node-role.kubernetes.io/control-plane' \
       --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 )
 
