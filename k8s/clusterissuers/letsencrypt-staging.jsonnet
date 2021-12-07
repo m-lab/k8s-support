@@ -32,7 +32,7 @@
         },
         {
           dns01: {
-            clouddns: {
+            cloudDNS: {
               project: std.extVar('PROJECT_ID'),
               serviceAccountSecretRef: {
                 name: 'cert-manager-credentials',
