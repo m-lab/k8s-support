@@ -38,9 +38,9 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--storage.tsdb.path=/prometheus',
               '--web.enable-lifecycle',
               '--web.external-url=https://prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
-              '--storage.tsdb.retention.time=2880h',
+              '--storage.tsdb.retention.time=120d',
             ],
-            image: 'prom/prometheus:v2.24.1',
+            image: 'prom/prometheus:v2.31.1',
             name: 'prometheus',
             ports: [
               {
