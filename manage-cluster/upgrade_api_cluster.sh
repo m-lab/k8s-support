@@ -75,6 +75,11 @@ for zone in $GCE_ZONES; do
     # All k8s binaries are located in /opt/bin
     export PATH=\$PATH:/opt/bin
 
+    # Use latest cluster version of admin kubeconfig for all API calls, since
+    # the version located at /root/.kube/config could possibly be old and
+    # expired.
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
