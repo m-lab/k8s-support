@@ -36,8 +36,12 @@
             {
               path: '/',
               backend: {
-                serviceName: 'prometheus-tls',
-                servicePort: 9090,
+                service: {
+                  name: 'prometheus-tls',
+                  port: {
+                    number: 9090,
+                  },
+                },
               },
             },
           ],
