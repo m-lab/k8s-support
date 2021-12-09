@@ -75,6 +75,11 @@ for zone in $GCE_ZONES; do
     # All k8s binaries are located in /opt/bin
     export PATH=\$PATH:/opt/bin
 
+    # Use latest cluster version of admin kubeconfig for all API calls, since
+    # the version located at /root/.kube/config could possibly be old and
+    # expired.
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
@@ -95,10 +100,10 @@ for zone in $GCE_ZONES; do
 
     # Drain the node of most workloads, except DaemonSets, since some of those
     # are critical for the node to even be part of the cluster (e.g., flannel).
-    # The flag --delete-local-data causes the command to "continue even if
+    # The flag --delete-emptydir-data causes the command to "continue even if
     # there are pods using emptyDir". In our case, the CoreDNS pods use
     # emptyDir volumes, but we don't care about the data in there.
-    kubectl drain $gce_name --ignore-daemonsets --delete-local-data=true
+    kubectl drain $gce_name --ignore-daemonsets --delete-emptydir-data=true
 
     # Upgrade CNI plugins.
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz

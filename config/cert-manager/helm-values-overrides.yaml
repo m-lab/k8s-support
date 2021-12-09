@@ -1,19 +1,19 @@
 cainjector:
   nodeSelector:
-    "node-role.kubernetes.io/master": ""
+    "node-role.kubernetes.io/control-plane": ""
   tolerations:
   - operator: Exists
 ingressShim:
   defaultIssuerName: letsencrypt
   defaultIssuerKind: ClusterIssuer
 nodeSelector:
-  "node-role.kubernetes.io/master": ""
+  "node-role.kubernetes.io/control-plane": ""
 strategy:
   type: Recreate
 tolerations:
 - operator: Exists
 webhook:
   nodeSelector:
-    "node-role.kubernetes.io/master": ""
+    "node-role.kubernetes.io/control-plane": ""
   tolerations:
   - operator: Exists

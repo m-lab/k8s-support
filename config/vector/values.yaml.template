@@ -43,7 +43,7 @@ sources:
   journald:
     type: "journald"
 tolerations:
-- key: node-role.kubernetes.io/master
+- key: node-role.kubernetes.io/control-plane
   effect: NoSchedule
 transforms:
   kernel_log:

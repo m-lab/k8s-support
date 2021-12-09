@@ -4,7 +4,7 @@
 // limits and is better for testing, though it doesn't produce globally valid
 // TLS certs.
 {
-  apiVersion: 'cert-manager.io/v1alpha2',
+  apiVersion: 'cert-manager.io/v1',
   kind: 'ClusterIssuer',
   metadata: {
     name: 'letsencrypt-staging',
@@ -32,7 +32,7 @@
         },
         {
           dns01: {
-            clouddns: {
+            cloudDNS: {
               project: std.extVar('PROJECT_ID'),
               serviceAccountSecretRef: {
                 name: 'cert-manager-credentials',

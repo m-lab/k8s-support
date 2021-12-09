@@ -1,5 +1,5 @@
 {
-  apiVersion: 'cert-manager.io/v1alpha2',
+  apiVersion: 'cert-manager.io/v1',
   kind: 'ClusterIssuer',
   metadata: {
     name: 'letsencrypt',
@@ -27,7 +27,7 @@
         },
         {
           dns01: {
-            clouddns: {
+            cloudDNS: {
               project: std.extVar('PROJECT_ID'),
               serviceAccountSecretRef: {
                 name: 'cert-manager-credentials',

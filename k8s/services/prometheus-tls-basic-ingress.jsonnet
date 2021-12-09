@@ -1,5 +1,5 @@
 {
-  apiVersion: 'networking.k8s.io/v1beta1',
+  apiVersion: 'networking.k8s.io/v1',
   kind: 'Ingress',
   metadata: {
     name: 'prometheus-tls-basic',
@@ -34,9 +34,14 @@
           paths: [
             {
               path: '/',
+              pathType: 'Prefix',
               backend: {
-                serviceName: 'prometheus-tls',
-                servicePort: 9090,
+                service: {
+                  name: 'prometheus-tls',
+                  port: {
+                    number: 9090,
+                  },
+                },
               },
             },
           ],
