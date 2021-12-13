@@ -21,6 +21,7 @@
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
     import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
+    import 'k8s/daemonsets/experiments/ndt-osupgrade.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
