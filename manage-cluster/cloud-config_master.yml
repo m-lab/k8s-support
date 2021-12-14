@@ -264,6 +264,8 @@ write_files:
       echo "There are less than 3 healthy etcd cluster members. Not rebooting."
       exit 1
     fi
+    # While we are at it, update all system packages.
+    apt full-upgrade --yes
     echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
     /sbin/reboot
 
