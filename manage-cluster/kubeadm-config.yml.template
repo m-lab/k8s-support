@@ -5,7 +5,6 @@ nodeRegistration:
   kubeletExtraArgs:
     container-runtime: "remote"
     container-runtime-endpoint: "unix:///run/containerd/containerd.sock"
-    resolv-conf: "/run/systemd/resolve/resolv.conf"
 localAPIEndpoint:
   advertiseAddress: "{{INTERNAL_IP}}"
   bindPort: 6443
@@ -28,7 +27,6 @@ nodeRegistration:
   kubeletExtraArgs:
     container-runtime: "remote"
     container-runtime-endpoint: "unix:///run/containerd/containerd.sock"
-    resolv-conf: "/run/systemd/resolve/resolv.conf"
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
