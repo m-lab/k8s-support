@@ -59,3 +59,5 @@ containerLogMaxSize: 100Mi
 # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
 nodeStatusUpdateFrequency: 20s
 podPidsLimit: 10000
+resolvConf: /run/systemd/resolve/resolv.conf
+
