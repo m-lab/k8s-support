@@ -39,6 +39,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--web.enable-lifecycle',
               '--web.external-url=https://prometheus-platform-cluster.' + std.extVar('PROJECT_ID') + '.measurementlab.net',
               '--storage.tsdb.retention.time=120d',
+              '--enable-feature=memory-snapshot-on-shutdown',
             ],
             image: 'prom/prometheus:v2.31.1',
             name: 'prometheus',
