@@ -184,8 +184,8 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 
 local TracerouteScamper1(expName, tcpPort, hostNetwork) = [
   {
-    name: 'trc-scamper1',
-    image: 'measurementlab/traceroute-caller:v0.10.0',
+    name: 'traceroute-caller-scamper1',
+    image: 'measurementlab/traceroute-caller:latest',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -226,15 +226,15 @@ local TracerouteScamper1(expName, tcpPort, hostNetwork) = [
     ],
   }] +
   if hostNetwork then
-    [RBACProxy('traceroute-scamper1', tcpPort)]
+    [RBACProxy('traceroute-caller-scamper1', tcpPort)]
   else
-    [SOCATProxy('traceroute-scamper1', tcpPort)]
+    [SOCATProxy('traceroute-caller-scamper1', tcpPort)]
 ;
 
 local TracerouteScamper2(expName, tcpPort, hostNetwork) = [
   {
-    name: 'trc-scamper2',
-    image: 'measurementlab/traceroute-caller:v0.10.0',
+    name: 'traceroute-caller-scamper2',
+    image: 'measurementlab/traceroute-caller:latest',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -273,9 +273,9 @@ local TracerouteScamper2(expName, tcpPort, hostNetwork) = [
     ],
   }] +
   if hostNetwork then
-    [RBACProxy('traceroute-scamper2', tcpPort)]
+    [RBACProxy('traceroute-caller-scamper2', tcpPort)]
   else
-    [SOCATProxy('traceroute-scamper2', tcpPort)]
+    [SOCATProxy('traceroute-caller-scamper2', tcpPort)]
 ;
 
 local Pcap(expName, tcpPort, hostNetwork) = [
@@ -557,7 +557,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // ourselves.
   RBACProxy(name, port):: RBACProxy(name, port),
 
-  // RBACProxy creates a localhost proxy for containers that listen on the
+  // SOCATProxy creates a localhost proxy for containers that listen on the
   // pod private IP. This allows operators to use kubectl port-forward to access
   // metrics and debug/pprof profiling safely through kubectl.
   SOCATProxy(name, port):: SOCATProxy(name, port),
