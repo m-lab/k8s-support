@@ -226,9 +226,9 @@ local TracerouteScamper1(expName, tcpPort, hostNetwork) = [
     ],
   }] +
   if hostNetwork then
-    [RBACProxy('traceroute', tcpPort)]
+    [RBACProxy('traceroute-scamper1', tcpPort)]
   else
-    [SOCATProxy('traceroute', tcpPort)]
+    [SOCATProxy('traceroute-scamper1', tcpPort)]
 ;
 
 local TracerouteScamper2(expName, tcpPort, hostNetwork) = [
@@ -273,9 +273,9 @@ local TracerouteScamper2(expName, tcpPort, hostNetwork) = [
     ],
   }] +
   if hostNetwork then
-    [RBACProxy('traceroute', tcpPort)]
+    [RBACProxy('traceroute-scamper2', tcpPort)]
   else
-    [SOCATProxy('traceroute', tcpPort)]
+    [SOCATProxy('traceroute-scamper2', tcpPort)]
 ;
 
 local Pcap(expName, tcpPort, hostNetwork) = [
@@ -478,8 +478,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         containers:
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork, anonMode),
-            if anonMode == "none" then
-              Traceroute(name, 9992, hostNetwork) else [],
+            if anonMode == "none" then [TracerouteScamper1(name, 9992, hostNetwork), TracerouteScamper2(name, 9996, hostNetwork)]
+            else [],
             Pcap(name, 9993, hostNetwork),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
