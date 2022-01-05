@@ -478,8 +478,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         containers:
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork, anonMode),
-            if anonMode == "none" then [TracerouteScamper1(name, 9992, hostNetwork), TracerouteScamper2(name, 9996, hostNetwork)]
-            else [],
+            if anonMode == "none" then TracerouteScamper1(name, 9992, hostNetwork) else [],
+            if anonMode == "none" then TracerouteScamper2(name, 9996, hostNetwork) else [],
             Pcap(name, 9993, hostNetwork),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
