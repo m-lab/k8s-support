@@ -182,24 +182,73 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
     [SOCATProxy('tcpinfo', tcpPort)]
 ;
 
-local Traceroute(expName, tcpPort, hostNetwork) = [
+local TracerouteScamper1(expName, tcpPort, hostNetwork) = [
   {
-    name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.9.0',
+    name: 'trc-scamper1',
+    image: 'measurementlab/traceroute-caller:v0.10.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-IPCacheTimeout=10m',
       '-IPCacheUpdatePeriod=1m',
+      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+      '-scamper.trace-type=mda',
+      '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1',
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
-      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+      '-scamper.tracelb-ptr=true',
+    ],
+    env: if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      tcpinfoServiceVolume.volumemount,
+      uuidannotatorServiceVolume.volumemount,
+      uuid.volumemount,
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('traceroute', tcpPort)]
+  else
+    [SOCATProxy('traceroute', tcpPort)]
+;
+
+local TracerouteScamper2(expName, tcpPort, hostNetwork) = [
+  {
+    name: 'trc-scamper2',
+    image: 'measurementlab/traceroute-caller:v0.10.0',
+    args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-uuid-prefix-file=' + uuid.prefixfile,
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
+      '-IPCacheTimeout=10m',
+      '-IPCacheUpdatePeriod=1m',
+      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+      '-scamper.trace-type=regular',
+      '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper2',
+      '-scamper.timeout=10m',
     ],
     env: if hostNetwork then [] else [
       {
@@ -402,7 +451,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
-      if anonMode == "none" then ['traceroute', 'scamper1', 'hopannotation1'] else [],
+      if anonMode == "none" then ['traceroute', 'scamper1', 'scamper2', 'hopannotation1'] else [],
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
