@@ -241,7 +241,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-    ] + if hostNetwork then [
+    ] + if hostNetwork && expName != 'ndtcloud' then [
       '-interface=eth0',
     ] else [],
     env: if hostNetwork then [] else [
