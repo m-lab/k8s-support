@@ -241,7 +241,9 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-    ] + if hostNetwork && expName != 'ndtcloud' then [
+    // The "host" experiment is currently the only experiment where
+    // packet-headers needs to listen explictly on interface eth0.
+    ] + if expName == 'host' then [
       '-interface=eth0',
     ] else [],
     env: if hostNetwork then [] else [
