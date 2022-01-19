@@ -77,4 +77,4 @@ fi
 
 ./add_k8s_virtual_node.sh -p "${PROJECT}" -z "${CLOUD_ZONE}" \
     -n "${GCE_NAME}" -H "${K8S_NAME}" -a "${GCE_NAME}" -t "ndt-cloud" \
-    -l "mlab/type=virtual mlab/run=ndtcloud mlab/machine=${MLAB_MACHINE} mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
+    -l "mlab/type=virtual mlab/run=ndt mlab/machine=${MLAB_MACHINE} mlab/metro=${CLOUD_SITE::-2} mlab/site=${CLOUD_SITE} mlab/project=${PROJECT}"
