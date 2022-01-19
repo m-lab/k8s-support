@@ -169,10 +169,11 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   mkdir -p /opt/cni/bin
   curl --location "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
-  # Install the Flannel CNI plugin
+  # Install the Flannel CNI plugin.
   # v0.9.1 of the official CNI plugins release stopped including flannel, so we
   # must now install it manually from its official source.
   curl --location "https://github.com/flannel-io/cni-plugin/releases/download/${K8S_FLANNELCNI_VERSION}/flannel-amd64" > /opt/cni/bin/flannel
+  chmod +x /opt/cni/bin/flannel
 
   # Install crictl.
   mkdir -p /opt/bin
