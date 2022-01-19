@@ -1,11 +1,32 @@
 local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
-local expName = 'ndtcloud';
+local expName = 'ndt';
 
-exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "none", datatypes, true) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, true) + {
+  metadata+: {
+    name: expName + '-virtual',
+  },
   spec+: {
+    selector+: {
+      matchLabels+: {
+        workload: expName + '-virtual',
+      },
+    },
     template+: {
+      metadata+: {
+        annotations+: {
+          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+        },
+        labels+: {
+          workload: expName + '-virtual',
+        },
+      },
       spec+: {
+        hostNetwork: true,
+        nodeSelector: {
+          'mlab/type': 'virtual',
+          'mlab/run': expName,
+        },
         containers+: [
           {
             name: 'ndt-server',
@@ -29,9 +50,7 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
             ],
             ports: [],
           },
-
           exp.RBACProxy(expName, 9990),
-
         ],
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds,
         volumes+: [
@@ -42,11 +61,6 @@ exp.ExperimentNoIndex(expName, 'pusher-ndtcloud-' + std.extVar('PROJECT_ID'), "n
             },
           },
         ],
-        nodeSelector: {
-          'mlab/type': 'virtual',
-          'mlab/run': expName,
-        },
-        hostNetwork: true,
       },
     },
   },
