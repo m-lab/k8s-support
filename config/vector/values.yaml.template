@@ -2,9 +2,6 @@ env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/vector/keys/vector.json
 extraVolumes:
-- name: docker
-  hostPath:
-    path: /cache/docker/containers
 - name: credentials
   secret:
     defaultMode: 420
@@ -13,8 +10,6 @@ extraVolumes:
   hostPath:
     path: /etc/machine-id
 extraVolumeMounts:
-- name: docker
-  mountPath: /cache/docker/containers
 - name: credentials
   mountPath: /etc/vector/keys
   readOnly: true
