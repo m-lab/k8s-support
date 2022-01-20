@@ -19,7 +19,7 @@
     import 'k8s/daemonsets/core/kured.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
-    import 'k8s/daemonsets/experiments/ndtcloud.jsonnet',
+    import 'k8s/daemonsets/experiments/ndt-virtual.jsonnet',
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/ndt-osupgrade.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
