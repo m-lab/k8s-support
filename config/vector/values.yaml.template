@@ -22,6 +22,7 @@ extraVolumeMounts:
   readOnly: true
 podLabels:
   workload: vector
+role: Agent
 sinks:
   stackdriver:
     type: gcp_stackdriver_logs
