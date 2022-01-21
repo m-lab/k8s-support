@@ -44,7 +44,6 @@ transforms:
   kernel_log:
     type: "filter"
     inputs: ["journald"]
-    condition.type: "check_fields"
-    condition."SYSLOG_IDENTIFIER.eq": "kernel"
+    condition: .SYSLOG_IDENTIFIER == "kernel"
     # This catches anything with priority warning (4) to critical (0).
-    condition."PRIORITY.eq": ["0", "1", "2", "3", "4"]
+    condition: .PRIORITY == ["0", "1", "2", "3", "4"]
