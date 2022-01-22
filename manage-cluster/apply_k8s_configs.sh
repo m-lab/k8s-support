@@ -80,7 +80,7 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 # Install Vector and configure to export to Google Stackdriver.
 
 # Replace per-project variables in Vector's values.yaml.
-sed -e "s|{{PROJECT}}|${PROJECT}|g"
+sed -e "s|{{PROJECT}}|${PROJECT}|g" \
     -e "s|{{IMAGE}}|${K8S_VECTOR_IMAGE}|g" \
     ../config/vector/values.yaml.template > \
     ../config/vector/values.yaml
