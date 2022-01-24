@@ -28,7 +28,7 @@ customConfig:
       condition:
         type: remap
         # This catches anything with priority warning (4) to critical (0).
-        source: .SYSLOG_IDENTIFIER == "kernel" && .PRIORITY == ["0", "1", "2", "3", "4"]
+        source: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/vector/keys/vector.json
