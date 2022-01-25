@@ -1,10 +1,36 @@
+customConfig:
+  api:
+    enabled: false
+  sinks:
+    stackdriver:
+      type: gcp_stackdriver_logs
+      inputs:
+      - kernel_log
+      - kubernetes_logs
+      project_id: {{PROJECT}}
+      log_id: "${VECTOR_SELF_NODE_NAME}"
+      resource:
+        type: "generic_node"
+        projectId: {{PROJECT}}
+        location: {{PROJECT}}
+        namespace: "${VECTOR_SELF_NODE_NAME}"
+        node_id: "${VECTOR_SELF_NODE_NAME}"
+  sources:
+    journald:
+      type: journald
+    kubernetes_logs:
+      type: kubernetes_logs
+  transforms:
+    kernel_log:
+      type: filter
+      inputs:
+      - journald
+      # This catches anything with priority warning (4) to critical (0).
+      condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/vector/keys/vector.json
 extraVolumes:
-- name: docker
-  hostPath:
-    path: /cache/docker/containers
 - name: credentials
   secret:
     defaultMode: 420
@@ -13,8 +39,6 @@ extraVolumes:
   hostPath:
     path: /etc/machine-id
 extraVolumeMounts:
-- name: docker
-  mountPath: /cache/docker/containers
 - name: credentials
   mountPath: /etc/vector/keys
   readOnly: true
@@ -25,31 +49,13 @@ extraVolumeMounts:
 - name: machine-id
   mountPath: /etc/machine-id
   readOnly: true
+image:
+  tag: {{IMAGE}}
 podLabels:
   workload: vector
-sinks:
-  stackdriver:
-    type: gcp_stackdriver_logs
-    inputs: ["kernel_log", "kubernetes_logs"]
-    rawConfig: |
-      resource.type = "generic_node"
-      resource.projectId = "{{PROJECT}}"
-      resource.location = "{{PROJECT}}"
-      resource.namespace = "${VECTOR_SELF_NODE_NAME}"
-      resource.node_id = "${VECTOR_SELF_NODE_NAME}"
-      project_id = "{{PROJECT}}"
-      log_id = "${VECTOR_SELF_NODE_NAME}"
-sources:
-  journald:
-    type: "journald"
+role: Agent
+service:
+  enabled: false
 tolerations:
 - key: node-role.kubernetes.io/control-plane
   effect: NoSchedule
-transforms:
-  kernel_log:
-    type: "filter"
-    inputs: ["journald"]
-    rawConfig: |
-      condition."SYSLOG_IDENTIFIER.eq" = "kernel"
-      # This catches anything with priority warning (4) to critical (0).
-      condition."PRIORITY.eq" = ["0", "1", "2", "3", "4"]
