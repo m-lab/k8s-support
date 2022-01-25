@@ -87,6 +87,7 @@ sed -e "s|{{PROJECT}}|${PROJECT}|g" \
 
 ./linux-amd64/helm upgrade --install vector \
   --values ../config/vector/values.yaml \
+  --version ${K8S_VECTOR_CHART} \
   vector/vector
 
 # Apply the configuration
