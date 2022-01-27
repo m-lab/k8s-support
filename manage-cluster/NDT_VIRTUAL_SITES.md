@@ -9,16 +9,21 @@ Platform (GCE).
 
 **NOTE**: if you are creating a virtual site in mlab-staging or mlab-oti, and
 want to be sure that the Locate Service does not send traffic to the site until
-you are ready, then you should create a new issue in the
+you are ready, then you should put the site into maintenance mode using the
+[Github Maintenance
+Exporter](https://docs.google.com/document/d/1qEsGhlS0afr-rGuneqHmL7qxohgEEpYZN4wlbDwrINA/).
+To do this, create a new issue in the
 [ops-tracker](https://github.com/m-lab/ops-tracker/issues) Github repository to
 track the site creation, and somewhere in the issue body, or in a subsequent
 comment, add the following text anywhere, which will put the site into
 maintenance mode until either the issue is closed or the site is explicity
-removed from maintenance mode (e.g., "/site pdx0t del"). For example:
+removed from maintenance mode (e.g., "/site <site> del"). For example:
 
 ```sh
-/site pdx0t
+/site <site>
 ```
+
+Be sure to replace "<site>" with the actual site name (e.g., pdx0t).
 
 ## Creating an NDT virtual node
 
