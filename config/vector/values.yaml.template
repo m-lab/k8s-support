@@ -59,7 +59,7 @@ extraVolumeMounts:
 image:
   tag: {{IMAGE}}
 podAnnotations:
-  prometheus.io/scrape: true
+  prometheus.io/scrape: "true"
 podLabels:
   workload: vector
 role: Agent
