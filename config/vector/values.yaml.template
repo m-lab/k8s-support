@@ -19,7 +19,7 @@ customConfig:
       type: prometheus_exporter
       inputs:
       - internal_metrics
-      address: 0.0.0.0:9598
+      address: 0.0.0.0:9090
   sources:
     journald:
       type: journald
@@ -58,6 +58,8 @@ extraVolumeMounts:
   readOnly: true
 image:
   tag: {{IMAGE}}
+podAnnotations:
+  prometheus.io/scrape: true
 podLabels:
   workload: vector
 role: Agent
