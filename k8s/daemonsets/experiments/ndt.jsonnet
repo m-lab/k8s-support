@@ -39,7 +39,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-ndt7.token.required=true',
-              '-label=machine-type=physical',
+              '-label=type=physical',
               '-label=deployment=stable',
             ],
             env: [
