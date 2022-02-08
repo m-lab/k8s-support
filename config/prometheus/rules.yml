@@ -188,7 +188,7 @@ groups:
   #
   # Units: bits per second.
   - record: switch:ifHCOutOctets:bps2m
-    expr: max by (site, speed) (8 * irate(ifHCOutOctets{ifAlias="uplink"}[4m]))
+    expr: max by (site, speed, ifAlias) (8 * irate(ifHCOutOctets{ifAlias="uplink"}[4m]))
 
   ## NDT Early Warning aggregation rules for Kubernetes platform.
 
