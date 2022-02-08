@@ -38,6 +38,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-label=type=virtual',
+              '-label=deployment=stable',
             ],
             volumeMounts: [
               {
