@@ -65,7 +65,7 @@ local VolumeMount(name) = {
 // information.
 local SOCATProxy(name, port) = {
   name: 'socat-proxy-' + name,
-  image: 'alpine/socat',
+  image: 'alpine/socat:1.0.5',
   args: [
     // socat does not support long options.
     '-dd', // debug.
