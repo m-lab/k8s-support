@@ -4,9 +4,10 @@ We have two kinds of daemonset we want to run on our nodes: Those that make the 
 
 ## Access Metrics and PProf Instrumentation
 
-Our core services (tcpinfo, traceroute, pcap, pusher) are built with native
-prometheus metrics and pprof instrumentation. Access to the `/metrics` and
-`/debug/pprof` targets are only accessible to the private k8s network.
+Our core services (tcp-info, traceroute-caller, packet-headers, uuid-annotator,
+pusher) are built with native prometheus metrics and pprof instrumentation.
+Access to the `/metrics` and `/debug/pprof` targets are only accessible to the
+private k8s network.
 
 Operators can access these targets by following these steps.
 
