@@ -87,8 +87,6 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             ],
 
           },
-        ] + [
-          exp.SOCATProxy('ndt-server', 9990)
         ],
         volumes+: [
           {

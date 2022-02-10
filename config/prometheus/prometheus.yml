@@ -101,14 +101,6 @@ scrape_configs:
         regex: https
         action: drop
 
-      # socat proxy enables easy access to pprof targets but accidentally
-      # duplicates metric collection. The annotation mechanism applies at the pod
-      # level not at individual containers. So, this rule drops metrics with
-      # socat containers.
-      - source_labels: [__meta_kubernetes_pod_container_name]
-        regex: socat-.*
-        action: drop
-
       # For inventory, record whether a pod is ready. This helps distinguish
       # between: missing from inventory, not ready and failing, ready but
       # failing, ready and working.
