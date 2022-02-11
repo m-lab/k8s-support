@@ -2,6 +2,33 @@ local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'ndt';
 
+local metadata = {
+  initContainer: {
+    name: 'curl',
+    image: 'curlimages/curl:7.81.0',
+    args: [
+      '-H', 'Metadata-Flavor: Google', // long form (--header=) fails for unknown reason.
+      '-o', '/var/local/metadata/external-ip', // long form (--output=) failed for unknown reason.
+      'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip'
+    ],
+    volumeMounts: [
+      metadata.volumemount {
+        readOnly: false,
+      },
+    ],
+  },
+  path: '/var/local/metadata',
+  volumemount: {
+    mountPath: metadata.path,
+    name: 'metadata',
+    readOnly: true,
+  },
+  volume: {
+    emptyDir: {},
+    name: 'metadata',
+  },
+};
+
 exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, true) + {
   metadata+: {
     name: expName + '-virtual',
@@ -28,22 +55,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
           'mlab/run': expName,
         },
         initContainers+:[
-          {
-            name: 'curl',
-            image: 'curlimages/curl:7.81.0',
-            args: [
-              '--header=Metadata-Flavor: Google',
-              '--output=/var/local/metadata/external-ip',
-              'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip'
-            ],
-            volumeMounts: [
-              {
-                mountPath: '/var/local/metadata',
-                name: 'metadata',
-                readOnly: false,
-              },
-            ],
-          },
+          metadata.initContainer,
         ],
         containers+: [
           {
@@ -51,7 +63,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
             command: [
               "/bin/sh", "-c",
-              "external_ip=$(cat /usr/local/metadata/external-ip); /ndt-server -label=external-ip=$external_ip $@",
+              "external_ip=$(cat " + metadata.path + "/external-ip); /ndt-server -label=external-ip=$external_ip $@",
               "--",
             ],
             args: [
@@ -71,11 +83,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              {
-                mountPath: '/var/local/metadata',
-                name: 'metadata',
-                readOnly: true,
-              },
+              metadata.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
@@ -91,10 +99,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
               secretName: 'measurement-lab-org-tls',
             },
           },
-          {
-            emptyDir: {},
-            name: 'metadata',
-          },
+          metadata.volume,
         ],
       },
     },
