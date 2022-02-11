@@ -39,7 +39,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
             volumeMounts: [
               {
                 mountPath: '/var/local/metadata',
-                name: 'metadta',
+                name: 'metadata',
                 readOnly: false,
               },
             ],
@@ -73,7 +73,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
               exp.uuid.volumemount,
               {
                 mountPath: '/var/local/metadata',
-                name: 'metadta',
+                name: 'metadata',
                 readOnly: true,
               },
             ] + [
