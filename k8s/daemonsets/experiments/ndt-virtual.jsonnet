@@ -27,10 +27,33 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
           'mlab/type': 'virtual',
           'mlab/run': expName,
         },
+        initContainers+:[
+          {
+            name: 'curl',
+            image: 'curlimages/curl:7.81.0',
+            args: [
+              '--header=Metadata-Flavor: Google',
+              '--output=/var/local/metadata/external-ip',
+              'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip'
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/var/local/metadata',
+                name: 'metadta',
+                readOnly: false,
+              },
+            ],
+          },
+        ],
         containers+: [
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
+            command: [
+              "/bin/sh", "-c",
+              "external_ip=$(cat /usr/local/metadata/external-ip); /ndt-server -label=external-ip=$external_ip $@",
+              "--",
+            ],
             args: [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
@@ -48,6 +71,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
                 readOnly: true,
               },
               exp.uuid.volumemount,
+              {
+                mountPath: '/var/local/metadata',
+                name: 'metadta',
+                readOnly: true,
+              },
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
@@ -62,6 +90,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
             secret: {
               secretName: 'measurement-lab-org-tls',
             },
+          },
+          {
+            emptyDir: {},
+            name: 'metadata',
           },
         ],
       },
