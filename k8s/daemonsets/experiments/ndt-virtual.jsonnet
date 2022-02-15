@@ -12,7 +12,7 @@ local metadata = {
   volume: {
     hostPath: {
       path: '/var/local/metadata',
-      type: 'DirectoryOrCreate',
+      type: 'Directory',
     },
     name: 'metadata',
   },
