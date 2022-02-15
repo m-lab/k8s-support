@@ -179,8 +179,8 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   mkdir -p /opt/bin
   curl --location "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
 
-  # Install conntrack.
-  apt install -y conntrack
+  # Install a few network-related packages.
+  apt install -y conntrack ebtables iptables socat
 
   # Install kubeadm, kubelet and kubectl.
   cd /opt/bin
@@ -248,10 +248,39 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list \
+EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
     --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
-    --project="${PROJECT}" \
-    --filter="name~'${GCE_NAME}'")
+    "${GCE_ARGS[@]}")
+
+# Determine the network tier for this VM. It does not appear that this value is
+# available through the GCE metadata server, but we can grab it here. We write
+# out this value to the VM metadata directory, which experiments can read in to
+# annotate data with VM/machine metadata.
+NETWORK_TIER=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format 'value(networkInterfaces[0].accessConfigs[0].networkTier)' \
+    "${GCE_ARGS[@]}")
+
+# Ssh to the new VM and write out various pieces of metadata to the filesystem.
+# These bits of metadata can be used by various services running on the VM to
+# know more about their environment. For example, an experiment might use the
+# metadata to label data that it produces so that someone querying the data in
+# BigQuery could discover more about the operating environment of the experiment.
+gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
+  set -euxo pipefail
+  sudo --login
+
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
+  set -euxo pipefail
+
+  metadata_dir=/var/local/metadata
+
+  mkdir -p \$metadata_dir
+
+  echo -n $GCE_ZONE > "\${metadata_dir}/zone"
+  echo -n $EXTERNAL_IP > "\${metadata_dir}/external-ip"
+  echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
+  echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
+EOF
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
