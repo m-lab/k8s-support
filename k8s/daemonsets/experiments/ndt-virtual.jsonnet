@@ -3,28 +3,17 @@ local exp = import '../templates.jsonnet';
 local expName = 'ndt';
 
 local metadata = {
-  initContainer: {
-    name: 'curl',
-    image: 'curlimages/curl:7.81.0',
-    args: [
-      '-H', 'Metadata-Flavor: Google', // long form (--header=) fails for unknown reason.
-      '-o', '/var/local/metadata/external-ip', // long form (--output=) failed for unknown reason.
-      'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip'
-    ],
-    volumeMounts: [
-      metadata.volumemount {
-        readOnly: false,
-      },
-    ],
-  },
-  path: '/var/local/metadata',
+  path: '/metadata',
   volumemount: {
     mountPath: metadata.path,
     name: 'metadata',
     readOnly: true,
   },
   volume: {
-    emptyDir: {},
+    hostPath: {
+      path: '/var/local/metadata',
+      type: 'DirectoryOrCreate',
+    },
     name: 'metadata',
   },
 };
@@ -54,27 +43,23 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
           'mlab/type': 'virtual',
           'mlab/run': expName,
         },
-        initContainers+:[
-          metadata.initContainer,
-        ],
         containers+: [
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
-            command: [
-              "/bin/sh", "-c",
-              "external_ip=$(cat " + metadata.path + "/external-ip); /ndt-server -label=external-ip=$external_ip $@",
-              "--",
-            ],
             args: [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/' + expName,
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
+              '-txcontroller.max-rate=150000000',
               '-label=type=virtual',
               '-label=deployment=stable',
-              '-txcontroller.max-rate=150000000',
+              '-label=external-ip=@'+metadata.path+'/external-ip',
+              '-label=machine-type=@'+metadata.path+'/machine-type',
+              '-label=network-tier=@'+metadata.path+'/network-tier',
+              '-label=zone=@'+metadata.path+'/zone',
             ],
             volumeMounts: [
               {
