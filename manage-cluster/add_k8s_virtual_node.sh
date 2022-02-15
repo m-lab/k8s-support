@@ -248,10 +248,17 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list \
+EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
     --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
-    --project="${PROJECT}" \
-    --filter="name~'${GCE_NAME}'")
+    "${GCE_ARGS[@]}")
+
+# Determine the network tier for this VM. It does not appear that this value is
+# available through the GCE metadata server, but we can grab it here. We write
+# out this value to the VM metadata directory, which experiments can read in to
+# annotate data with VM/machine metadata.
+NETWORK_TIER=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format 'value(networkInterfaces[0].accessConfigs[0].networkTier)' \
+    "${GCE_ARGS[@]}")
 
 # Ssh to the new VM and write out various pieces of metadata to the filesystem.
 # These bits of metadata can be used by various services running on the VM to
@@ -272,6 +279,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   echo $GCE_ZONE > "\${metadata_dir}/zone"
   echo $EXTERNAL_IP > "\${metadata_dir}/external-ip"
   echo $MACHINE_TYPE > "\${metadata_dir}/machine-type"
+  echo $NETWORK_TIER > "\${metadata_dir}/network-tier"
 EOF
 
 # Ssh to the master and fix the network annotation for the node.
