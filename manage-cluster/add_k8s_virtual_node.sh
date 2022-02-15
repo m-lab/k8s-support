@@ -276,10 +276,10 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   mkdir -p \$metadata_dir
 
-  echo $GCE_ZONE > "\${metadata_dir}/zone"
-  echo $EXTERNAL_IP > "\${metadata_dir}/external-ip"
-  echo $MACHINE_TYPE > "\${metadata_dir}/machine-type"
-  echo $NETWORK_TIER > "\${metadata_dir}/network-tier"
+  echo -n $GCE_ZONE > "\${metadata_dir}/zone"
+  echo -n $EXTERNAL_IP > "\${metadata_dir}/external-ip"
+  echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
+  echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
 EOF
 
 # Ssh to the master and fix the network annotation for the node.
