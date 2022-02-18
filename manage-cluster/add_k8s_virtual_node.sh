@@ -21,6 +21,10 @@ usage() {
   echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-H <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
+# List of GCP regions which support external IPv6 addresses for GCE VMs:
+# https://cloud.google.com/vpc/docs/vpc#ipv6-regions
+IPV6_REGIONS="asia-east1 asia-south1 europe-west2 us-west2"
+
 ADDRESS=""
 HOST_NAME=""
 LABELS=""
@@ -115,7 +119,13 @@ else
 fi
 
 if [[ -z "${MACHINE_TYPE}" ]]; then
-  MACHINE_TYPE="n1-standard-1"
+  MACHINE_TYPE="n1-highcpu-4"
+fi
+
+if echo $IPV6_REGIONS | grep ${!GCE_REGION}; then
+  IPV6_FLAG="--stack-type=IPV4_IPV6"
+else
+  IPV6_FLAG=""
 fi
 
 # Allocate a new VM.
@@ -127,6 +137,7 @@ gcloud compute instances create "${GCE_NAME}" \
   --network "${GCE_NETWORK}" \
   ${ADDRESS_FLAG} \
   ${TAGS_FLAG} \
+  ${IPV6_FLAG} \
   --subnet "${GCE_K8S_SUBNET}" \
   --scopes "${GCE_API_SCOPES}" \
   --metadata-from-file "user-data=cloud-config_node.yml" \
@@ -249,8 +260,14 @@ EOF
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
 EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
-    --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
+    --format 'value(networkInterfaces[0].accessConfigs[0].natIP)' \
     "${GCE_ARGS[@]}")
+
+if [[ -n $IPV6_FLAG ]]; then
+  EXTERNAL_IPV6=$(gcloud compute instances describe "${GCE_NAME}" \
+      --format 'value(networkInterfaces[0].ipv6AccessConfigs[0].externalIpv6)' \
+      "${GCE_ARGS[@]}")
+fi
 
 # Determine the network tier for this VM. It does not appear that this value is
 # available through the GCE metadata server, but we can grab it here. We write
@@ -278,6 +295,9 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   echo -n $GCE_ZONE > "\${metadata_dir}/zone"
   echo -n $EXTERNAL_IP > "\${metadata_dir}/external-ip"
+  if [[ -n $EXTERNAL_IPV6 ]]; then
+    echo -n $EXTERNAL_IPV6 > "\${metadata_dir}/external-ipv6"
+  fi
   echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
   echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
 EOF
