@@ -15,18 +15,11 @@ customConfig:
         location: {{PROJECT}}
         namespace: "${VECTOR_SELF_NODE_NAME}"
         node_id: "${VECTOR_SELF_NODE_NAME}"
-    prometheus_exporter:
-      type: prometheus_exporter
-      inputs:
-      - internal_metrics
-      address: 0.0.0.0:9090
   sources:
     journald:
       type: journald
     kubernetes_logs:
       type: kubernetes_logs
-    internal_metrics:
-      type: internal_metrics
   transforms:
     kernel_log:
       type: filter
