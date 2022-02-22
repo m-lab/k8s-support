@@ -267,6 +267,8 @@ if [[ -n $IPV6_FLAG ]]; then
   EXTERNAL_IPV6=$(gcloud compute instances describe "${GCE_NAME}" \
       --format 'value(networkInterfaces[0].ipv6AccessConfigs[0].externalIpv6)' \
       "${GCE_ARGS[@]}")
+else
+  EXTERNAL_IPV6=""
 fi
 
 # Determine the network tier for this VM. It does not appear that this value is
@@ -295,9 +297,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   echo -n $GCE_ZONE > "\${metadata_dir}/zone"
   echo -n $EXTERNAL_IP > "\${metadata_dir}/external-ip"
-  if [[ -n $EXTERNAL_IPV6 ]]; then
-    echo -n $EXTERNAL_IPV6 > "\${metadata_dir}/external-ipv6"
-  fi
+  echo -n $EXTERNAL_IPV6 > "\${metadata_dir}/external-ipv6"
   echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
   echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
 EOF
