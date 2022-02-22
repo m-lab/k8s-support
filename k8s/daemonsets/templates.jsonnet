@@ -1,5 +1,7 @@
-local ndtVersion = 'v0.20.6';
-local ndtCanaryVersion = 'v0.20.6';
+local ndtVersion = 'v0.20.9';
+// The canary version is expected to be greater than or equal to
+// the current stable version.
+local ndtCanaryVersion = 'v0.20.9';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -57,36 +59,6 @@ local volume(name) = {
 local VolumeMount(name) = {
   mountPath: '/var/spool/' + name,
   name: std.strReplace(name, '/', '-') + '-data',
-};
-
-// SOCATProxy creates a tunnel between localhost:<port> and the private pod
-// IP:<port>. This allows operators and developers to use `kubectl port-forward`
-// (which only binds to localhost) to connect to :<port>/debug/pprof for profile
-// information.
-local SOCATProxy(name, port) = {
-  name: 'socat-proxy-' + name,
-  image: 'alpine/socat',
-  args: [
-    // socat does not support long options.
-    '-dd', // debug.
-    'tcp-listen:' + port + ',bind=127.0.0.1,fork,reuseaddr',
-    'tcp-connect:$(IP):' +  port,
-  ],
-  env: [
-    {
-      name: 'IP',
-      valueFrom: {
-        fieldRef: {
-          fieldPath: 'status.podIP',
-        },
-      },
-    },
-  ],
-  ports: [
-    {
-      containerPort: port,
-    },
-  ],
 };
 
 local RBACProxy(name, port) = {
@@ -178,8 +150,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   }] +
   if hostNetwork then
     [RBACProxy('tcpinfo', tcpPort)]
-  else
-    [SOCATProxy('tcpinfo', tcpPort)]
+  else []
 ;
 
 local Traceroute(expName, tcpPort, hostNetwork) = [
@@ -225,8 +196,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   }] +
   if hostNetwork then
     [RBACProxy('traceroute', tcpPort)]
-  else
-    [SOCATProxy('traceroute', tcpPort)]
+  else []
 ;
 
 local Pcap(expName, tcpPort, hostNetwork) = [
@@ -241,7 +211,9 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-    ] + if hostNetwork then [
+    // The "host" experiment is currently the only experiment where
+    // packet-headers needs to listen explictly on interface eth0.
+    ] + if expName == 'host' then [
       '-interface=eth0',
     ] else [],
     env: if hostNetwork then [] else [
@@ -267,8 +239,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
   }] +
   if hostNetwork then
     [RBACProxy('pcap', tcpPort)]
-  else
-    [SOCATProxy('pcap', tcpPort)]
+  else []
 ;
 
 
@@ -331,14 +302,13 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   }] +
   if hostNetwork then
     [RBACProxy('pusher', tcpPort)]
-  else
-    [SOCATProxy('pusher', tcpPort)]
+  else []
 ;
 
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.4.4',
+    image: 'measurementlab/uuid-annotator:v0.4.6',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -394,8 +364,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   }] +
   if hostNetwork then
     [RBACProxy('uuid-annotator', tcpPort)]
-  else
-    [SOCATProxy('uuid-annotator', tcpPort)]
+  else []
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
@@ -507,11 +476,6 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // metrics securely over https, andto https-authenticate to only serve them to
   // ourselves.
   RBACProxy(name, port):: RBACProxy(name, port),
-
-  // RBACProxy creates a localhost proxy for containers that listen on the
-  // pod private IP. This allows operators to use kubectl port-forward to access
-  // metrics and debug/pprof profiling safely through kubectl.
-  SOCATProxy(name, port):: SOCATProxy(name, port),
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.

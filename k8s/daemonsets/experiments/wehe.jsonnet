@@ -15,7 +15,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             args: [
               'cp', '/wehe-ca/ca.key', '/wehe-ca/ca.crt', '/wehe/ssl/',
             ],
-            image: 'busybox',
+            image: 'busybox:1.34',
             // Wehe expects the ca.key and ca.crt to be in a
             // directory to which it can write the resulting keys
             // produced. Secrets can't be mounted read/write, so

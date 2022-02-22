@@ -4,31 +4,55 @@ We have two kinds of daemonset we want to run on our nodes: Those that make the 
 
 ## Access Metrics and PProf Instrumentation
 
-Our core services (tcpinfo, traceroute, pcap, pusher) are built with native
-prometheus metrics and pprof instrumentation. Ordinarily, access to the
-`/metrics` and `/debug/pprof` targets are only accessible to the private k8s
-network.
+Our core services (tcp-info, traceroute-caller, packet-headers, uuid-annotator,
+pusher) are built with native prometheus metrics and pprof instrumentation.
+Access to the `/metrics` and `/debug/pprof` targets are only accessible to the
+private k8s network.
 
 Operators can access these targets by following these steps.
 
-1. Identify a pod of interest. For example:
+Identify a pod of interest. For example:
 
 ```sh
-$ kubectl get pods -o wide | grep mlab1.lga0t | grep ndt
-ndt-w6tr6   9/9       Running   0          29m     192.168.3.24    mlab1.lga0t
+$ kubectl get pods -l workload=ndt -o wide | grep mlab1-lga0t
+ndt-w6tr6   13/13       Running   0          29m     192.168.3.24 mlab1-lga0t[...]
 ```
 
-2. Forward a local port to the remote pod port for the container of interest.
-   Check the latest port-to-container mapping in k8s/daemonsets/templates.jsonnet
+In one terminal, use kubectl to start a proxy to the control plane (API
+cluster). By default `kubectl proxy` will create a local listener on port
+8001. You can use the default or change the port to whatever you prefer.
 
 ```sh
-$ kubectl port-forward pod/ndt-w6tr6 9993:9993
+$ kubectl proxy
 ```
 
-3. Access localhost:9993 using a browser, `go tool pprof <url>`, or other tool.
+Using the local listener created by `kubectl proxy`, make an API call to the
+"proxy" operation for the pod we discovered earlier. The general URL pattern is
+like:
 
 ```sh
-$ google-chrome http://localhost:9993/metrics
-$ go tool pprof -top http://localhost:9993/debug/pprof/heap
-$ lynx http://localhost:9993/debug/pprof/
+/api/v1/namespaces/<namespace>/pods/<podname>:<port>/proxy/
 ```
+
+For example:
+
+```sh
+$ curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9990/proxy/debug/pprof/
+$ curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9995/proxy/metrics
+$ go tool pprof -top http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9991/proxy/debug/pprof/heap
+$ google-chrome http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9992/proxy/debug/pprof/
+```
+
+Each sidecar service (and ndt-server) listens on a particular port. At the time
+of this writing the ports are as follows:
+
+* 9990: ndt-server
+* 9991: tcp-info
+* 9992: traceroute-caller
+* 9993: packet-headers
+* 9994: uuid-annotator
+* 9995: pusher
+
+To access metrics or pprof data for a given service, simply modify the the URL
+to specify `<podname>:<port>`. 
+

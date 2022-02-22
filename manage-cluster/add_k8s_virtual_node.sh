@@ -21,6 +21,10 @@ usage() {
   echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-H <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
+# List of GCP regions which support external IPv6 addresses for GCE VMs:
+# https://cloud.google.com/vpc/docs/vpc#ipv6-regions
+IPV6_REGIONS="asia-east1 asia-south1 europe-west2 us-west2"
+
 ADDRESS=""
 HOST_NAME=""
 LABELS=""
@@ -115,7 +119,13 @@ else
 fi
 
 if [[ -z "${MACHINE_TYPE}" ]]; then
-  MACHINE_TYPE="n1-standard-1"
+  MACHINE_TYPE="n1-highcpu-4"
+fi
+
+if echo $IPV6_REGIONS | grep ${!GCE_REGION}; then
+  IPV6_FLAG="--stack-type=IPV4_IPV6"
+else
+  IPV6_FLAG=""
 fi
 
 # Allocate a new VM.
@@ -127,6 +137,7 @@ gcloud compute instances create "${GCE_NAME}" \
   --network "${GCE_NETWORK}" \
   ${ADDRESS_FLAG} \
   ${TAGS_FLAG} \
+  ${IPV6_FLAG} \
   --subnet "${GCE_K8S_SUBNET}" \
   --scopes "${GCE_API_SCOPES}" \
   --metadata-from-file "user-data=cloud-config_node.yml" \
@@ -167,27 +178,33 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   # Install CNI plugins.
   mkdir -p /opt/cni/bin
-  curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+  curl --location "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+  # Install the Flannel CNI plugin.
+  # v0.9.1 of the official CNI plugins release stopped including flannel, so we
+  # must now install it manually from its official source.
+  curl --location "https://github.com/flannel-io/cni-plugin/releases/download/${K8S_FLANNELCNI_VERSION}/flannel-amd64" > /opt/cni/bin/flannel
+  chmod +x /opt/cni/bin/flannel
 
   # Install crictl.
   mkdir -p /opt/bin
-  curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
+  curl --location "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
 
-  # Install conntrack.
-  apt install -y conntrack
+  # Install a few network-related packages.
+  apt install -y conntrack ebtables iptables socat
 
   # Install kubeadm, kubelet and kubectl.
   cd /opt/bin
-  curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+  curl --location --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
   chmod +x {kubeadm,kubelet,kubectl}
 
   # Install kubelet systemd service and enable it.
-  curl -sSL \
+  curl --silent --show-error --location \
     "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" \
 	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service
 
   mkdir -p /etc/systemd/system/kubelet.service.d
-  curl -sSL \
+  curl --silent --show-error --location \
     "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" \
 	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
@@ -242,10 +259,48 @@ EOF
 # has resolved by the time this command returns.  If you move this assignment to
 # earlier in the file, make sure to insert a sleep here so prevent the next
 # lines from happening too soon after the initial registration.
-EXTERNAL_IP=$(gcloud compute instances list \
-    --format 'value(networkInterfaces[].accessConfigs[0].natIP)'\
-    --project="${PROJECT}" \
-    --filter="name~'${GCE_NAME}'")
+EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format 'value(networkInterfaces[0].accessConfigs[0].natIP)' \
+    "${GCE_ARGS[@]}")
+
+if [[ -n $IPV6_FLAG ]]; then
+  EXTERNAL_IPV6=$(gcloud compute instances describe "${GCE_NAME}" \
+      --format 'value(networkInterfaces[0].ipv6AccessConfigs[0].externalIpv6)' \
+      "${GCE_ARGS[@]}")
+else
+  EXTERNAL_IPV6=""
+fi
+
+# Determine the network tier for this VM. It does not appear that this value is
+# available through the GCE metadata server, but we can grab it here. We write
+# out this value to the VM metadata directory, which experiments can read in to
+# annotate data with VM/machine metadata.
+NETWORK_TIER=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format 'value(networkInterfaces[0].accessConfigs[0].networkTier)' \
+    "${GCE_ARGS[@]}")
+
+# Ssh to the new VM and write out various pieces of metadata to the filesystem.
+# These bits of metadata can be used by various services running on the VM to
+# know more about their environment. For example, an experiment might use the
+# metadata to label data that it produces so that someone querying the data in
+# BigQuery could discover more about the operating environment of the experiment.
+gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
+  set -euxo pipefail
+  sudo --login
+
+  # Bash options are not inherited by subshells. Reset them to exit on any error.
+  set -euxo pipefail
+
+  metadata_dir=/var/local/metadata
+
+  mkdir -p \$metadata_dir
+
+  echo -n $GCE_ZONE > "\${metadata_dir}/zone"
+  echo -n $EXTERNAL_IP > "\${metadata_dir}/external-ip"
+  echo -n $EXTERNAL_IPV6 > "\${metadata_dir}/external-ipv6"
+  echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
+  echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
+EOF
 
 # Ssh to the master and fix the network annotation for the node.
 gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EOF
