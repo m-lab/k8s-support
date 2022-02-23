@@ -122,7 +122,7 @@ if [[ -z "${MACHINE_TYPE}" ]]; then
   MACHINE_TYPE="n1-highcpu-4"
 fi
 
-if echo $IPV6_REGIONS | grep ${!GCE_REGION}; then
+if echo $IPV6_REGIONS | grep "${GCE_ZONE%-*}"; then
   IPV6_FLAG="--stack-type=IPV4_IPV6"
 else
   IPV6_FLAG=""
