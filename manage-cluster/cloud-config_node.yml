@@ -30,6 +30,7 @@ write_files:
   content: |
     overlay
     br_netfilter
+    tcp_bbr
 
 # The odd number of 999 because GCE nodes already have a file named
 # 99-gce.conf, which, among other things, disables ip forwarding.
@@ -41,15 +42,25 @@ write_files:
     net.bridge.bridge-nf-call-iptables  = 1
     net.bridge.bridge-nf-call-ip6tables = 1
 
-# Load the TCP BBR kernel module.
-- path: /etc/modules-load.d/tcp_bbr.conf
+# Configures the fq qdisc on boot. Note that all GCE VMs we create will be
+# capable of 10g, even though we may choose to flag the site as 1g in siteinfo
+# for other reasons.
+- path: /etc/systemd/system/configure-tc-fq.service
   permissions: 0644
   owner: root:root
-  content: tcp_bbr
+  content: |
+    [Unit]
+    Description=Configures TCP pacing
+    After=multi-user.target
+    [Service]
+    Type=oneshot
+    ExecStart=tc qdisc replace dev ens4 root fq maxrate 10gbit
+    [Install]
+    WantedBy=multi-user.target
 
 runcmd:
 - sysctl --system
 - systemctl restart systemd-modules-load.service
 - systemctl enable containerd
 - systemctl start containerd
-- tc qdisc replace dev ens4 root fq maxrate 10gbit
+- systemctl start configure-tc-fq.service
