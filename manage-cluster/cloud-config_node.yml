@@ -41,8 +41,15 @@ write_files:
     net.bridge.bridge-nf-call-iptables  = 1
     net.bridge.bridge-nf-call-ip6tables = 1
 
+# Load the TCP BBR kernel module.
+- path: /etc/modules-load.d/tcp_bbr.conf
+  permissions: 0644
+  owner: root:root
+  content: tcp_bbr
+
 runcmd:
 - sysctl --system
 - systemctl restart systemd-modules-load.service
 - systemctl enable containerd
 - systemctl start containerd
+- tc qdisc replace dev ens4 root fq maxrate 10gbit
