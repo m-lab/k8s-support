@@ -54,7 +54,15 @@ write_files:
     After=multi-user.target
     [Service]
     Type=oneshot
-    ExecStart=tc qdisc replace dev ens4 root fq maxrate 10gbit
+    # The - in front of the file name indicates that if the file doesn't exist,
+    # don't attempt to read it and don't emit and error.
+    EnvironmentFile=-/run/net-iface
+    # This is a fairly ugly way to get the device name of the default route
+    # (which should be representative of the primary NIC device). The double
+    # backslash in front of $5 is a requirement of systemd, since unit files can
+    # contain escape sequences.
+    ExecStartPre=/bin/bash -c 'echo IFACE=$(ip -o -4 route show default | awk "{print \\$5}") > /run/net-iface'
+    ExecStart=tc qdisc replace dev $IFACE root fq maxrate 10gbit
     [Install]
     WantedBy=multi-user.target
 
