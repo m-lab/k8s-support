@@ -51,6 +51,8 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               // port 3002 is arbitrary.
               '-ndt5_addr=127.0.0.1:3002',
               '-ndt5_ws_addr=:3001',
+              '-ndt5.token.required=true',
+              '-ndt7.token.required=true',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/' + expName,
@@ -58,6 +60,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+              '-txcontroller.device=ens4',
               '-txcontroller.max-rate=150000000',
               '-label=type=virtual',
               '-label=deployment=canary',
