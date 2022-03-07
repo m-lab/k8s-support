@@ -37,9 +37,23 @@ NODES=$(
       --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 )
 
+for node in $NODES; do
+  UPGRADE_NODES=""
+  CURRENT_VERSION=$(
+    kubectl get node $node -o jsonpath='{.status.nodeInfo.kubeletVersion}{"\n"}'
+  )
+  lowest_version=$(
+    echo -e "${CURRENT_VERSION}\n${K8S_VERSION}" | sort --version-sort | head --lines 1
+  )
+
+  if [[ $lowest_version == $CURRENT_VERSION ]]; then
+    UPGRADE_NODES="${UPGRADE_NODES} ${node}"
+  fi
+done
+
 set +x
 echo -e "\n\n##### NODES TO BE UPGRADED #####"
-for node in $NODES; do
+for node in $UPGRADE_NODES; do
   echo $node
 done
 echo -e "\n"
@@ -58,7 +72,7 @@ if [[ "${keepgoing}" != "y" ]]; then
 fi
 set -x
 
-for node in $NODES; do
+for node in $UPGRADE_NODES; do
   # Replace the dots in the hostname with dashes.
   node="${node//./-}"
   # Determine the zone of the node.
