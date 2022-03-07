@@ -37,16 +37,15 @@ NODES=$(
       --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'
 )
 
+UPGRADE_NODES=""
 for node in $NODES; do
-  UPGRADE_NODES=""
   CURRENT_VERSION=$(
     kubectl get node $node -o jsonpath='{.status.nodeInfo.kubeletVersion}{"\n"}'
   )
-  lowest_version=$(
-    echo -e "${CURRENT_VERSION}\n${K8S_VERSION}" | sort --version-sort | head --lines 1
-  )
-
-  if [[ $lowest_version == $CURRENT_VERSION ]]; then
+  # If the node is already at the right version, then continue.
+  if [[ $CURRENT_VERSION == $K8S_VERSION ]]; then
+    continue
+  else
     UPGRADE_NODES="${UPGRADE_NODES} ${node}"
   fi
 done
