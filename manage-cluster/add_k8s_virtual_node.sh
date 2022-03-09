@@ -134,6 +134,8 @@ gcloud compute instances create "${GCE_NAME}" \
   --image-family "${GCE_IMAGE_FAMILY}" \
   --image-project "${GCE_IMAGE_PROJECT}" \
   --machine-type "${MACHINE_TYPE}" \
+  --boot-disk-type pd-ssd \
+  --boot-disk-size "${K8S_CLOUD_NODE_DISK_SIZE}" \
   --network "${GCE_NETWORK}" \
   ${ADDRESS_FLAG} \
   ${TAGS_FLAG} \
