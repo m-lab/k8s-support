@@ -178,12 +178,13 @@ groups:
 
 # Platform Hardware alerts
 
-  # TODO(kinkade): this alert is only valid for R630s. R640s will have 32 or
-  # 64GB of RAM. We will need a way to distinguish between the two for the
-  # purposes of this alert.
+  # TODO(kinkade): this alert is only valid for R630s and physical nodes. R640s
+  # will have 32 or 64GB of RAM. We need a way to distinguish between the
+  # two for the purposes of this alert.
   - alert: PlatformCluster_RamBelowExpected
     expr: |
       node_memory_MemTotal_bytes{machine=~"^mlab[1-4].[a-z]{3}[0-9]{2}.*"} / 2^20 < 15000
+        unless on(node) kube_node_labels{label_mlab_type="virtual"}
         unless on(node) gmx_machine_maintenance == 1
     for: 1d
     labels:
