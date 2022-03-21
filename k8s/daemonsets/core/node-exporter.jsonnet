@@ -108,7 +108,7 @@
                 },
               },
             ],
-            image: 'quay.io/coreos/kube-rbac-proxy:v0.4.1',
+            image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
             name: 'kube-rbac-proxy',
             ports: [
               {
