@@ -63,7 +63,7 @@ local VolumeMount(name) = {
 
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
-  image: 'quay.io/coreos/kube-rbac-proxy:v0.4.1',
+  image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
   args: [
     '--logtostderr',
     '--secure-listen-address=$(IP):' + port,
