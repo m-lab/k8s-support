@@ -91,7 +91,7 @@ kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
 kubectl create secret generic wehe-ca --from-file secrets/wehe-ca/ \
     --dry-run -o json > secret-configs/wehe-ca.json
 kubectl create secret generic fluentbit-credentials --from-file secrets/fluentbit.json \
-    --dry-run -o json > secret-configs/fluentbit-credentials.json
+    --dry-run -o json > secret-configs/fluentbit.json
 kubectl create secret generic snmp-community --from-file secrets/snmp.community \
     --dry-run -o json > secret-configs/snmp-community.json
 # NB: The file containing the user/password pair must be called 'auth'.

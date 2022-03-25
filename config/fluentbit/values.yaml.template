@@ -26,17 +26,9 @@ config:
         namespace {{PROJECT}}
         node_id fluent-bit-test
         export_to_project_id {{PROJECT}}
-  customParsers: |
-    [PARSER]
-        # http://rubular.com/r/tjUt3Awgg4
-        Name cri
-        Format regex
-        Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<message>.*)$
-        Time_Key    time
-        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
-  value: /etc/fluentbit/keys/credentials.json
+  value: /etc/fluentbit/keys/fluentbit.json
 extraVolumes:
 - name: credentials
   secret:
