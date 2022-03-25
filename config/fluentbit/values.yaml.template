@@ -1,0 +1,54 @@
+config:
+  service: |
+  inputs: |
+    [INPUT]
+      Name tail
+      Path /var/log/containers/*.log
+      Parser cri
+      Tag mlab.k8s.*
+      Mem_Buf_Limit 5MB
+      Skip_Long_Lines On
+    [INPUT]
+      Name systemd
+      Tag mlab.systemd.*
+      Systemd_Filter .SYSLOG_IDENTIFIER="kernel"
+      Systemd_Filter .PRIORITY=0
+      Systemd_Filter .PRIORITY=1
+      Systemd_Filter .PRIORITY=2
+      Systemd_Filter .PRIORITY=3
+      Systemd_Filter .PRIORITY=4
+  outputs: |
+    [OUTPUT]
+      # write the log records that still have the 'kube.*' tags to Cloud Logging
+      Name stackdriver
+      Match mlab.*
+      Resource generic_node 
+      location {{PROJECT}}
+      namespace {{PROJECT}}
+      node_id fluent-bit-test
+      export_to_project_id {{PROJECT}}
+  customParsers: |
+    [PARSER]
+      # http://rubular.com/r/tjUt3Awgg4
+      Name cri
+      Format regex
+      Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<message>.*)$
+      Time_Key    time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+env:
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /etc/fluent-bit/keys/credentials.json
+extraVolumes:
+- name: credentials
+  secret:
+    defaultMode: 420
+    secretName: fluentbit-credentials
+extraVolumeMounts:
+- name: credentials
+  mountPath: /etc/fluent-bit/keys
+  readOnly: true
+image:
+  repository: fluent/fluent-bit
+  tag: {{K8S_FLUENTBIT_VERSION}}
+  pullPolicy: Always
+metricsPort: 9090
