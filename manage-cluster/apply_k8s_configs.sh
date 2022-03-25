@@ -81,7 +81,7 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 
 # Replace per-project variables in fluent-bit's values.yaml.
 sed -e "s|{{PROJECT}}|${PROJECT}|g" \
-    -e "s|{{IMAGE}}|${K8S_FLUENTBIT_VERSION}|g" \
+    -e "s|{{K8S_FLUENTBIT_VERSION}}|${K8S_FLUENTBIT_VERSION}|g" \
     ../config/fluentbit/values.yaml.template > \
     ../config/fluentbit/values.yaml
 
