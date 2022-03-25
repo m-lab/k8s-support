@@ -45,10 +45,14 @@ extraVolumes:
   secret:
     defaultMode: 420
     secretName: fluentbit-credentials
+- name: fluent-bit-etc
+  emptyDir: {}
 extraVolumeMounts:
 - name: credentials
   mountPath: /etc/fluentbit/keys
   readOnly: true
+- name: fluent-bit-etc
+  mountPath: /fluent-bit/etc
 image:
   repository: fluent/fluent-bit
   tag: {{K8S_FLUENTBIT_VERSION}}
@@ -80,4 +84,7 @@ initContainers:
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
+  volumeMount:
+  - name: fluent-bit-etc
+    mountPath: /fluent-bit/etc
 metricsPort: 9090
