@@ -37,6 +37,8 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER="kernel"
         Systemd_Filter PRIORITY=4
         Systemd_Filter_Type and
+  outputs: |
+    @INCLUDE output.conf
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
