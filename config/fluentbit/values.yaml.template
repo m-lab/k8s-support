@@ -1,9 +1,9 @@
 config:
   filters: |
     [FILTER]
-      Name kubernetes
-      Match mlab.k8s.*
-      Use_Kubelet On
+        Name kubernetes
+        Match mlab.k8s.*
+        Use_Kubelet On
   inputs: |
     [INPUT]
         Name tail
