@@ -85,7 +85,9 @@ sed -e "s|{{PROJECT}}|${PROJECT}|g" \
     ../config/fluentbit/values.yaml.template > \
     ../config/fluentbit/values.yaml
 
-./linux-amd64/helm upgrade --install fluent-bit fluent/fluent-bit
+./linux-amd64/helm upgrade --install fluent-bit \
+  --values ../config/fluentbit/values.yaml \
+  fluent/fluent-bit
 
 # Apply the configuration
 
