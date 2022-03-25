@@ -84,7 +84,7 @@ initContainers:
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
-  volumeMount:
+  volumeMounts:
   - name: fluent-bit-etc
     mountPath: /fluent-bit/etc
 metricsPort: 9090
