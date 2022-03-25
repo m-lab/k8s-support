@@ -10,12 +10,33 @@ config:
     [INPUT]
         Name systemd
         Tag mlab.systemd.*
-        Systemd_Filter .SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter .PRIORITY=0
-        Systemd_Filter .PRIORITY=1
-        Systemd_Filter .PRIORITY=2
-        Systemd_Filter .PRIORITY=3
-        Systemd_Filter .PRIORITY=4
+        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
+        Systemd_Filter PRIORITY=0
+        Systemd_Filter_Type and
+    [INPUT]
+        Name systemd
+        Tag mlab.systemd.*
+        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
+        Systemd_Filter PRIORITY=1
+        Systemd_Filter_Type and
+    [INPUT]
+        Name systemd
+        Tag mlab.systemd.*
+        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
+        Systemd_Filter PRIORITY=2
+        Systemd_Filter_Type and
+    [INPUT]
+        Name systemd
+        Tag mlab.systemd.*
+        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
+        Systemd_Filter PRIORITY=3
+        Systemd_Filter_Type and
+    [INPUT]
+        Name systemd
+        Tag mlab.systemd.*
+        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
+        Systemd_Filter PRIORITY=4
+        Systemd_Filter_Type and
   outputs: |
     [OUTPUT]
         # write the log records that still have the 'kube.*' tags to Cloud Logging
