@@ -37,16 +37,6 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER="kernel"
         Systemd_Filter PRIORITY=4
         Systemd_Filter_Type and
-  outputs: |
-    [OUTPUT]
-        # write the log records that still have the 'kube.*' tags to Cloud Logging
-        Name stackdriver
-        Match mlab.*
-        Resource generic_node 
-        location {{PROJECT}}
-        namespace {{PROJECT}}
-        node_id fluent-bit-test
-        export_to_project_id {{PROJECT}}
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
@@ -63,4 +53,31 @@ image:
   repository: fluent/fluent-bit
   tag: {{K8S_FLUENTBIT_VERSION}}
   pullPolicy: Always
+# The fluent-bit Helm chart does not allow the possibility to specify
+# environment variables using the k8s downward API. We need the node name when
+# pushing to Stackdriver, so this initContainer creates the [OUTPUT]
+# configuration, instead of specifying it above in config.outputs.
+initContainers:
+- name: create-output-config
+  image: busybox
+  command:
+  - sh
+  - -c
+  - |
+    cat << EOF >> /fluent-bit/etc/output.conf
+    [OUTPUT]
+        # write the log records that still have the 'kube.*' tags to Cloud Logging
+        Name stackdriver
+        Match mlab.*
+        Resource generic_node
+        location {{PROJECT}}
+        namespace ${NODE_NAME}
+        node_id ${NODE_NAME}
+        export_to_project_id {{PROJECT}}
+    EOF
+  env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
 metricsPort: 9090
