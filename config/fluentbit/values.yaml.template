@@ -23,34 +23,12 @@ config:
         Name systemd
         Tag host.*
         Systemd_Filter SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter PRIORITY="0"
-        Systemd_Filter_Type and
-    [INPUT]
-        Name systemd
-        Tag host.*
-        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter PRIORITY="1"
-        Systemd_Filter_Type and
-    [INPUT]
-        Name systemd
-        Tag host.*
-        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter PRIORITY="2"
-        Systemd_Filter_Type and
-    [INPUT]
-        Name systemd
-        Tag host.*
-        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter PRIORITY="3"
-        Systemd_Filter_Type and
-    [INPUT]
-        Name systemd
-        Tag host.*
-        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
-        Systemd_Filter PRIORITY="4"
-        Systemd_Filter_Type and
   outputs: |
     @INCLUDE output.conf
+  service: |
+    [SERVICE]
+        Daemon Off
+        Parsers_File custom_parsers.conf
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
