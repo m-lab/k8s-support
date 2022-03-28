@@ -28,7 +28,13 @@ config:
   service: |
     [SERVICE]
         Daemon Off
+        Flush {{ .Values.flush }}
+        Log_Level {{ .Values.logLevel }}
         Parsers_File custom_parsers.conf
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port {{ .Values.metricsPort }}
+        Health_Check Off
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
