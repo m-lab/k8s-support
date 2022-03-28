@@ -49,7 +49,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=4
         Systemd_Filter_Type And
-
+  outputs: |
     @INCLUDE output.conf
   service: |
     [SERVICE]
