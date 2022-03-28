@@ -95,3 +95,6 @@ initContainers:
   - name: fluent-bit-etc
     mountPath: /fluent-bit/etc
 metricsPort: 9090
+rbac:
+  create: true
+  nodeAccess: true
