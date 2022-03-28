@@ -22,8 +22,11 @@ config:
     [INPUT]
         Name systemd
         Tag host.*
-        Systemd_Filter SYSLOG_IDENTIFIER="kernel"
   outputs: |
+    [OUTPUT]
+        Name stdout
+        Match host.*
+
     @INCLUDE output.conf
   service: |
     [SERVICE]
