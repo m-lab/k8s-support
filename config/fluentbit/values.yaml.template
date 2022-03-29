@@ -20,9 +20,13 @@ config:
         Tag kube.*
         Mem_Buf_Limit 32MB
         Buffer_Chunk_Size 64KB
-        Buffer_Max_Size 1028KB
+        Buffer_Max_Size 1MB
         Skip_Long_Lines On
         storage.type filesystem
+    # The systemd input plugin has fairly rudimentary ability to filter
+    # messages. It only has the ability to join filters on AND or OR, and you
+    # cannot use globbing or regexs. The following systemd inputs just break
+    # out each particular PRIORITY level we want from the kernel.
     [INPUT]
         Name systemd
         Tag host.*
