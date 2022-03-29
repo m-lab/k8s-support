@@ -11,6 +11,7 @@ config:
     [FILTER]
         Name kubernetes
         Match kube.*
+        Buffer_Size 1MB
   inputs: |
     [INPUT]
         Name tail
