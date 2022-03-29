@@ -17,35 +17,43 @@ config:
         Path /var/log/containers/*.log
         Parser cri
         Tag kube.*
-        Mem_Buf_Limit 5MB
+        Mem_Buf_Limit 32MB
+        Buffer_Chunk_Size 64KB
+        Buffer_Max_Size 1028KB
         Skip_Long_Lines On
+        storage.type filesystem
     [INPUT]
         Name systemd
         Tag host.*
+        Read_From_Tail On
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=0
         Systemd_Filter_Type And
     [INPUT]
         Name systemd
         Tag host.*
+        Read_From_Tail On
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=1
         Systemd_Filter_Type And
     [INPUT]
         Name systemd
         Tag host.*
+        Read_From_Tail On
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=2
         Systemd_Filter_Type And
     [INPUT]
         Name systemd
         Tag host.*
+        Read_From_Tail On
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=3
         Systemd_Filter_Type And
     [INPUT]
         Name systemd
         Tag host.*
+        Read_From_Tail On
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=4
         Systemd_Filter_Type And

@@ -293,6 +293,10 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # Bash options are not inherited by subshells. Reset them to exit on any error.
   set -euxo pipefail
 
+  # If this directory doesn't exist the kubelet will spam its log with messages
+  # about this missing directory every number of seconds.
+  mkdir -p /etc/kubernetes/manifests
+
   metadata_dir=/var/local/metadata
 
   mkdir -p \$metadata_dir
