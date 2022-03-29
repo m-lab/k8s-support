@@ -67,6 +67,7 @@ config:
         Parsers_File custom_parsers.conf
         HTTP_Server Off
         Health_Check Off
+        storage.path /var/lib/fluent-bit
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
