@@ -54,7 +54,7 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 # Add the required Helm repositories.
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-./linux-amd64/helm repo add vector https://helm.vector.dev
+./linux-amd64/helm repo add fluent https://fluent.github.io/helm-charts
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager --dry-run=client -o json | kubectl apply -f -
@@ -77,18 +77,17 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
   --values ../config/cert-manager/helm-values-overrides.yaml \
   jetstack/cert-manager
 
-# Install Vector and configure to export to Google Stackdriver.
+# Install fluent-bit and configure to export to Google Stackdriver.
 
-# Replace per-project variables in Vector's values.yaml.
+# Replace per-project variables in fluent-bit's values.yaml.
 sed -e "s|{{PROJECT}}|${PROJECT}|g" \
-    -e "s|{{IMAGE}}|${K8S_VECTOR_IMAGE}|g" \
-    ../config/vector/values.yaml.template > \
-    ../config/vector/values.yaml
+    -e "s|{{K8S_FLUENTBIT_VERSION}}|${K8S_FLUENTBIT_VERSION}|g" \
+    ../config/fluentbit/values.yaml.template > \
+    ../config/fluentbit/values.yaml
 
-./linux-amd64/helm upgrade --install vector \
-  --values ../config/vector/values.yaml \
-  --version ${K8S_VECTOR_CHART} \
-  vector/vector
+./linux-amd64/helm upgrade --install fluent-bit \
+  --values ../config/fluentbit/values.yaml \
+  fluent/fluent-bit
 
 # Apply the configuration
 
