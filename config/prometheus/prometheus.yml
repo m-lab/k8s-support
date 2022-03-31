@@ -116,10 +116,10 @@ scrape_configs:
 
       # If a custom metrics path was specified in an annotation, use it instead
       # of the default /metrics.
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_metric_path]
-        action: replace
-        target_label: __metrics_path__
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_metrics_path]
         regex: (.+)
+        target_label: __metrics_path__
+        replacement: ${1}
 
       # Only keep containers that have a declared container port.
       - source_labels: [__meta_kubernetes_pod_container_port_number]
