@@ -90,6 +90,7 @@ extraVolumeMounts:
   readOnly: true
 - name: fluent-bit-etc
   mountPath: /fluent-bit/etc
+flush: 15
 image:
   repository: fluent/fluent-bit
   tag: {{K8S_FLUENTBIT_VERSION}}
