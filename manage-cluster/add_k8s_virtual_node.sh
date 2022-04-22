@@ -161,6 +161,15 @@ until gcloud compute ssh "${GCE_NAME}" --command true --ssh-flag "-o PasswordAut
   gcloud compute config-ssh "${GCP_ARGS[@]}"
 done
 
+# Get the instances internal IP address. We will use it to manually configure
+# the node's InternalIP. On dual stack cloud VMs, for some reason the kubelet
+# often (always?) sets the InternalIP to the IPv6 address, which causes
+# problems with kube-rbac-proxy as well as with using the kubectl to look at
+# logs, since the API servers cannot speak IPv6.
+INTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format "value(networkInterfaces[0].networkIP)" \
+    "${GCE_ARGS[@]}")
+
 # Ssh to the new node, install all the k8s binaries.
 gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   set -euxo pipefail
@@ -213,7 +222,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # Override the node name, which without this will be something like:
   #     ${K8S_NODE_NAME}.c.mlab-sandbox.internal
   # https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
-  echo "KUBELET_EXTRA_ARGS='--hostname-override ${K8S_NODE_NAME}'" > /etc/default/kubelet
+  echo "KUBELET_EXTRA_ARGS='--hostname-override ${K8S_NODE_NAME} --node-ip ${INTERNAL_IP}'" > /etc/default/kubelet
 
   # Enable and start the kubelet service
   systemctl enable --now kubelet.service
