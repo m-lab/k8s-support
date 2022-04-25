@@ -392,6 +392,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         },
         labels: {
           workload: name,
+          measurementlab.net/type: 'physical',
         },
       },
       spec: {
