@@ -31,7 +31,7 @@
               // Only show stats for docker containers.
               '--docker_only',
             ],
-            image: 'gcr.io/cadvisor/cadvisor:v0.39.3'
+            image: 'gcr.io/cadvisor/cadvisor:v0.39.3',
             name: 'cadvisor',
             ports: [
               {
