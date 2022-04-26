@@ -305,6 +305,32 @@ groups:
         Perhaps an API server node was incorrectly upgraded _not_ using the
         ugprade script and not all components got updated?
 
+  # If any node is unschedulable for too long, fire an alert, unless the node
+  # is in lame-duck mode or GMX maintenance mode. We give the condition 1d
+  # before firing the alert because a node can get into an unschedulable state
+  # by being flagged for reboot, and the reboot not working as expected. Often
+  # this state will resolve itself, or Rebot will reboot the node resolving the
+  # state. On the other hand, it occasionally happens that a node fails to
+  # reboot properly in a timely fashion (4h) and Kured abandons the node and
+  # moves on to the next node, while leaving the node cordoned. When the node
+  # eventually comes back up, it is unschedulable until an operator uncordons
+  # it.
+  - alert: PlatformCluster_NodeUnschedulableForTooLong
+    expr: |
+      kube_node_spec_unschedulable == 1 unless on(node) (
+        kube_node_spec_taint{key="lame-duck"} or
+        gmx_machine_maintenance == 1
+      )
+    for: 1d
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: A node has been in an unschedulable state for too long.
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_nodeunschedulablefortoolong
+      dashboard: https://grafana.mlab-staging.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
   # If any pod is down or otherwise broken, fire an alert, unless the node is
   # in lame-duck mode, the node is NotReady, GMX maintenance mode, or the
   # scrape job for the entire node is down.
