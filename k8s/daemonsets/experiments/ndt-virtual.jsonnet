@@ -35,7 +35,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         },
         labels+: {
           workload: expName + '-virtual',
-          site-type: 'virtual',
+          'site-type': 'virtual',
         },
       },
       spec+: {

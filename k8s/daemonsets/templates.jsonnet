@@ -392,7 +392,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
         },
         labels: {
           workload: name,
-          site-type: 'physical',
+          'site-type': 'physical',
         },
       },
       spec: {
