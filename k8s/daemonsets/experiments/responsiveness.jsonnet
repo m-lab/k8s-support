@@ -44,8 +44,9 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             ],
           },
         ],
+        // Use host network to listen on the machine IP address without
+        // registering an experiment index yet.
         hostNetwork: true,
-        hostPID: true,
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
