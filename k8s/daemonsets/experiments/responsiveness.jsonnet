@@ -10,7 +10,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
         },
       },
       spec+: {
-        containers+: [
+        // NOTE: we override the containers to include only those named below.
+        // Once this service has a dedicated experiment index assigned, we should
+        // update the config to use all sidecar services.
+        containers: [
           {
             args: [
               '-base-port=443',
