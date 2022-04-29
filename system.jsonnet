@@ -24,6 +24,9 @@
     import 'k8s/daemonsets/experiments/ndt-osupgrade.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
+  ] + if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
+    import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
+  ] else [] + [
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
