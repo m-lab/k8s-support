@@ -265,7 +265,7 @@ write_files:
       exit 1
     fi
     # While we are at it, update all system packages.
-    apt full-upgrade --yes
+    DEBIAN_FRONTEND=noninteractive apt full-upgrade --yes
     echo "Reboot day ${REBOOT_DAY} equals today: ${TODAY}. Rebooting node."
     /sbin/reboot
 
