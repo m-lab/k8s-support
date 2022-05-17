@@ -46,7 +46,7 @@ case $PROJECT in
     ;;
   mlab-oti)
     MACHINE_TYPE="n2-highmem-32"
-    DISK_SIZE="2500GB"
+    DISK_SIZE="3500GB"
     ;;
   *)
     echo "Unknown GCP project: ${PROJECT}"
