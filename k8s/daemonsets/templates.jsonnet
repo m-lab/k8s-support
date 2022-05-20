@@ -245,7 +245,7 @@ local Pcap(expName, tcpPort, hostNetwork) = [
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
-    local version='v1.20',
+    local version='v1.20.1',
     name: 'pusher',
     image: 'measurementlab/pusher:'+version,
     args: [
