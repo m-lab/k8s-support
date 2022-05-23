@@ -36,7 +36,9 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             ],
             image: 'soltesz/responsiveness-server:v0.1',
             name: 'responsiveness-server',
-            command: '/server/networkqualityd',
+            command: [
+              '/server/networkqualityd',
+            ],
             volumeMounts: [
               {
                 mountPath: '/certs',
