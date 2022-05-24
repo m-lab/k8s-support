@@ -16,9 +16,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
         containers: [
           {
             args: [
-              '-base-port=443',
+              '-config-port=443',
+              '-config-name=$(MLAB_NODE_NAME)',
+              '-public-port=443',
               '-public-name=$(MLAB_NODE_NAME)',
-              '-domain=$(MLAB_NODE_NAME)',
               '-cert-file=/certs/tls.crt',
               '-key-file=/certs/tls.key',
               '-listen-addr=0.0.0.0',
@@ -33,8 +34,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
                 },
               },
             ],
-            image: 'soltesz/responsiveness-server:v0.0',
+            image: 'soltesz/responsiveness-server:v0.1',
             name: 'responsiveness-server',
+            command: [
+              '/server/networkqualityd',
+            ],
             volumeMounts: [
               {
                 mountPath: '/certs',
