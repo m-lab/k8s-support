@@ -30,6 +30,11 @@ local uuid = {
     args: [
       '-filename=' + uuid.prefixfile,
     ],
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
     volumeMounts: [
       uuid.volumemount {
         readOnly: false,
