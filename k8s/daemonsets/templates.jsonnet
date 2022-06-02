@@ -26,7 +26,7 @@ local uuid = {
     // more on this, see DESIGN.md
     // https://github.com/m-lab/uuid/
     name: 'set-up-uuid-prefix-file',
-    image: 'measurementlab/uuid:v0.1',
+    image: 'measurementlab/uuid:v1.0.0',
     args: [
       '-filename=' + uuid.prefixfile,
     ],
