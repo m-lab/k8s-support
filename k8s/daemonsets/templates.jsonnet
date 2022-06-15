@@ -392,8 +392,8 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         name: 'API_KEY',
         valueFrom: {
           secretKeyRef: {
-            name: locate-heartbeat-key
-            key: locate-heartbeat-key
+            name: locate-heartbeat-key,
+            key: locate-heartbeat-key,
           },
         },
       },
