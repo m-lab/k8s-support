@@ -385,7 +385,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
       '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
       '-experiment='+expName,
-      '-hostname='+$(POD_NAME),
+      '-hostname=+$(POD_NAME)',
     ] + ['-services=' + s for s in services],
     env: [
       {
