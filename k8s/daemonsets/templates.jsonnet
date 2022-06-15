@@ -377,6 +377,62 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
+local Heartbeat(expName, tcpPort, hostNetwork, services) = [
+  {
+    name: 'heartbeat',
+    image: 'measurementlab/heartbeat:latest',
+    args: [
+      '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
+      '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
+      '-experiment='+expName,
+      '-hostname='+${POD_NAME},
+    ] + ['-services=' + s for s in services],
+    env: [
+      {
+        name: 'API_KEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: locate-heartbeat-key
+            key: locate-heartbeat-key
+          },
+        },
+      },
+      {
+        name: 'POD_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'metadata.name',
+          },
+        },
+      },
+    ] + if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      {
+        mountPath: '/etc/credentials',
+        name: 'locate-heartbeat-key',
+        readOnly: true,
+      },
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('heartbeat', tcpPort)]
+  else []
+;
+
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
@@ -414,6 +470,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             Pcap(name, 9993, hostNetwork),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
+            Heartbeat(name, 9996, hostNetwork, []),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
@@ -433,6 +490,12 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             name: 'uuid-annotator-credentials',
             secret: {
               secretName: 'uuid-annotator-credentials',
+            },
+          },
+          {
+            name: 'locate-heartbeat-key',
+            secret: {
+              secretName: 'locate-heartbeat-key',
             },
           },
           uuid.volume,
