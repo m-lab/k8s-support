@@ -383,7 +383,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
     image: 'measurementlab/heartbeat:latest',
     args: [
       # '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
-      '-heartbeat-url=ws://locate-dot-' + PROJECT_ID + '.appspot.com/v2/platform/heartbeat?key=$(API_KEY)'
+      '-heartbeat-url=ws://locate-dot-' + PROJECT_ID + '.appspot.com/v2/platform/heartbeat?key=$(API_KEY)',
       '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
       '-experiment=' + expName,
       '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
