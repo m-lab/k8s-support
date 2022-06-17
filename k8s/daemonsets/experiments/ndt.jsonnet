@@ -90,9 +90,10 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               },
             ],
 
-          }]  + std.flattenArrays([
-            exp.Heartbeat(expName, 9996, true, services),
-          ]),
+          }
+        ] + std.flattenArrays([
+          exp.Heartbeat(expName, 9996, true, services),
+        ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',

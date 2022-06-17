@@ -1,6 +1,10 @@
 local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'ndt';
+local services = [
+  'ndt/ndt7=ws:///ndt/v7/download,ws:///ndt/v7/upload,wss:///ndt/v7/download,wss:///ndt/v7/upload',
+  'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
+];
 
 local metadata = {
   path: '/metadata',
@@ -100,8 +104,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             ],
             ports: [],
           },
+        ] + std.flattenArrays([
           exp.RBACProxy(expName, 9990),
-        ],
+          exp.Heartbeat(expName, 9996, true, services),
+        ]),
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds,
         volumes+: [
           {
