@@ -92,7 +92,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
 
           }
         ] + std.flattenArrays([
-          exp.Heartbeat(expName, 9996, true, services),
+          exp.Heartbeat(expName, true, services),
         ]),
         volumes+: [
           {

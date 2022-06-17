@@ -563,7 +563,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   Pusher(expName, tcpPort, datatypes, hostNetwork, bucket):: Pusher(expName, tcpPort, datatypes, hostNetwork, bucket),
 
   // Returns a "container" configuration for the heartbeat service.
-  Heartbeat(expName, tcpPort, hostNetwork, services):: Heartbeat(expName, tcpPort, hostNetwork, services),
+  Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
