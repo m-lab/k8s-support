@@ -1,6 +1,10 @@
 local datatypes = ['ndt5', 'ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'ndt';
+local services = [
+  'ndt/ndt7=ws:///ndt/v7/download,ws:///ndt/v7/upload,wss:///ndt/v7/download,wss:///ndt/v7/upload',
+  'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
+];
 
 exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
@@ -86,8 +90,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               },
             ],
 
-          },
-        ],
+          }]  + std.flattenArrays([
+            exp.Heartbeat(expName, 9996, true, services),
+          ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',

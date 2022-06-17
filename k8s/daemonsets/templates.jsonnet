@@ -470,7 +470,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             Pcap(name, 9993, hostNetwork),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
-            Heartbeat(name, 9996, hostNetwork, []),
           ]),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
@@ -562,6 +561,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
   Pusher(expName, tcpPort, datatypes, hostNetwork, bucket):: Pusher(expName, tcpPort, datatypes, hostNetwork, bucket),
+
+  // Returns a "container" configuration for the heartbeat service.
+  Heartbeat(expName, tcpPort, hostNetwork, services):: Heartbeat(expName, tcpPort, hostNetwork, services),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,

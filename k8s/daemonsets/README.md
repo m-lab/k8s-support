@@ -54,6 +54,6 @@ of this writing the ports are as follows:
 * 9995: pusher
 * 9996: heartbeat
 
-To access metrics or pprof data for a given service, simply modify the the URL
+To access metrics or pprof data for a given service, simply modify the URL
 to specify `<podname>:<port>`.
 
