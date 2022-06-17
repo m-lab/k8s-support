@@ -377,6 +377,62 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
+local Heartbeat(expName, tcpPort, hostNetwork, services) = [
+  {
+    name: 'heartbeat',
+    image: 'measurementlab/heartbeat:v0.0',
+    args: [
+      '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
+      '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
+      '-experiment=' + expName,
+      '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
+    ] + ['-services=' + s for s in services],
+    env: [
+      {
+        name: 'API_KEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: 'locate-heartbeat-key',
+            key: 'locate-heartbeat-key',
+          },
+        },
+      },
+      {
+        name: 'MLAB_NODE_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'spec.nodeName',
+          },
+        },
+      },
+    ] + if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      {
+        mountPath: '/etc/credentials',
+        name: 'locate-heartbeat-key',
+        readOnly: true,
+      },
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('heartbeat', tcpPort)]
+  else []
+;
+
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
@@ -433,6 +489,12 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             name: 'uuid-annotator-credentials',
             secret: {
               secretName: 'uuid-annotator-credentials',
+            },
+          },
+          {
+            name: 'locate-heartbeat-key',
+            secret: {
+              secretName: 'locate-heartbeat-key',
             },
           },
           uuid.volume,
@@ -499,6 +561,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
   Pusher(expName, tcpPort, datatypes, hostNetwork, bucket):: Pusher(expName, tcpPort, datatypes, hostNetwork, bucket),
+
+  // Returns a "container" configuration for the heartbeat service.
+  Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
