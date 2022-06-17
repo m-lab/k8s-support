@@ -104,8 +104,8 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             ],
             ports: [],
           },
-        ] + std.flattenArrays([
           exp.RBACProxy(expName, 9990),
+        ] + std.flattenArrays([
           exp.Heartbeat(expName, 9996, true, services),
         ]),
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds,
