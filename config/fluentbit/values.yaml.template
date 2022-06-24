@@ -125,6 +125,7 @@ initContainers:
   volumeMounts:
   - name: fluent-bit-etc
     mountPath: /fluent-bit/etc
+nameOverride: fluentbit
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/scheme: http
