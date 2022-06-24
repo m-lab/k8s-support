@@ -129,5 +129,7 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/scheme: http
   prometheus.io/metrics_path: /api/v1/metrics/prometheus
+podLabels:
+  workload: fluentbit
 
 
