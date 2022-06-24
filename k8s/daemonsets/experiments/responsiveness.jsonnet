@@ -56,7 +56,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             ],
           },
           {
-            image: "soltesz/access-proxy:v0.0.2",
+            image: "soltesz/access-proxy:v0.0.3",
             name: "access-proxy",
             args: [
               '-forward=https://0.0.0.0:443@https://localhost:4043',
