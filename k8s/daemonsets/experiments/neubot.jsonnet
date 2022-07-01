@@ -14,7 +14,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
         containers+: [
             {
               name: 'dash',
-              image: 'measurementlab/dash:v0.4.3',
+              image: 'measurementlab/dash:v0.4.1',
             args: [
               '-datadir=/var/spool/' + expName,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
