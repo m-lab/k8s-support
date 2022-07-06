@@ -50,7 +50,7 @@ kind: KubeProxyConfiguration
 clusterCIDR: {{K8S_CLUSTER_CIDR}}
 hostnameOverride: "{{MASTER_NAME}}"
 ---
-apiVersion: kubelet.config.k8s.io/v1beta1
+apiVersion: kubelet.config.k8s.io/v1
 kind: KubeletConfiguration
 cgroupDriver: systemd
 containerLogMaxSize: 100Mi
