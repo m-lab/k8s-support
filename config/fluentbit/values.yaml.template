@@ -116,6 +116,14 @@ initContainers:
         namespace ${NODE_NAME}
         node_id ${NODE_NAME}
         export_to_project_id {{PROJECT}}
+        # Don't try to push a chunk forever.
+        Retry_Limit 10
+        # Default timeout is 10s. Increase this a bit to workaround a slow or
+        # flaky network connection.
+        net.connect_timeout 60
+        # Don't continue to fill up the filesystem with buffered chunks when
+        # pushing logs to Stackdriver isn't working for some reason.
+        storage.total_limit_size 1G
     EOF
   env:
   - name: NODE_NAME
