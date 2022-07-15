@@ -186,7 +186,6 @@ scrape_configs:
 
       # Extract the a node's site from the node name, and add a new 'site'
       # label using the value.
-      - source_labels: [node]
       - source_labels: [__meta_kubernetes_pod_node_name]
         regex: mlab[1-4]-([a-z]{3}[0-9tc]{2}).*
         target_label: site
