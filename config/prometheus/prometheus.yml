@@ -181,6 +181,7 @@ scrape_configs:
         target_label: site
         replacement: ${1}
 
+
     # This relabel config is the last relabel processed before ingesting data
     # into the datastore.
     metric_relabel_configs:
@@ -195,6 +196,17 @@ scrape_configs:
         regex: (uplink)-.*
         target_label: ifAlias
         replacement: ${1}
+
+      # The relabel_config that adds a 'site' label works for a lot of metrics,
+      # but not for workloads that aren't running on a platform node.
+      # Specifically, kube-state-metrics. This rule will extract a 'site' label
+      # from the source label 'node' for all metrics gathered from
+      # kube-state-metrics.
+      - source_labels: [container, node]
+        action: replace
+        regex: kube-state-metrics;mlab[1-4]-([a-z]{3}[0-9t]{2}).*
+        replacement: $1
+        target_label: site
 
   # Scrape config for kubernetes service endpoints.
   - job_name: 'kubernetes-service-endpoints'
