@@ -62,7 +62,7 @@
           },
         ],
         nodeSelector: {
-          'mlab/type': 'virtual',
+          'run': 'prometheus-server',
         },
         serviceAccountName: 'kube-state-metrics',
       },
