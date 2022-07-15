@@ -184,6 +184,13 @@ scrape_configs:
         action: replace
         target_label: container
 
+      # Extract the a node's site from the node name, and add a new 'site'
+      # label using the value.
+      - source_labels: [node]
+        regex: mlab[1-4]-([a-z]{3}[0-9tc]{2}).*
+        target_label: site
+        replacement: ${1}
+
     # This relabel config is the last relabel processed before ingesting data
     # into the datastore.
     metric_relabel_configs:
