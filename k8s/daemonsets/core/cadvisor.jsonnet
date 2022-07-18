@@ -26,13 +26,13 @@
             args: [
               '-housekeeping_interval=60s',
               '-max_housekeeping_interval=75s',
-              '-disable_metrics=accelerator,cpu_topology,disk,diskIO,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset',
+              '-enable_metrics=cpu,memory,network',
               // Only show stats for docker containers.
               '-docker_only',
               '-store_container_labels=false',
               '-whitelisted_container_labels=io.kubernetes.container.name,io.kubernetes.pod.name,workload',
             ],
-            image: 'gcr.io/cadvisor/cadvisor:v0.39.3',
+            image: 'gcr.io/cadvisor/cadvisor:v0.44.1',
             name: 'cadvisor',
             ports: [
               {
