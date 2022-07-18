@@ -32,7 +32,7 @@
               '-store_container_labels=false',
               '-whitelisted_container_labels=io.kubernetes.container.name,io.kubernetes.pod.name,workload',
             ],
-            image: 'gcr.io/cadvisor/cadvisor:v0.44.1',
+            image: 'gcr.io/cadvisor/cadvisor:v0.44.0',
             name: 'cadvisor',
             ports: [
               {
