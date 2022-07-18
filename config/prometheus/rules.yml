@@ -2,6 +2,12 @@ groups:
 - name: rules.yml
   rules:
 
+# NOTE: in a number of the recording rules below you will encounter the patten
+# "on(machine) group_left(label_mlab_type) label_replace(kube_node_labels".
+# This pattern allow us to select on virtual vs physical nodes in dashboard.
+# The group_left statement brings the "label_mlab_type" label over to the
+# right side label set, allow us to query on it.
+
 ## CPU METRICS
 
   #  Calculates aggregate 1h rate of CPU usage for a DaemonSet across all
