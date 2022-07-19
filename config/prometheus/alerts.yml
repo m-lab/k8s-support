@@ -52,7 +52,7 @@ groups:
       dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_FluentbitMissing
-    expr: absent(up{deployment="fluent-bit"})
+    expr: absent(up{deployment="fluentbit"})
     for: 15m
     labels:
       repo: ops-tracker
@@ -61,7 +61,7 @@ groups:
     annotations:
       summary: The Fluentbit DaemonSet is missing or has no metrics.
       description: The Fluentbit DaemonSet is missing or has no metrics. Verify
-        that the DaemonSet is healthy (`kubectl describe ds fluent-bit`).
+        that the DaemonSet is healthy (`kubectl describe ds fluentbit`).
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_NdtMissing
