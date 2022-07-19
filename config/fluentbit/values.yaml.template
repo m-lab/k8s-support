@@ -74,11 +74,6 @@ config:
         HTTP_Listen  0.0.0.0
         HTTP_PORT    2020
         storage.path /var/lib/fluent-bit
-dnsConfig:
-  nameservers:
-  - 8.8.8.8
-  - 8.8.4.4
-dnsPolicy: None
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
