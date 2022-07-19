@@ -142,16 +142,6 @@ scrape_configs:
         action: replace
         target_label: machine
 
-      # Add a site label for SNMP metrics from DISCO. DISCOv2 collects switch
-      # metrics from each machine in a pod, and hence there is not site label
-      # by default, but rather only a machine label, from which we can extract
-      # the site.
-      - source_labels: [__meta_kubernetes_pod_container_name, __meta_kubernetes_pod_node_name]
-        action: replace
-        regex: disco;mlab[1-4]-([a-z]{3}[0-9t]{2}).*
-        replacement: $1
-        target_label: site
-
       # Identify the deployment name for replica set or daemon set.  Pods
       # created by deployments or daemon sets are processed here. The
       # following two rules recognize these two cases.
@@ -184,6 +174,14 @@ scrape_configs:
         action: replace
         target_label: container
 
+      # Extract the a node's site from the node name, and add a new 'site'
+      # label using the value.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        regex: mlab[1-4]-([a-z]{3}[0-9tc]{2}).*
+        target_label: site
+        replacement: ${1}
+
+
     # This relabel config is the last relabel processed before ingesting data
     # into the datastore.
     metric_relabel_configs:
@@ -198,6 +196,17 @@ scrape_configs:
         regex: (uplink)-.*
         target_label: ifAlias
         replacement: ${1}
+
+      # The relabel_config that adds a 'site' label works for a lot of metrics,
+      # but not for workloads that aren't running on a platform node.
+      # Specifically, kube-state-metrics. This rule will extract a 'site' label
+      # from the source label 'node' for all metrics gathered from
+      # kube-state-metrics.
+      - source_labels: [container, node]
+        action: replace
+        regex: kube-state-metrics;mlab[1-4]-([a-z]{3}[0-9t]{2}).*
+        replacement: $1
+        target_label: site
 
   # Scrape config for kubernetes service endpoints.
   - job_name: 'kubernetes-service-endpoints'
@@ -319,6 +328,13 @@ scrape_configs:
       - source_labels: [__meta_kubernetes_pod_container_name]
         action: replace
         target_label: container
+
+      # Extract a node's site from the node name, and add a new 'site' label
+      # using the value.
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        regex: mlab[1-4]-([a-z]{3}[0-9tc]{2}).*
+        target_label: site
+        replacement: ${1}
 
   # Scrape the token-server. The address we are scraping is actually a GCP
   # internal load balancer. Scraping the load balancer address won't guarantee

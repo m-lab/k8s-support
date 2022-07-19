@@ -24,14 +24,15 @@
         containers: [
           {
             args: [
-              '--housekeeping_interval=60s',
-              '--max_housekeeping_interval=75s',
-              // Note: tcp,udp stats are expensive and are disabled by default.
-              '--disable_metrics=percpu,process,sched,tcp,udp',
+              '-housekeeping_interval=60s',
+              '-max_housekeeping_interval=75s',
+              '-enable_metrics=cpu,memory,network',
               // Only show stats for docker containers.
-              '--docker_only',
+              '-docker_only',
+              '-store_container_labels=false',
+              '-whitelisted_container_labels=io.kubernetes.container.name,io.kubernetes.pod.name,workload',
             ],
-            image: 'gcr.io/cadvisor/cadvisor:v0.39.3',
+            image: 'gcr.io/cadvisor/cadvisor:v0.44.0',
             name: 'cadvisor',
             ports: [
               {

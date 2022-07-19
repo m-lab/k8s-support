@@ -2,19 +2,27 @@ groups:
 - name: rules.yml
   rules:
 
+# NOTE: in a number of the recording rules below you will encounter the patten
+# "on(machine) group_left(label_mlab_type) label_replace(kube_node_labels".
+# This pattern allow us to select on virtual vs physical nodes in dashboard.
+# The group_left statement brings the "label_mlab_type" label over to the
+# right side label set, allow us to query on it.
+
 ## CPU METRICS
 
   #  Calculates aggregate 1h rate of CPU usage for a DaemonSet across all
   #  machines.
   - record: daemonset:container_cpu_usage_seconds:sum_rate1h
     expr: |
-      sum by (daemonset) (
+      sum by (daemonset, label_mlab_type) (
         label_replace(
           rate (container_cpu_usage_seconds_total{
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*"
           }[1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        ) * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
         )
       )
 
@@ -28,13 +36,15 @@ groups:
   # Calculates aggregate DaemonSet CPU usage on a machine.
   - record: machine_daemonset:container_cpu_usage_seconds:sum_rate1h
     expr: |
-      sum by (machine, daemonset) (
+      sum by (machine, daemonset, label_mlab_type) (
         label_replace(
           rate (container_cpu_usage_seconds_total{
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*"
           }[1h]),
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        ) * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
         )
       )
 
@@ -51,13 +61,15 @@ groups:
   #  Calculates aggregate DaemonSet memory usage across all machines.
   - record: daemonset:container_memory_working_set_bytes:sum
     expr: |
-      sum by (daemonset) (
+      sum by (daemonset, label_mlab_type) (
         label_replace(
           container_memory_working_set_bytes{
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*"
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        ) * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
         )
       )
 
@@ -71,13 +83,15 @@ groups:
   # Calculates aggregate DaemonSet memory usage on a machine.
   - record: machine_daemonset:container_memory_working_set_bytes:sum
     expr: |
-      sum by (machine, daemonset) (
+      sum by (machine, daemonset, label_mlab_type) (
         label_replace(
           container_memory_working_set_bytes{
             container_label_io_kubernetes_container_name != "",
             machine=~"mlab[1-4].*"
           },
           "daemonset", "$1", "container_label_io_kubernetes_pod_name", "^(.*)-[a-z0-9]+$"
+        ) * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
         )
       )
 
@@ -100,53 +114,61 @@ groups:
   # Calculates aggregate DaemonSet network trasmit bytes on the platform.
   - record: workload:container_network_transmit_bytes_total:sum
     expr: |
-      sum by (container_label_workload) (
+      sum by (container_label_workload, label_mlab_type) (
         rate(
           container_network_transmit_bytes_total{
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
-        [1h]) * 8
+        [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
+        )
       )
 
   # Calculates aggregate DaemonSet network receive bytes on the platform.
   - record: workload:container_network_receive_bytes_total:sum
     expr: |
-      sum by (container_label_workload) (
+      sum by (container_label_workload, label_mlab_type) (
         rate(
           container_network_receive_bytes_total{
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
-        [1h]) * 8
+        [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
+        )
       )
 
   # Calculates aggregate DaemonSet network trasmit bytes on a machine.
   - record: machine_workload:container_network_transmit_bytes_total:sum
     expr: |
-      sum by (machine, container_label_workload) (
+      sum by (machine, container_label_workload, label_mlab_type) (
         rate(
           container_network_transmit_bytes_total{
             container_label_workload != "",
             container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
-        [1h]) * 8
+        [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
+        )
       )
 
   # Calculates aggregate DaemonSet network receive bytes on a machine.
   - record: machine_workload:container_network_receive_bytes_total:sum
     expr: |
-      sum by (machine, container_label_workload) (
+      sum by (machine, container_label_workload, label_mlab_type) (
         rate(
           container_network_receive_bytes_total{
             container_label_workload != "",
             container_label_workload !~ "(flannel-virutal|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
-        [1h]) * 8
+        [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
+          kube_node_labels, "machine", "$1", "node", "(.*)"
+        )
       )
 
 ## Pusher Daily Volume metrics
