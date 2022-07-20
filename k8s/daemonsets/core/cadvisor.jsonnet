@@ -30,7 +30,7 @@
               // Only show stats for docker containers.
               '-docker_only',
               '-store_container_labels=false',
-              '-whitelisted_container_labels=io.kubernetes.container.name,io.kubernetes.pod.name,workload',
+              '-whitelisted_container_labels=io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,workload',
             ],
             image: 'gcr.io/cadvisor/cadvisor:v0.44.0',
             name: 'cadvisor',
