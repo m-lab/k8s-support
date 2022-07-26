@@ -105,6 +105,14 @@ local version = 'v0.1.13';
             },
           },
         ],
+        dnsConfig: {
+          options: [
+            {
+              name: 'ndots',
+              value: '2',
+            },
+          ],
+        }
       },
     },
     updateStrategy: {
