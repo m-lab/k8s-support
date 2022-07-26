@@ -78,10 +78,6 @@ dnsConfig:
   options:
   - name: ndots
     value: "2"
-  searches:
-  - cluster.local
-  - svc.cluster.local
-  - default.svc.cluster.local
 env:
 - name: GOOGLE_APPLICATION_CREDENTIALS
   value: /etc/fluentbit/keys/fluentbit.json
