@@ -59,7 +59,7 @@
                 },
               },
             ],
-            image: 'quay.io/coreos/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
+            image: 'rancher/mirrored-flannelcni-flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
             name: 'flannel',
             resources: {
               limits: {
