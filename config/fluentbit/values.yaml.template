@@ -125,6 +125,12 @@ initContainers:
         # Default timeout is 10s. Increase this a bit to workaround a slow or
         # flaky network connection.
         net.connect_timeout 60
+        # We have been seeing a lot of "Timeout while contacting DNS servers"
+        # errors in fluent-bit logs and fluent bit not being able to upload
+        # logs. Several Github issues reporting this had users saying that this
+        # was at least partially mitigated by this setting (using TCP instead
+        # of UDP).
+        net.dns.mode TCP
         # Don't continue to fill up the filesystem with buffered chunks when
         # pushing logs to Stackdriver isn't working for some reason.
         storage.total_limit_size 1G
