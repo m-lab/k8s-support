@@ -1,7 +1,7 @@
 local ndtVersion = 'v0.20.10';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
-local ndtCanaryVersion = 'v0.20.10';
+local ndtCanaryVersion = 'v0.20.11';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
