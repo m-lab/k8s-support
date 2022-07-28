@@ -25,7 +25,6 @@
           {
             args: [
               '--collector.disable-defaults',
-              '--collector.boottime',
               '--collector.cpu',
               '--collector.diskstats',
               '--collector.edac',
