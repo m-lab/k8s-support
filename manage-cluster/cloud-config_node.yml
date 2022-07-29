@@ -63,8 +63,8 @@ write_files:
     METRIC_FILE_TEMP=$(mktemp)
     mkdir -p $METRIC_DIR
     echo -n "node_configure_qdisc_success " > $METRIC_FILE_TEMP
-    # Append the passed status code to the temporary metric file, overwrite the
-    # metric file with the temp metric file, and make the metric file world readable.
+    # Append the passed status code to the temporary metric file, and move the
+    # temp metric file to the right location, making it world readable.
     function write_metric_file {
       local status=$1
       echo "$status" >> $METRIC_FILE_TEMP
@@ -74,7 +74,7 @@ write_files:
     tc qdisc replace dev $IFACE root fq maxrate "${MAXRATE}bps"
     if [[ $? -ne 0 ]]; then
       echo "Failed to configure qdisc fq on dev ${IFACE} with max rate of: ${MAXRATE}"
-      overwrite_metric_file 0
+      write_metric_file 0
       exit 1
     fi
     # Even though tc's exit code was 0, be 100% sure that the configured value for
@@ -82,10 +82,10 @@ write_files:
     configured_maxrate=$(tc -json qdisc show dev $IFACE | jq -r '.[0].options.maxrate')
     if [[ $configured_maxrate != $MAXRATE ]]; then
       echo "maxrate of qdisc fq on $IFACE is ${configured_maxrate}, but should be ${MAXRATE}"
-      overwrite_metric_file 0
+      write_metric_file 0
       exit 1
     fi
-    overwrite_metric_file 1
+    write_metric_file 1
     echo "Set maxrate for qdisc fq on dev eth0 to: ${MAXRATE}"
 
 # systemd service for configuring the fq qdisc on boot.
