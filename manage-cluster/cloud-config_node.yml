@@ -3,6 +3,7 @@
 packages:
 - containerd
 - ebtables
+- jq
 - iptables
 - socat
 - vim
@@ -45,6 +46,49 @@ write_files:
 # Configures the fq qdisc on boot. Note that all GCE VMs we create will be
 # capable of 10g, even though we may choose to flag the site as 1g in siteinfo
 # for other reasons.
+- path: /opt/mlab/bin/configure-tc-fq.sh
+  permissions: 0744
+  owner: root:root
+  content: |
+    #!/bin/bash
+    # Determine the default/primary network interface of the VM.
+    IFACE=$(ip -o -4 route show default | awk '{print $5}')
+    # For vitual machines we set the fq qdisc maxrate to 10g, here expressed as
+    # bytes per second.
+    MAXRATE="1250000000"
+    # This script writes out a Prometheus metric file which will be collected by the
+    # node_exporter textfile collector. Make sure that METRIC_DIR exists.
+    METRIC_DIR=/cache/data/node-exporter
+    METRIC_FILE=$METRIC_DIR/configure_tc_fq.prom
+    METRIC_FILE_TEMP=$(mktemp)
+    mkdir -p $METRIC_DIR
+    echo -n "node_configure_qdisc_success " > $METRIC_FILE_TEMP
+    # Append the passed status code to the temporary metric file, and move the
+    # temp metric file to the right location, making it world readable.
+    function write_metric_file {
+      local status=$1
+      echo "$status" >> $METRIC_FILE_TEMP
+      mv $METRIC_FILE_TEMP $METRIC_FILE
+      chmod 644 $METRIC_FILE
+    }
+    tc qdisc replace dev $IFACE root fq maxrate "${MAXRATE}bps"
+    if [[ $? -ne 0 ]]; then
+      echo "Failed to configure qdisc fq on dev ${IFACE} with max rate of: ${MAXRATE}"
+      write_metric_file 0
+      exit 1
+    fi
+    # Even though tc's exit code was 0, be 100% sure that the configured value for
+    # maxrate is what we expect.
+    configured_maxrate=$(tc -json qdisc show dev $IFACE | jq -r '.[0].options.maxrate')
+    if [[ $configured_maxrate != $MAXRATE ]]; then
+      echo "maxrate of qdisc fq on $IFACE is ${configured_maxrate}, but should be ${MAXRATE}"
+      write_metric_file 0
+      exit 1
+    fi
+    write_metric_file 1
+    echo "Set maxrate for qdisc fq on dev eth0 to: ${MAXRATE}"
+
+# systemd service for configuring the fq qdisc on boot.
 - path: /etc/systemd/system/configure-tc-fq.service
   permissions: 0644
   owner: root:root
@@ -54,15 +98,7 @@ write_files:
     After=multi-user.target
     [Service]
     Type=oneshot
-    # The - in front of the file name indicates that if the file doesn't exist,
-    # don't attempt to read it and don't emit and error.
-    EnvironmentFile=-/run/net-iface
-    # This is a fairly ugly way to get the device name of the default route
-    # (which should be representative of the primary NIC device). The double
-    # backslash in front of $5 is a requirement of systemd, since unit files can
-    # contain escape sequences.
-    ExecStartPre=/bin/bash -c 'echo IFACE=$(ip -o -4 route show default | awk "{print \\$5}") > /run/net-iface'
-    ExecStart=tc qdisc replace dev $IFACE root fq maxrate 10gbit
+    ExecStart=/opt/mlab/bin/configure-tc-fq.sh
     [Install]
     WantedBy=multi-user.target
 
@@ -71,4 +107,6 @@ runcmd:
 - systemctl restart systemd-modules-load.service
 - systemctl enable containerd
 - systemctl start containerd
+- systemctl enable configure-tc-fq.service
 - systemctl start configure-tc-fq.service
+
