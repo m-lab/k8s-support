@@ -53,7 +53,7 @@ write_files:
     #!/bin/bash
     # Determine the default/primary network interface of the VM.
     IFACE=$(ip -o -4 route show default | awk '{print $5}')
-    # For vitual machines we set the fq qdisc maxrate to 10g, here expressed at
+    # For vitual machines we set the fq qdisc maxrate to 10g, here expressed as
     # bytes per second.
     MAXRATE="1250000000"
     # This script writes out a Prometheus metric file which will be collected by the
@@ -65,7 +65,7 @@ write_files:
     echo -n "node_configure_qdisc_success " > $METRIC_FILE_TEMP
     # Append the passed status code to the temporary metric file, overwrite the
     # metric file with the temp metric file, and make the metric file world readable.
-    function overwrite_metric_file {
+    function write_metric_file {
       local status=$1
       echo "$status" >> $METRIC_FILE_TEMP
       mv $METRIC_FILE_TEMP $METRIC_FILE
