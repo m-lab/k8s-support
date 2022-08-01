@@ -102,6 +102,70 @@ write_files:
     [Install]
     WantedBy=multi-user.target
 
+# Instructs systemd to wait for 180s before shutting down or rebooting to give
+# all experiments time to stop serving running tests and Pusher time to upload
+# all data.
+- path: /etc/systemd/system.conf.d/10-timeoutstopsec.conf
+  permissions: 0644
+  owner: root:root
+  content: |
+    [Manager]
+    DefaultTimeoutStopSec=180
+
+# A onehost systemd service to check whether a node needs to be rebooted.
+- path: /etc/systemd/system/check-reboot.service
+  permissions: 0644
+  owner: root:root
+  content: |
+    [Unit]
+    Description=Check system uptime, and reboot the machine if it is too long
+    [Service]
+    Type=oneshot
+    ExecStart=/opt/mlab/bin/check-reboot.sh
+    [Install]
+    WantedBy=multi-user.target
+
+- path: /etc/systemd/system/check-reboot.timer
+  permissions: 0644
+  owner: root:root
+  content: |
+    [Unit]
+    Description=Run check-reboot.service daily
+    [Timer]
+    OnCalendar=daily
+    [Install]
+    WantedBy=multi-user.target
+
+- path: /opt/mlab/bin/check-reboot.sh
+  permissions: 0744
+  owner: root:root
+  content: |
+    #!/bin/bash
+    # The maximum amount of time, in days, that a machine can be up before it gets
+    # automatically rebooted.
+    MAX_DAYS_UP=60
+    # We use Kured (KUbernetes REboot Daemon) to help manage rolling reboots on the
+    # platform. Kured runs as a pod on every node (a DaemonSet) and watches for
+    # a configurable "sentinel" file, the existence of which signals that a reboot
+    # should be performed. When the file is found Kured queues the node for a
+    # reboot. The following value reflects the sentinel file configured for Kured:
+    # https://github.com/m-lab/k8s-support/blob/master/k8s/daemonsets/core/kured.jsonnet#L28
+    REBOOT_SENTINEL_FILE=/var/run/mlab-reboot
+    # Check if the Kured sentinel file already exists. If so, do nothing and exit.
+    if [[ -f $REBOOT_SENTINEL_FILE ]]; then
+      echo "Reboot sentinel file ${REBOOT_SENTINEL_FILE} already exists. Exiting..."
+      exit
+    fi
+    # The first field in /proc/uptime is the machine's uptime in seconds. Here we
+    # convert that to days to make things easier to understand for people.
+    days_up=$(awk '{print int($1 / 60 / 60/ 24)}' /proc/uptime)
+    if [[ $days_up -gt $MAX_DAYS_UP ]]; then
+      echo "Uptime of ${days_up}d exceeds MAX_DAYS_UP=${MAX_DAYS_UP}. Flagging node for reboot..."
+      touch "$REBOOT_SENTINEL_FILE"
+    else
+      echo "Uptime of ${days_up}d does not exceed MAX_DAYS_UP=${MAX_DAYS_UP}. Doing nothing..."
+    fi
+
 runcmd:
 - sysctl --system
 - systemctl restart systemd-modules-load.service
@@ -109,4 +173,6 @@ runcmd:
 - systemctl start containerd
 - systemctl enable configure-tc-fq.service
 - systemctl start configure-tc-fq.service
+- systemctl enable check-reboot.service
+- systemctl enable check-reboot.timer
 
