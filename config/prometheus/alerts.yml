@@ -240,7 +240,7 @@ groups:
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview
 
   # Too many OS releases on the platform for too long. This could happen, for
-  # example, if a new epoxy-images version was onlhy partially deployed to the
+  # example, if a new epoxy-images version was only partially deployed to the
   # platform.
   - alert: PlatformCluster_TooManyOSVersions
     expr: |
