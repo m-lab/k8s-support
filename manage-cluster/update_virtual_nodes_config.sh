@@ -37,14 +37,13 @@ for instance in $(echo "$INSTANCES"); do
   # Normally, cloud-init only runs most modules a single time per VM (when it
   # is first created). However, running `cloud-init clean` will clean out all
   # cloud-init configuration data, causing cloud-init to run all modules on the
-  # next boot. Pipe all output to /dev/null, since gcloud gets upset when the
-  # SSH connection is disconnected by the reboot.
+  # next boot. Shutdown one minute in the future so that the SSH session can
+  # exit cleanly.
   echo "Running 'cloud-init clean' and rebooting ${vm}..."
   gcloud compute ssh $vm \
     --quiet \
     --project "$PROJECT" \
     --zone "$zone" -- \
-    'sudo cloud-init clean && sudo reboot' \
-    &> /dev/null
+    'sudo cloud-init clean && sudo shutdown -r +1'
 done
 
