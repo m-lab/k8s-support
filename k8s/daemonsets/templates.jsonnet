@@ -586,6 +586,37 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
+local Revtr(expName, tcpPort) = [
+  {
+    name: 'revtr-sidecar',
+    image: 'kvermeul/revtr-sidecar:1.0',
+    args: [
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-revtr.hostname=revtr.ccs.neu.edu',
+      '-revtr.grpcPort=9999',
+      '-revtr.APIKey=$(REVTR_APIKEY)',
+      '-loglevel=debug',
+    ],
+    env: [
+      {
+        name: 'REVTR_APIKEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: 'revtr-apikey',
+            key: 'revtr-apikey-txt',
+          },
+        },
+      },
+    ],
+    // TODO: add ports for monitoring the revtr sidecar.
+    ports: [],
+    volumeMounts: [
+      tcpinfoServiceVolume.volumemount,
+    ],
+  }
+]
+;
+
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
@@ -850,6 +881,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Volumes, volumemounts and other data and configs for experiment metadata.
   Metadata:: Metadata,
+
+  // Returns a "container" configuration for the revtr sidecar container.
+  Revtr(expName):: Revtr(expName, 9997),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
