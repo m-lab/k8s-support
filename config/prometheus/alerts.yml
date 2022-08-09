@@ -277,8 +277,7 @@ groups:
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview?orgId=1&viewPanel=22
 
   # Configuration of the "fq" qdisc on the primary network interface failed, or
-  # the metric is missing for a machine, unless the machine is in maintenance
-  # mode.
+  # the metric is missing for a machine.
   - alert: PlatformCluster_ConfigureQdiscFailedOrMissing
     expr: |
       kube_node_info{node=~"mlab[1-4].*"} unless on(node) node_configure_qdisc_success == 1
