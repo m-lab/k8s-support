@@ -51,7 +51,7 @@
                 },
               },
             ],
-            image: 'weaveworks/kured:1.8.2',
+            image: 'weaveworks/kured:1.10.0',
             imagePullPolicy: 'IfNotPresent',
             name: 'kured',
             ports: [
