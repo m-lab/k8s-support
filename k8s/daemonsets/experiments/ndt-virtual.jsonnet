@@ -66,7 +66,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-txcontroller.device=ens4',
-              '-txcontroller.max-rate=150000000',
+              '-txcontroller.max-rate=2500000000',
               '-label=type=virtual',
               '-label=deployment=canary',
               '-label=external-ip=@' + metadata.path + '/external-ip',
