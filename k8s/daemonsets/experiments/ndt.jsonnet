@@ -95,6 +95,10 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           }
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
+        ]) + std.flattenArrays([
+          // NOTE: exclude from production until design doc is approved, service
+          // is monitored and scales to millions of requests/day.
+          exp.Revtr(expName),
         ]),
         volumes+: [
           {
@@ -110,6 +114,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             },
           },
           exp.Metadata.volume,
+          {
+            name: 'revtr-apikey',
+            secret: {
+              secretName: 'revtr-apikey',
+            },
+          },
         ],
       },
     },
