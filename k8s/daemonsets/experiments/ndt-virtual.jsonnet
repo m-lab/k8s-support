@@ -58,6 +58,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-ndt5_ws_addr=:3001',
               '-ndt5.token.required=true',
               '-ndt7.token.required=true',
+              '-htmldir=html/mlab',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
               '-datadir=/var/spool/' + expName,
