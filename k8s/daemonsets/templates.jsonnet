@@ -380,7 +380,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.10.0',
+    image: 'measurementlab/heartbeat:v0.0',
     args: [
       if PROJECT_ID == 'mlab-oti' then
         '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
@@ -389,6 +389,8 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
       '-experiment=' + expName,
       '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
+      '-node=$(MLAB_NODE_NAME)',
+      '-pod=$(MLAB_POD_NAME)',
     ] + ['-services=' + s for s in services],
     env: [
       {
@@ -405,6 +407,14 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         valueFrom: {
           fieldRef: {
             fieldPath: 'spec.nodeName',
+          },
+        },
+      },
+      {
+        name: 'MLAB_POD_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'metadata.name',
           },
         },
       },
