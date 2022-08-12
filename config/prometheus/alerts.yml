@@ -277,10 +277,12 @@ groups:
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview?orgId=1&viewPanel=22
 
   # Configuration of the "fq" qdisc on the primary network interface failed, or
-  # the metric is missing for a machine.
+  # the metric is missing for a machine. Don't fire the alert if the node's
+  # status in k8s is "NotReady", or if the node is in maintenance mode.
   - alert: PlatformCluster_ConfigureQdiscFailedOrMissing
     expr: |
       kube_node_info{node=~"mlab[1-4].*"} unless on(node) node_configure_qdisc_success == 1
+        unless on (node) kube_node_status_condition{condition="Ready", status!="true"} == 1
         unless on(node) gmx_machine_maintenance == 1
     for: 1h
     labels:
