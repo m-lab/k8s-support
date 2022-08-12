@@ -67,6 +67,19 @@
           'list',
         ],
       },
+      {
+        apiGroups: [
+          '',
+        ],
+        resources: [
+          'nodes'
+        ],
+        verbs: [
+          'get',
+          'watch',
+          'list',
+        ],
+      },
     ],
   },
 ]
