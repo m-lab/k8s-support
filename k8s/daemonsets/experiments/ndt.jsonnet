@@ -15,7 +15,6 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
-        hostNetwork: true,
         nodeSelector+: {
           'mlab/ndt-version': 'production',
         },
@@ -91,7 +90,6 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               },
             ],
           },
-          exp.RBACProxy(expName, 9998),
         ] + std.flattenArrays([
           exp.Heartbeat(expName, true, services),
         ]),
