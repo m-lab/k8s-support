@@ -94,6 +94,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         ] + std.flattenArrays([
           exp.Heartbeat(expName, true, services),
         ]),
+        serviceAccountName: 'kube-rbac-proxy',
         volumes+: [
           {
             name: 'measurement-lab-org-tls',

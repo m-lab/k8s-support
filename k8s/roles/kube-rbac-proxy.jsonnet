@@ -59,20 +59,8 @@
           '',
         ],
         resources: [
-          'pods'
-        ],
-        verbs: [
-          'get',
-          'watch',
-          'list',
-        ],
-      },
-      {
-        apiGroups: [
-          '',
-        ],
-        resources: [
-          'nodes'
+          'pods',
+          'nodes',
         ],
         verbs: [
           'get',
