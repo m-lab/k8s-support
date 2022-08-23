@@ -56,7 +56,7 @@
       },
       {
         apiGroups: [
-          'v1',
+          '',
         ],
         resources: [
           'pods',
@@ -64,8 +64,6 @@
         ],
         verbs: [
           'get',
-          'watch',
-          'list',
         ],
       },
     ],

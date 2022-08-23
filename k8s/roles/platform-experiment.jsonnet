@@ -42,8 +42,6 @@
         ],
         verbs: [
           'get',
-          'watch',
-          'list',
         ],
       },
     ],
