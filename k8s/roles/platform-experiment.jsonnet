@@ -34,7 +34,7 @@
     rules: [
       {
         apiGroups: [
-          'v1',
+          '',
         ],
         resources: [
           'pods',
