@@ -380,7 +380,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.13',
+    image: 'measurementlab/heartbeat:v0.14',
     args: [
       if PROJECT_ID == 'mlab-oti' then
         '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
@@ -392,6 +392,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-node=$(MLAB_NODE_NAME)',
       '-pod=$(MLAB_POD_NAME)',
       '-namespace=$(MLAB_NAMESPACE)',
+      '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
     ] + ['-services=' + s for s in services],
     env: [
       {
