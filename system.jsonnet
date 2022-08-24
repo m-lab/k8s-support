@@ -48,10 +48,10 @@
     import 'k8s/networks/networks.jsonnet',
     // Roles (which are in array form already).
     import 'k8s/roles/flannel.jsonnet',
+    import 'k8s/roles/heartbeat-experiment.jsonnet',
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
     import 'k8s/roles/kured.jsonnet',
-    import 'k8s/roles/platform-experiment.jsonnet',
     import 'k8s/roles/rbac-prometheus.jsonnet',
     import 'k8s/roles/reloader.jsonnet',
   ]),
