@@ -54,18 +54,6 @@
           'create',
         ],
       },
-      {
-        apiGroups: [
-          '',
-        ],
-        resources: [
-          'pods',
-          'nodes',
-        ],
-        verbs: [
-          'get',
-        ],
-      },
     ],
   },
 ]
