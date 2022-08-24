@@ -380,7 +380,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.16',
+    image: 'measurementlab/heartbeat:v0.17',
     args: [
       if PROJECT_ID == 'mlab-oti' then
         '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
