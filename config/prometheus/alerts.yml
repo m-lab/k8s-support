@@ -293,6 +293,21 @@ groups:
       summary: Configuration of the fq qdisc failed, or the metric is missing.
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_configureqdiscfailedormissing
 
+  # The ndt-server is unable to enable BBR for ndt7 tests because the tcp_bbr
+  # module is not loaded.
+  - alert: PlatformCluster_BBRmoduleMissing
+    expr: |
+      increase(ndt7_measurer_bbr_enabled_total{error="no such file or directory"}[5m]) > 0
+        unless on(node) gmx_machine_maintenance == 1
+    for: 15m
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The ndt-server is unable to enable BBR because the kernel module isn't loaded
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_bbrmodulemissing
+
   # There is version skew among the core k8s components on one or more API
   # cluster servers.
   - alert: PlatformCluster_ApiClusterComponentVersionSkew
