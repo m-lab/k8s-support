@@ -297,9 +297,9 @@ groups:
   # module is not loaded.
   - alert: PlatformCluster_BBRmoduleMissing
     expr: |
-      ndt7_measurer_bbr_enabled_total{error="no such file or directory"} > 0
+      increase(ndt7_measurer_bbr_enabled_total{error="no such file or directory"}[5m]) > 0
         unless on(node) gmx_machine_maintenance == 1
-    for: 10m
+    for: 15m
     labels:
       repo: ops-tracker
       severity: ticket
