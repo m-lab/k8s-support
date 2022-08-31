@@ -18,6 +18,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         nodeSelector+: {
           'mlab/ndt-version': 'production',
         },
+        serviceAccountName: 'heartbeat-experiment',
         containers+: [
           {
             name: 'ndt-server',

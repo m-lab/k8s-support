@@ -380,8 +380,12 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.10.0',
+    image: 'measurementlab/heartbeat:v0.12.1',
     args: [
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       if PROJECT_ID == 'mlab-oti' then
         '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
       else
@@ -389,6 +393,10 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
       '-experiment=' + expName,
       '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
+      '-node=$(MLAB_NODE_NAME)',
+      '-pod=$(MLAB_POD_NAME)',
+      '-namespace=$(MLAB_NAMESPACE)',
+      '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
     ] + ['-services=' + s for s in services],
     env: [
       {
@@ -405,6 +413,22 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         valueFrom: {
           fieldRef: {
             fieldPath: 'spec.nodeName',
+          },
+        },
+      },
+      {
+        name: 'MLAB_POD_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'metadata.name',
+          },
+        },
+      },
+      {
+        name: 'MLAB_NAMESPACE',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'metadata.namespace',
           },
         },
       },
