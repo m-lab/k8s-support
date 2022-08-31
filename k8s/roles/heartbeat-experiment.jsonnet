@@ -1,3 +1,4 @@
+# Service Account for experiments that use the Heartbeat Service.
 [
   {
     apiVersion: 'v1',
@@ -32,6 +33,8 @@
       name: 'heartbeat-experiment',
     },
     rules: [
+      # The following rules are needed for experiments to run the kube-rbac-proxy
+      # sidecar container.
       {
         apiGroups: [
           'authentication.k8s.io',
@@ -54,6 +57,8 @@
           'create',
         ],
       },
+      # The following rule is needed for the Heartbeat Service to send pod/node GET
+      # requests to the Kubernetes API server.
       {
         apiGroups: [
           '',
