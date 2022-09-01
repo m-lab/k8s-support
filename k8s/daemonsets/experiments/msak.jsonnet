@@ -43,7 +43,8 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
                 mountPath: '/certs',
                 name: 'measurement-lab-org-tls',
                 readOnly: true,
-              } + [
+              },
+            ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
           },
