@@ -23,6 +23,7 @@
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
+    import 'k8s/daemonsets/experiments/msak.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
