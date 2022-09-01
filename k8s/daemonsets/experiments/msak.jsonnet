@@ -2,7 +2,7 @@ local datatypes = ['ndtm'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
 
-exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, true) + {
+exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
     template+: {
       metadata+: {
@@ -49,9 +49,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", dat
             ],
           },
         ],
-        // Use host network to listen on the machine IP address without
-        // registering an experiment index yet.
-        hostNetwork: true,
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
