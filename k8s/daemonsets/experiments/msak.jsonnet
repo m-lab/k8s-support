@@ -11,10 +11,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
-        // NOTE: we override the containers to include only those named below.
-        // Once this service has a dedicated experiment index assigned, we should
-        // update the config to use all sidecar services.
-        containers: [
+        containers+: [
           {
             args: [
               '-ws_addr=:8080',
