@@ -68,6 +68,13 @@
         hostPID: true,
         restartPolicy: 'Always',
         serviceAccountName: 'kured',
+        tolerations: [
+          {
+            effect: 'NoSchedule',
+            key: 'lame-duck',
+            operator: 'Exists',
+          },
+        ],
       },
     },
     updateStrategy: {

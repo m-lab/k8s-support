@@ -69,6 +69,13 @@
             ],
           },
         ],
+        tolerations: [
+          {
+            effect: 'NoSchedule',
+            key: 'lame-duck',
+            operator: 'Exists',
+          },
+        ],
         volumes: [
           {
             hostPath: {

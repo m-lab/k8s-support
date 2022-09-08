@@ -124,6 +124,11 @@
         tolerations: [
           {
             effect: 'NoSchedule',
+            key: 'lame-duck',
+            operator: 'Exists',
+          },
+          {
+            effect: 'NoSchedule',
             key: 'node-role.kubernetes.io/master',
           },
           {
