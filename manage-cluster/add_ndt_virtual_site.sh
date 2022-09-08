@@ -12,10 +12,6 @@ PROJECT=${1:? Please specify a GCP project: ${USAGE}}
 CLOUD_SITE=${2:? Please specify a cloud site name: ${USAGE}}
 CLOUD_ZONE=${3:? Please specify the GCP zone for this VM: ${USAGE}}
 
-# List of GCP regions which support external IPv6 addresses for GCE VMs:
-# https://cloud.google.com/vpc/docs/vpc#ipv6-regions
-IPV6_REGIONS="asia-east1 asia-south1 europe-west2 us-west2"
-
 if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
   SITE_REGEX="[a-z]{3}[0-9]t"
 else
@@ -64,12 +60,6 @@ else
       "${GCP_ARGS[@]}")
 fi
 
-if echo $IPV6_REGIONS | grep "${GCE_REGION}"; then
-  IPV6_FLAGS=("--stack-type=IPV4_IPV6" "--ipv6-access-type=EXTERNAL")
-else
-  export IPV6_FLAGS=""
-fi
-
 # If a subnet for the region of this VM doesn't already exist, then create it.
 EXISTING_SUBNET=$(gcloud compute networks subnets list \
     --filter "name=${GCE_K8S_SUBNET} AND region:( ${GCE_REGION} )" \
@@ -82,7 +72,8 @@ if [[ -z "${EXISTING_SUBNET}" ]]; then
       --network "${GCE_NETWORK}" \
       --range "10.${N}.0.0/16" \
       --region "${GCE_REGION}" \
-      ${IPV6_FLAGS[@]} \
+      --stack-type "IPV4_IPV6" \
+      --ipv6-access-type "EXTERNAL" \
       "${GCP_ARGS[@]}"
 fi
 

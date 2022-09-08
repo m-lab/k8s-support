@@ -21,10 +21,6 @@ usage() {
   echo "USAGE: $0 -p <project> [-z <gcp-zone>] [-m <machine-type>] [-n <gce-name>] [-H <hostname>] [-a <address>] [-t <gce-tag> ...] [-l <k8s-label> ...]"
 }
 
-# List of GCP regions which support external IPv6 addresses for GCE VMs:
-# https://cloud.google.com/vpc/docs/vpc#ipv6-regions
-IPV6_REGIONS="asia-east1 asia-south1 europe-west2 us-west2"
-
 ADDRESS=""
 HOST_NAME=""
 LABELS=""
@@ -119,13 +115,7 @@ else
 fi
 
 if [[ -z "${MACHINE_TYPE}" ]]; then
-  MACHINE_TYPE="n1-highcpu-4"
-fi
-
-if echo $IPV6_REGIONS | grep "${GCE_ZONE%-*}"; then
-  IPV6_FLAG="--stack-type=IPV4_IPV6"
-else
-  IPV6_FLAG=""
+  MACHINE_TYPE="n2-highcpu-4"
 fi
 
 # Allocate a new VM.
@@ -139,7 +129,7 @@ gcloud compute instances create "${GCE_NAME}" \
   --network "${GCE_NETWORK}" \
   ${ADDRESS_FLAG} \
   ${TAGS_FLAG} \
-  ${IPV6_FLAG} \
+  --stack-type "IPV4_IPV6" \
   --subnet "${GCE_K8S_SUBNET}" \
   --scopes "${GCE_API_SCOPES}" \
   --metadata-from-file "user-data=cloud-config_node.yml" \
@@ -274,13 +264,9 @@ EXTERNAL_IP=$(gcloud compute instances describe "${GCE_NAME}" \
     --format 'value(networkInterfaces[0].accessConfigs[0].natIP)' \
     "${GCE_ARGS[@]}")
 
-if [[ -n $IPV6_FLAG ]]; then
-  EXTERNAL_IPV6=$(gcloud compute instances describe "${GCE_NAME}" \
-      --format 'value(networkInterfaces[0].ipv6AccessConfigs[0].externalIpv6)' \
-      "${GCE_ARGS[@]}")
-else
-  EXTERNAL_IPV6=""
-fi
+EXTERNAL_IPV6=$(gcloud compute instances describe "${GCE_NAME}" \
+    --format 'value(networkInterfaces[0].ipv6AccessConfigs[0].externalIpv6)' \
+    "${GCE_ARGS[@]}")
 
 # Determine the network tier for this VM. It does not appear that this value is
 # available through the GCE metadata server, but we can grab it here. We write
@@ -337,4 +323,9 @@ gcloud compute ssh "${K8S_MASTER}" --zone "${MASTER_ZONE}" "${GCP_ARGS[@]}" <<EO
   for label in ${LABELS}; do
     kubectl label nodes ${K8S_NODE_NAME} \${label} --overwrite=true
   done
+
+  # Taint the node to put it into lame-duck mode to prevent production traffic
+  # from being directed at the site while it is being fully configured in
+  # siteinfo.
+  kubectl taint node ${K8S_NODE_NAME} lame-duck=new-virtual-site:NoSchedule
 EOF
