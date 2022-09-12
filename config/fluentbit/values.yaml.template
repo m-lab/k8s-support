@@ -150,5 +150,8 @@ podAnnotations:
   prometheus.io/metrics_path: /api/v1/metrics/prometheus
 podLabels:
   workload: fluentbit
-
+tolerations:
+- effect: NoSchedule
+  key: lame-duck
+  operator: Exists
 
