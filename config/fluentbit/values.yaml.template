@@ -141,6 +141,7 @@ initContainers:
         Buffer_Size 1MB
         Use_Kubelet true
         Kubelet_Host ${KUBELET_HOST}
+        tls.verify Off
     EOF
   env:
   - name: NODE_NAME
