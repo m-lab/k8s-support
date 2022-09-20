@@ -161,6 +161,9 @@ podAnnotations:
   prometheus.io/metrics_path: /api/v1/metrics/prometheus
 podLabels:
   workload: fluentbit
+rbac:
+  create: true
+  nodeAccess: true
 tolerations:
 - effect: NoSchedule
   key: lame-duck
