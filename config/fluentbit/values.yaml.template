@@ -8,10 +8,7 @@ config:
         Time_Key    time
         Time_Format %Y-%m-%dT%H:%M:%S.%L%z
   filters: |
-    [FILTER]
-        Name kubernetes
-        Match kube.*
-        Buffer_Size 1MB
+    @INCLUDE filter.conf
   inputs: |
     [INPUT]
         Name tail
@@ -102,7 +99,9 @@ image:
 # The fluent-bit Helm chart does not allow the possibility to specify
 # environment variables using the k8s downward API. We need the node name when
 # pushing to Stackdriver, so this initContainer creates the [OUTPUT]
-# configuration, instead of specifying it above in config.outputs.
+# configuration, instead of specifying it above in config.outputs. We also use
+# the "Use_Kubelet" configuration of the kubernetes filter, which needs to know
+# the address on which to contact the kubelet for pod metadata.
 initContainers:
 - name: create-output-config
   image: busybox
@@ -135,11 +134,24 @@ initContainers:
         # pushing logs to Stackdriver isn't working for some reason.
         storage.total_limit_size 1G
     EOF
+    cat << EOF >> /fluent-bit/etc/filter.conf
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Buffer_Size 1MB
+        Use_Kubelet true
+        Kubelet_Host ${KUBELET_HOST}
+        tls.verify Off
+    EOF
   env:
   - name: NODE_NAME
     valueFrom:
       fieldRef:
         fieldPath: spec.nodeName
+  - name: KUBELET_HOST
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
   volumeMounts:
   - name: fluent-bit-etc
     mountPath: /fluent-bit/etc
@@ -150,6 +162,9 @@ podAnnotations:
   prometheus.io/metrics_path: /api/v1/metrics/prometheus
 podLabels:
   workload: fluentbit
+rbac:
+  create: true
+  nodeAccess: true
 tolerations:
 - effect: NoSchedule
   key: lame-duck
