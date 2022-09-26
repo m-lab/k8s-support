@@ -212,7 +212,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # Override the node name, which without this will be something like:
   #     ${K8S_NODE_NAME}.c.mlab-sandbox.internal
   # https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
-  echo "KUBELET_EXTRA_ARGS='--hostname-override ${K8S_NODE_NAME} --node-ip ${INTERNAL_IP}'" > /etc/default/kubelet
+  echo "KUBELET_EXTRA_ARGS='--node-ip=${INTERNAL_IP}'" > /etc/default/kubelet
 
   # Enable and start the kubelet service
   systemctl enable --now kubelet.service
