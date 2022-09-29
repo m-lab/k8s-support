@@ -138,7 +138,7 @@ initContainers:
     [FILTER]
         Name kubernetes
         Match kube.*
-        Buffer_Size 2MB
+        Buffer_Size 0
         Use_Kubelet true
         Kubelet_Host ${KUBELET_HOST}
         tls.verify Off
