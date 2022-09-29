@@ -19,6 +19,9 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-cert=/certs/tls.crt',
               '-key=/certs/tls.key',
               '-datadir=/var/spool/' + expName,
+              '-token.machine=$(NODE_NAME)',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+              '-token.required=false',
             ],
             env: [
               {
@@ -39,6 +42,11 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               {
                 mountPath: '/certs',
                 name: 'measurement-lab-org-tls',
+                readOnly: true,
+              },
+              {
+                mountPath: '/verify',
+                name: 'locate-verify-keys',
                 readOnly: true,
               },
             ] + [
