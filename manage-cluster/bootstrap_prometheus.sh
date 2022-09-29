@@ -232,4 +232,8 @@ EOF2
       # TODO: replace with native k8s persistent volumes, if possible.
       chown nobody:nogroup /mnt/local/prometheus/
   fi
+
+  # The kubelet will complain about this directory not existing every few
+  # seconds, terribly polluting the logs.
+  mkdir -p /etc/kubernetes/manifests
 EOF
