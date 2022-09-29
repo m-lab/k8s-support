@@ -61,6 +61,12 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               secretName: 'measurement-lab-org-tls',
             },
           },
+          {
+            name: 'locate-verify-keys',
+            secret: {
+              secretName: 'locate-verify-keys',
+            },
+          },
         ],
       },
     },
