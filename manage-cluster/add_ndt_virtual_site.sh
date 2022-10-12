@@ -11,6 +11,7 @@ USAGE="USAGE: $0 <cloud-project> <cloud-site> <gce-zone>"
 PROJECT=${1:? Please specify a GCP project: ${USAGE}}
 CLOUD_SITE=${2:? Please specify a cloud site name: ${USAGE}}
 CLOUD_ZONE=${3:? Please specify the GCP zone for this VM: ${USAGE}}
+MACHINE_NAME=$4
 
 if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
   SITE_REGEX="[a-z]{3}[0-9]t"
@@ -32,9 +33,16 @@ fi
 GCE_REGION="${CLOUD_ZONE%-*}"
 GCP_ARGS=("--project=${PROJECT}" "--quiet")
 
-# All mlab-staging nodes are mlab4s. For mlab-sandbox and mlab-oti just use
-# mlab1.
-if [[ "${PROJECT}" == "mlab-staging" ]]; then
+# If the user passed a MACHINE_NAME argument use that, else, by default, use
+# "mlab4" for staging, and mlab1 for everything else.
+if [[ -n "${MACHINE_NAME}" ]]; then
+  if [[ "${MACHINE_NAME}" =~ ^mlab[1-4]$ ]]; then
+    MLAB_MACHINE=$MACHINE_NAME
+  else
+    echo "Machine name ${MACHINE_NAME} does not match regexp /^mlab[1-4]$/"
+    exit 1
+  fi
+elif [[ "${PROJECT}" == "mlab-staging" ]]; then
   MLAB_MACHINE="mlab4"
 else
   MLAB_MACHINE="mlab1"
