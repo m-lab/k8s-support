@@ -68,8 +68,9 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-txcontroller.device=ens4',
-              // GCE VMs have an egress rate limit of 7Gbps. Setting max-rate
-              // to 4Gbps should leave headroom for very fast clients.
+              // GCE VMs have an egress rate limit of 7Gbps to Internet
+              // addresses. Setting max-rate to 4Gbps should leave headroom for
+              // very fast clients.
               '-txcontroller.max-rate=4000000000',
               '-label=type=virtual',
               '-label=deployment=canary',
