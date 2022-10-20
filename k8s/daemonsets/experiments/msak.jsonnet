@@ -1,6 +1,9 @@
 local datatypes = ['ndtm'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
+local services = [
+  'msak/ndtm=ws:///msak/ndtm/download,ws:///msak/ndtm/upload,wss:///msak/ndtm/download,wss:///msak/ndtm/upload',
+];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
@@ -53,7 +56,9 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
           },
-        ],
+        ] + std.flattenArrays([
+          exp.Heartbeat(expName, true, services),
+        ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
