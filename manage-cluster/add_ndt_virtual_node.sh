@@ -11,7 +11,7 @@ USAGE="USAGE: $0 <cloud-project> <cloud-site> <gce-zone> [<machine-name>]"
 PROJECT=${1:? Please specify a GCP project: ${USAGE}}
 CLOUD_SITE=${2:? Please specify a cloud site name: ${USAGE}}
 CLOUD_ZONE=${3:? Please specify the GCP zone for this VM: ${USAGE}}
-MACHINE_NAME=$4
+MACHINE_NAME=${4:-""}
 
 if [[ "${PROJECT}" == "mlab-sandbox" ]]; then
   SITE_REGEX="[a-z]{3}[0-9]t"
