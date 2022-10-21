@@ -14,11 +14,12 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
+        serviceAccountName: 'heartbeat-experiment',
         containers+: [
           {
             args: [
-              '-ws_addr=:8080',
-              '-wss_addr=:4443',
+              '-ws_addr=:80',
+              '-wss_addr=:443',
               '-cert=/certs/tls.crt',
               '-key=/certs/tls.key',
               '-datadir=/var/spool/' + expName,
