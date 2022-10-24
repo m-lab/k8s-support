@@ -54,10 +54,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
             args: [
-              // port 3002 is arbitrary.
-              '-ndt5_addr=127.0.0.1:3002',
-              '-ndt5_ws_addr=:3001',
-              '-ndt5.token.required=true',
               '-ndt7.token.required=true',
               '-htmldir=html/mlab',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
@@ -73,7 +69,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               // very fast clients.
               '-txcontroller.max-rate=4000000000',
               '-label=type=virtual',
-              '-label=deployment=canary',
+              '-label=deployment=stable',
               '-label=external-ip=@' + metadata.path + '/external-ip',
               '-label=external-ipv6=@' + metadata.path + '/external-ipv6',
               '-label=machine-type=@' + metadata.path + '/machine-type',
