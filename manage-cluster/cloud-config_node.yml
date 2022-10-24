@@ -75,7 +75,7 @@ write_files:
       exit 1
     fi
     write_metric_file 1
-    echo "Set qdisc fq on root of dev ens4"
+    echo "Set qdisc fq on root of dev ${IFACE}"
 
 # systemd service for configuring the fq qdisc on boot.
 - path: /etc/systemd/system/configure-tc-fq.service
