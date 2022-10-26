@@ -2,7 +2,7 @@ local datatypes = ['ndtm'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
 local services = [
-  'msak/ndtm=ws://:8080/msak/ndtm/download,ws://:8080/msak/ndtm/upload,wss://:4443/msak/ndtm/download,wss://:4443/msak/ndtm/upload',
+  'msak/ndtm=ws:///msak/ndtm/download,ws:///msak/ndtm/upload,wss:///msak/ndtm/download,wss:///msak/ndtm/upload',
 ];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
@@ -18,8 +18,8 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         containers+: [
           {
             args: [
-              '-ws_addr=:8080',
-              '-wss_addr=:4443',
+              '-ws_addr=:80',
+              '-wss_addr=:443',
               '-cert=/certs/tls.crt',
               '-key=/certs/tls.key',
               '-datadir=/var/spool/' + expName,
