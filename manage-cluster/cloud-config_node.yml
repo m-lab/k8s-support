@@ -53,9 +53,6 @@ write_files:
     #!/bin/bash
     # Determine the default/primary network interface of the VM.
     IFACE=$(ip -o -4 route show default | awk '{print $5}')
-    # For vitual machines we set the fq qdisc maxrate to 10g, here expressed as
-    # bytes per second.
-    MAXRATE="1250000000"
     # This script writes out a Prometheus metric file which will be collected by the
     # node_exporter textfile collector. Make sure that METRIC_DIR exists.
     METRIC_DIR=/cache/data/node-exporter
@@ -71,22 +68,14 @@ write_files:
       mv $METRIC_FILE_TEMP $METRIC_FILE
       chmod 644 $METRIC_FILE
     }
-    tc qdisc replace dev $IFACE root fq maxrate "${MAXRATE}bps"
+    tc qdisc replace dev $IFACE root fq
     if [[ $? -ne 0 ]]; then
-      echo "Failed to configure qdisc fq on dev ${IFACE} with max rate of: ${MAXRATE}"
-      write_metric_file 0
-      exit 1
-    fi
-    # Even though tc's exit code was 0, be 100% sure that the configured value for
-    # maxrate is what we expect.
-    configured_maxrate=$(tc -json qdisc show dev $IFACE | jq -r '.[0].options.maxrate')
-    if [[ $configured_maxrate != $MAXRATE ]]; then
-      echo "maxrate of qdisc fq on $IFACE is ${configured_maxrate}, but should be ${MAXRATE}"
+      echo "Failed to configure qdisc fq on dev ${IFACE}"
       write_metric_file 0
       exit 1
     fi
     write_metric_file 1
-    echo "Set maxrate for qdisc fq on dev eth0 to: ${MAXRATE}"
+    echo "Set qdisc fq on root of dev ${IFACE}"
 
 # systemd service for configuring the fq qdisc on boot.
 - path: /etc/systemd/system/configure-tc-fq.service
