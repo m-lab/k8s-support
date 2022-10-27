@@ -26,10 +26,11 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-token.verify=false',
+              '-debug=true',
             ],
             env: [
               {
-                name: 'MLAB_NODE_NAME',
+                name: 'NODE_NAME',
                 valueFrom: {
                   fieldRef: {
                     fieldPath: 'spec.nodeName',
