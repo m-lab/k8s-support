@@ -28,7 +28,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             command: [
               '/bin/sh',
               '-c',
-              '/ndt-server -txcontroller.max-rate=$(cat /etc/max-rate) $@',
+              '/ndt-server -txcontroller.max-rate=$(cat /metadata/iface-max-rate) $@',
             ],
             args: [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
@@ -69,16 +69,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 readOnly: true,
               },
               {
-                mountPath: '/etc/max-rate',
-                name: 'max-rate',
-                readOnly: true,
-              },
-              {
                 mountPath: '/verify',
                 name: 'locate-verify-keys',
                 readOnly: true,
               },
               exp.uuid.volumemount,
+              exp.Metadata.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
@@ -100,18 +96,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             },
           },
           {
-            name: 'max-rate',
-            hostPath: {
-              path: '/var/local/metadata/iface-max-rate',
-              type: 'File',
-            },
-          },
-          {
             name: 'locate-verify-keys',
             secret: {
               secretName: 'locate-verify-keys',
             },
           },
+          exp.Metadata.volume,
         ],
       },
     },
