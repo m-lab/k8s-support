@@ -54,11 +54,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-txcontroller.max-rate=4000000000',
               '-label=type=virtual',
               '-label=deployment=stable',
-              '-label=external-ip=@' + metadata.path + '/external-ip',
-              '-label=external-ipv6=@' + metadata.path + '/external-ipv6',
-              '-label=machine-type=@' + metadata.path + '/machine-type',
-              '-label=network-tier=@' + metadata.path + '/network-tier',
-              '-label=zone=@' + metadata.path + '/zone',
+              '-label=external-ip=@' + Metadata.path + '/external-ip',
+              '-label=external-ipv6=@' + Metadata.path + '/external-ipv6',
+              '-label=machine-type=@' + Metadata.path + '/machine-type',
+              '-label=network-tier=@' + Metadata.path + '/network-tier',
+              '-label=zone=@' + Metadata.path + '/zone',
             ],
             env: [
               {
