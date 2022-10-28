@@ -40,7 +40,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '/bin/sh',
               '-c',
               '/ndt-server -txcontroller.max-rate=$(cat /etc/max-rate) $@',
-            ]
+            ],
             args: [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
