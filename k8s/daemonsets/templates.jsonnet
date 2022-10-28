@@ -463,7 +463,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 local Metadata = {
   path: '/metadata',
   volumemount: {
-    mountPath: metadata.path,
+    mountPath: Metadata.path,
     name: 'metadata',
     readOnly: true,
   },
