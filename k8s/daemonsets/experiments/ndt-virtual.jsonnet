@@ -6,22 +6,6 @@ local services = [
   'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
 ];
 
-local metadata = {
-  path: '/metadata',
-  volumemount: {
-    mountPath: metadata.path,
-    name: 'metadata',
-    readOnly: true,
-  },
-  volume: {
-    hostPath: {
-      path: '/var/local/metadata',
-      type: 'Directory',
-    },
-    name: 'metadata',
-  },
-};
-
 exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', datatypes, true) + {
   metadata+: {
     name: expName + '-virtual',
@@ -70,11 +54,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-txcontroller.max-rate=4000000000',
               '-label=type=virtual',
               '-label=deployment=stable',
-              '-label=external-ip=@' + metadata.path + '/external-ip',
-              '-label=external-ipv6=@' + metadata.path + '/external-ipv6',
-              '-label=machine-type=@' + metadata.path + '/machine-type',
-              '-label=network-tier=@' + metadata.path + '/network-tier',
-              '-label=zone=@' + metadata.path + '/zone',
+              '-label=external-ip=@' + exp.Metadata.path + '/external-ip',
+              '-label=external-ipv6=@' + exp.Metadata.path + '/external-ipv6',
+              '-label=machine-type=@' + exp.Metadata.path + '/machine-type',
+              '-label=network-tier=@' + exp.Metadata.path + '/network-tier',
+              '-label=zone=@' + exp.Metadata.path + '/zone',
             ],
             env: [
               {
@@ -98,7 +82,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              metadata.volumemount,
+              exp.Metadata.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d)
               for d in datatypes
@@ -123,7 +107,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               secretName: 'locate-verify-keys',
             },
           },
-          metadata.volume,
+          exp.Metadata.volume,
         ],
       },
     },

@@ -7,7 +7,6 @@
     import 'config/flannel.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
-    import 'config/nodes-max-rate.json',
     // Custom resource definitions
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
