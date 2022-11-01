@@ -460,6 +460,22 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   else []
 ;
 
+local Metadata = {
+  path: '/metadata',
+  volumemount: {
+    mountPath: Metadata.path,
+    name: 'metadata',
+    readOnly: true,
+  },
+  volume: {
+    hostPath: {
+      path: '/var/local/metadata',
+      type: 'Directory',
+    },
+    name: 'metadata',
+  },
+};
+
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
@@ -591,6 +607,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
+
+  // Volumes, volumemounts and other data and configs for experiment metadata.
+  Metadata:: Metadata,
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
