@@ -573,7 +573,7 @@ groups:
 
   - alert: PlatformCluster_PusherDailyDataVolumeTooLow
     expr: |
-      datatype:pusher_bytes_per_tarfile:increase24h{datatype!~"biosversion|chassisserial|ipaddress|iproute4|iproute6|lshw|lspci|lsusb|osrelease|uname"}
+      datatype:pusher_bytes_per_tarfile:increase24h{datatype!~"biosversion|chassisserial|ipaddress|iproute4|iproute6|lshw|lspci|lsusb|osrelease|replay|uname"}
         < (0.7 * quantile by(datatype)(0.5,
           label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 1d, "delay", "1d", "", ".*") or
           label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 3d, "delay", "3d", "", ".*") or
@@ -599,8 +599,31 @@ groups:
       cluster: platform
     annotations:
       summary: Test data volume today is less than 70% of nominal daily volume.
-      description: Are machines online? Is data being collected? Is pusher working?
-        Is mlab-ns working? A new rollout?
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_replaypusherdailydatavolumetoolow
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
+
+  # This alert breaks out the replay data type because for unknown reasons
+  # there are large cyclical swings in the amount of data produced by the Wehe
+  # experiment, mostly in staging. The cycles appear to be very roughly every
+  # 20 days. This alert is less sensitive than its counterpart above, but
+  # should still alert us of a major problem with Wehe.
+- alert: PlatformCluster_ReplayPusherDailyDataVolumeTooLow
+    expr: |
+      datatype:pusher_bytes_per_tarfile:increase24h{datatype="replay"}
+        < (0.5 * quantile by(datatype)(0.5,
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h{datatype="replay"} offset 1d, "delay", "1d", "", ".*") or
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h{datatype="replay"} offset 3d, "delay", "3d", "", ".*") or
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h{datatype="replay"} offset 5d, "delay", "5d", "", ".*") or
+          label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 1w, "delay", "7d", "", ".*")
+          ))
+    for: 2h
+    labels:
+      repo: dev-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: Test data volume today is less than 50% of nominal daily volume forthe replay data type.
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_replaypusherdailydatavolumetoolow
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
 
   - alert: PlatformCluster_PusherDailyDataVolumeTooLow_NodeinfoMissing
