@@ -622,7 +622,7 @@ groups:
       severity: ticket
       cluster: platform
     annotations:
-      summary: Test data volume today is less than 50% of nominal daily volume forthe replay data type.
+      summary: Test data volume today is less than 50% of nominal daily volume for the replay data type.
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_replaypusherdailydatavolumetoolow
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
 
