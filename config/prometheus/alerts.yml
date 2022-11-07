@@ -256,7 +256,7 @@ groups:
       cluster: platform
     annotations:
       summary: Too many OS versions in the cluster for more than 30d.
-      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_toomanyosversions 
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_toomanyosversions
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview?orgId=1&viewPanel=22
 
   # Too many kubelet versions on the platform for too long. This could happen, for
@@ -607,7 +607,7 @@ groups:
   # experiment, mostly in staging. The cycles appear to be very roughly every
   # 20 days. This alert is less sensitive than its counterpart above, but
   # should still alert us of a major problem with Wehe.
-- alert: PlatformCluster_ReplayPusherDailyDataVolumeTooLow
+  - alert: PlatformCluster_ReplayPusherDailyDataVolumeTooLow
     expr: |
       datatype:pusher_bytes_per_tarfile:increase24h{datatype="replay"}
         < (0.5 * quantile by(datatype)(0.5,
