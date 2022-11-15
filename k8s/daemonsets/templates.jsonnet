@@ -481,7 +481,7 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType="physical") = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical') = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
