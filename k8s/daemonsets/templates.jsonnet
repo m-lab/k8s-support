@@ -241,6 +241,11 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         containerPort: tcpPort,
       },
     ],
+    resources: if expName == 'ndt-virtual' then [
+      limits: {
+        memory: '1500M',
+      },
+    ] else [],
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
