@@ -209,7 +209,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
-local Pcap(expName, tcpPort, hostNetwork) = [
+local Pcap(expName, tcpPort, hostNetwork, siteType) = [
   {
     name: 'packet-headers',
     image: 'measurementlab/packet-headers:v0.6.0',
@@ -241,11 +241,11 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         containerPort: tcpPort,
       },
     ],
-    resources: if expName == 'ndt-virtual' then [
+    resources: if siteType == 'virtual' then {
       limits: {
         memory: '1500M',
       },
-    ] else [],
+    } else {},
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -481,7 +481,7 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType="physical") = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
@@ -515,7 +515,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             Tcpinfo(name, 9991, hostNetwork, anonMode),
             if anonMode == "none" then
               Traceroute(name, 9992, hostNetwork) else [],
-            Pcap(name, 9993, hostNetwork),
+            Pcap(name, 9993, hostNetwork, siteType),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
           ]),
@@ -591,7 +591,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
