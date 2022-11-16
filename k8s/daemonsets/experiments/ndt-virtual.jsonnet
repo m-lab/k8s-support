@@ -6,7 +6,7 @@ local services = [
   'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
 ];
 
-exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', datatypes, true) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', datatypes, true, 'virtual') + {
   metadata+: {
     name: expName + '-virtual',
   },
