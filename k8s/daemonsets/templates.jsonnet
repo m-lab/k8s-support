@@ -243,7 +243,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
     ],
     resources: if siteType == 'virtual' then {
       limits: {
-        memory: '1500M',
+        memory: '2G',
       },
     } else {},
     volumeMounts: [
