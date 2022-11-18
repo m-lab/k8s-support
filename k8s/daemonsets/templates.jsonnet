@@ -212,7 +212,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.6.0',
+    image: 'measurementlab/packet-headers:sandbox-soltesz-maxramratio',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -221,6 +221,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
+      '-maxramratio=0.5',
     // The "host" experiment is currently the only experiment where
     // packet-headers needs to listen explictly on interface eth0.
     ] + if expName == 'host' then [
