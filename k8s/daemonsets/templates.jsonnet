@@ -1,7 +1,7 @@
-local ndtVersion = 'v0.20.16';
+local ndtVersion = 'v0.20.17';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
-local ndtCanaryVersion = 'v0.20.16';
+local ndtCanaryVersion = 'v0.20.17';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -385,7 +385,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.12.1',
+    image: 'measurementlab/heartbeat:v0.13.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
