@@ -221,7 +221,8 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-      '-maxramratio=0.5',
+      '-maxidleram=1.5G',
+      '-maxheap=2G',
     // The "host" experiment is currently the only experiment where
     // packet-headers needs to listen explictly on interface eth0.
     ] + if expName == 'host' then [
@@ -244,7 +245,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
     ],
     resources: if siteType == 'virtual' then {
       limits: {
-        memory: '2G',
+        memory: '3G',
       },
     } else {},
     volumeMounts: [
