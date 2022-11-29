@@ -212,7 +212,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.6.0',
+    image: 'measurementlab/packet-headers:v0.7.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -221,9 +221,14 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-    // The "host" experiment is currently the only experiment where
-    // packet-headers needs to listen explictly on interface eth0.
+    ] + if siteType == 'virtual' then [
+      // Only virtual nodes need to limit RAM beyond default values.
+      '-maxidleram=1500MB',
+      '-maxheap=2GB',
+    ] else [
     ] + if expName == 'host' then [
+      // The "host" experiment is currently the only experiment where
+      // packet-headers needs to listen explictly on interface eth0.
       '-interface=eth0',
     ] else [],
     env: if hostNetwork then [] else [
@@ -243,7 +248,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
     ],
     resources: if siteType == 'virtual' then {
       limits: {
-        memory: '2G',
+        memory: '3G',
       },
     } else {},
     volumeMounts: [
