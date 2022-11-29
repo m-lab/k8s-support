@@ -223,8 +223,8 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
       '-stream=false',
     ] + if siteType == 'virtual' then [
       // Only virtual nodes need to limit RAM beyond default values.
-      '-maxidleram=1.5G',
-      '-maxheap=2G',
+      '-maxidleram=1500MB',
+      '-maxheap=2GB',
     ] else [
     ] + if expName == 'host' then [
       // The "host" experiment is currently the only experiment where
