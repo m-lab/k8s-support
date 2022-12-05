@@ -301,6 +301,7 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   echo -n $EXTERNAL_IPV6 > "\${metadata_dir}/external-ipv6"
   echo -n $MACHINE_TYPE > "\${metadata_dir}/machine-type"
   echo -n $NETWORK_TIER > "\${metadata_dir}/network-tier"
+  uname -r | tr -d '\n' > "\${metadata_dir}/kernel-version"
 EOF
 
 # Ssh to the master and fix the network annotation for the node.

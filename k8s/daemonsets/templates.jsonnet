@@ -1,7 +1,7 @@
-local ndtVersion = 'v0.20.16';
+local ndtVersion = 'v0.20.17';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
-local ndtCanaryVersion = 'v0.20.16';
+local ndtCanaryVersion = 'v0.20.17';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -209,10 +209,10 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
-local Pcap(expName, tcpPort, hostNetwork) = [
+local Pcap(expName, tcpPort, hostNetwork, siteType) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.6.0',
+    image: 'measurementlab/packet-headers:v0.7.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -221,9 +221,14 @@ local Pcap(expName, tcpPort, hostNetwork) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
-    // The "host" experiment is currently the only experiment where
-    // packet-headers needs to listen explictly on interface eth0.
+    ] + if siteType == 'virtual' then [
+      // Only virtual nodes need to limit RAM beyond default values.
+      '-maxidleram=1500MB',
+      '-maxheap=2GB',
+    ] else [
     ] + if expName == 'host' then [
+      // The "host" experiment is currently the only experiment where
+      // packet-headers needs to listen explictly on interface eth0.
       '-interface=eth0',
     ] else [],
     env: if hostNetwork then [] else [
@@ -241,6 +246,11 @@ local Pcap(expName, tcpPort, hostNetwork) = [
         containerPort: tcpPort,
       },
     ],
+    resources: if siteType == 'virtual' then {
+      limits: {
+        memory: '3G',
+      },
+    } else {},
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -380,7 +390,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.12.1',
+    image: 'measurementlab/heartbeat:v0.13.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -476,7 +486,7 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical') = {
   // TODO(m-lab/k8s-support/issues/358): make this unconditional once traceroute
   // supports anonymization.
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation'] + datatypes +
@@ -510,7 +520,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork) = {
             Tcpinfo(name, 9991, hostNetwork, anonMode),
             if anonMode == "none" then
               Traceroute(name, 9992, hostNetwork) else [],
-            Pcap(name, 9993, hostNetwork),
+            Pcap(name, 9993, hostNetwork, siteType),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
           ]),
@@ -586,7 +596,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to

@@ -40,6 +40,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '/bin/sh',
               '-c',
               '/ndt-server -txcontroller.max-rate=$(cat /metadata/iface-max-rate) $@',
+              '--',
             ],
             args: [
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
@@ -97,7 +98,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
 
           },
         ] + std.flattenArrays([
-          exp.Heartbeat(expName, true, services),
+          exp.Heartbeat(expName, false, services),
         ]),
         volumes+: [
           {
