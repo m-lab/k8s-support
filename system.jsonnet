@@ -25,6 +25,7 @@
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
+      import 'k8s/daemonsets/experiments/msak.jsonnet',
     ] else []
   ) + [
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
