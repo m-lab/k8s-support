@@ -20,6 +20,7 @@ config:
         Buffer_Max_Size 1MB
         Skip_Long_Lines On
         storage.type filesystem
+        threaded on
     # The systemd input plugin has fairly rudimentary ability to filter
     # messages. It only has the ability to join filters on AND or OR, and you
     # cannot use globbing or regexs. The following systemd inputs just break
@@ -31,6 +32,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=0
         Systemd_Filter_Type And
+        threaded on
     [INPUT]
         Name systemd
         Tag host.*
@@ -38,6 +40,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=1
         Systemd_Filter_Type And
+        threaded on
     [INPUT]
         Name systemd
         Tag host.*
@@ -45,6 +48,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=2
         Systemd_Filter_Type And
+        threaded on
     [INPUT]
         Name systemd
         Tag host.*
@@ -52,6 +56,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=3
         Systemd_Filter_Type And
+        threaded on
     [INPUT]
         Name systemd
         Tag host.*
@@ -59,6 +64,7 @@ config:
         Systemd_Filter SYSLOG_IDENTIFIER=kernel
         Systemd_Filter PRIORITY=4
         Systemd_Filter_Type And
+        threaded on
   outputs: |
     @INCLUDE output.conf
   service: |
@@ -132,7 +138,7 @@ initContainers:
         net.dns.mode TCP
         # Don't continue to fill up the filesystem with buffered chunks when
         # pushing logs to Stackdriver isn't working for some reason.
-        storage.total_limit_size 1G
+        storage.total_limit_size 250M
     EOF
     cat << EOF >> /fluent-bit/etc/filter.conf
     [FILTER]
