@@ -58,6 +58,34 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
           },
+          {
+            args: [
+              '-addr=:4443',
+              '-cert=/certs/tls.crt',
+              '-key=/certs/tls.key',
+              '-hostname=msak-$(NODE_NAME)',
+              '-www=/app/www',
+            ],
+            env: [
+              {
+                name: 'NODE_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+            ],
+            image: 'soltesz/speedtest-webtransport-go:v0.0.1',
+            name: 'speedtest-webtransport',
+            volumeMounts: [
+              {
+                mountPath: '/certs',
+                name: 'measurement-lab-org-tls',
+                readOnly: true,
+              },
+            ],
+          },
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
         ]),
