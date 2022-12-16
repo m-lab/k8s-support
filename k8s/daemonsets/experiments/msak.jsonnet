@@ -76,7 +76,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
-            image: 'soltesz/speedtest-webtransport-go:v0.0.0',
+            image: 'soltesz/speedtest-webtransport-go:v0.0.1',
             name: 'speedtest-webtransport',
             volumeMounts: [
               {
