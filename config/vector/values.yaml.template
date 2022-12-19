@@ -1,6 +1,7 @@
 customConfig:
   api:
     enabled: false
+  data_dir: /tmp
   sinks:
     stackdriver:
       type: gcp_stackdriver_logs
