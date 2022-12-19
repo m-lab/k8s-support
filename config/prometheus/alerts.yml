@@ -51,17 +51,17 @@ groups:
         the DaemonSet is healthy (`kubectl describe ds cadvisor`).
       dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
-  - alert: PlatformCluster_FluentbitMissing
-    expr: absent(up{deployment="fluentbit"})
+  - alert: PlatformCluster_VectorMissing
+    expr: absent(up{deployment="vector"})
     for: 15m
     labels:
       repo: ops-tracker
       severity: ticket
       cluster: platform
     annotations:
-      summary: The Fluentbit DaemonSet is missing or has no metrics.
-      description: The Fluentbit DaemonSet is missing or has no metrics. Verify
-        that the DaemonSet is healthy (`kubectl describe ds fluentbit`).
+      summary: The Vector DaemonSet is missing or has no metrics.
+      description: The Vector DaemonSet is missing or has no metrics. Verify
+        that the DaemonSet is healthy (`kubectl describe ds vector`).
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_NdtMissing

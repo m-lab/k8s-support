@@ -1,0 +1,65 @@
+customConfig:
+  api:
+    enabled: false
+  sinks:
+    stackdriver:
+      type: gcp_stackdriver_logs
+      inputs:
+      - kernel_log
+      - kubernetes_logs
+      project_id: {{PROJECT}}
+      log_id: "${VECTOR_SELF_NODE_NAME}"
+      resource:
+        type: "generic_node"
+        projectId: {{PROJECT}}
+        location: {{PROJECT}}
+        namespace: "${VECTOR_SELF_NODE_NAME}"
+        node_id: "${VECTOR_SELF_NODE_NAME}"
+  sources:
+    journald:
+      type: journald
+    kubernetes_logs:
+      type: kubernetes_logs
+  transforms:
+    kernel_log:
+      type: filter
+      inputs:
+      - journald
+      # This catches anything with priority warning (4) to critical (0).
+      condition:
+        type: "vrl"
+        source: ".SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)"
+env:
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /etc/vector/keys/vector.json
+extraVolumes:
+- name: credentials
+  secret:
+    defaultMode: 420
+    secretName: vector-credentials
+- name: machine-id
+  hostPath:
+    path: /etc/machine-id
+extraVolumeMounts:
+- name: credentials
+  mountPath: /etc/vector/keys
+  readOnly: true
+# The Vector journald source uses journalctl inside the container to read logs.
+# journalctl constructs the path to the system journal using the contents of
+# /etc/machine-id, so it must be mounted in the container, else journalctl will
+# fail to find any log files.
+- name: machine-id
+  mountPath: /etc/machine-id
+  readOnly: true
+image:
+  tag: {{IMAGE}}
+podAnnotations:
+  prometheus.io/scrape: "true"
+podLabels:
+  workload: vector
+role: Agent
+service:
+  enabled: false
+tolerations:
+- key: node-role.kubernetes.io/control-plane
+  effect: NoSchedule
