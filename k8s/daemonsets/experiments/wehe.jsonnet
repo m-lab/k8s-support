@@ -1,4 +1,3 @@
-local datatypes = ['replay'];
 local exp = import '../templates.jsonnet';
 local expName = 'wehe';
 local services = [
