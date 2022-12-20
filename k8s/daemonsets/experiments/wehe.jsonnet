@@ -13,6 +13,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
         },
       },
       spec+: {
+        serviceAccountName: 'heartbeat-experiment',
         initContainers+: [
           {
             args: [
