@@ -1,5 +1,9 @@
+local datatypes = ['replay'];
 local exp = import '../templates.jsonnet';
 local expName = 'wehe';
+local services = [
+  'wehe/replay=wss://:4443/v0/envelope/access',
+];
 
 exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
   spec+: {
@@ -146,7 +150,9 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
             ],
           },
-        ],
+        ] + std.flattenArrays([
+          exp.Heartbeat(expName, false, services),
+        ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
