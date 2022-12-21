@@ -52,7 +52,7 @@ groups:
       dashboard: https://grafana.mlab-staging.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_VectorMissing
-    expr: absent(up{deployment="vector"})
+    expr: absent(kube_daemonset_status_desired_number_scheduled{daemonset="vector"})
     for: 15m
     labels:
       repo: ops-tracker
@@ -60,8 +60,7 @@ groups:
       cluster: platform
     annotations:
       summary: The Vector DaemonSet is missing or has no metrics.
-      description: The Vector DaemonSet is missing or has no metrics. Verify
-        that the DaemonSet is healthy (`kubectl describe ds vector`).
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_workloadmissing
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/tZHLFQRZk/k8s-workload-overview
 
   - alert: PlatformCluster_NdtMissing
