@@ -64,7 +64,7 @@ kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install ingress-nginx \
   --namespace ingress-nginx \
-  --values ../config/ingress-nginx/helm-values-overrides.yaml \
+  --values ../helm/ingress-nginx/helm-values-overrides.yaml \
   ingress-nginx/ingress-nginx
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
@@ -74,17 +74,17 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 ./linux-amd64/helm upgrade --install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
-  --values ../config/cert-manager/helm-values-overrides.yaml \
+  --values ../helm/cert-manager/helm-values-overrides.yaml \
   jetstack/cert-manager
 
 # Replace per-project variables in Vector's values.yaml and install Vector.
 sed -e "s|{{PROJECT}}|${PROJECT}|g" \
     -e "s|{{IMAGE}}|${K8S_VECTOR_IMAGE}|g" \
-    ../config/vector/values.yaml.template > \
-    ../config/vector/values.yaml
+    ../helm/vector/values.yaml.template > \
+    ../helm/vector/values.yaml
 
 ./linux-amd64/helm upgrade --install vector \
-  --values ../config/vector/values.yaml \
+  --values ../helm/vector/values.yaml \
   --version ${K8S_VECTOR_CHART} \
   vector/vector
 
