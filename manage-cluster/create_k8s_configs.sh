@@ -42,7 +42,7 @@ gsutil cp -R gs://${!GCS_BUCKET_K8S}/wehe-ca secrets/.
 gsutil cp gs://${!GCS_BUCKET_K8S}/uuid-annotator-credentials.json secrets/uuid-annotator.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/pusher-credentials.json secrets/pusher.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/cert-manager-credentials.json secrets/cert-manager.json
-gsutil cp gs://${!GCS_BUCKET_K8S}/fluentbit-credentials.json secrets/fluentbit.json
+gsutil cp gs://${!GCS_BUCKET_K8S}/vector-credentials.json secrets/vector.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.community
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
 # The alertmanager-basicauth.yaml file is already a valid k8s YAML Secret
@@ -63,8 +63,8 @@ kubectl create secret generic ndt-tls --from-file secrets/ndt-tls/ \
     --dry-run -o json > secret-configs/ndt-tls.json
 kubectl create secret generic wehe-ca --from-file secrets/wehe-ca/ \
     --dry-run -o json > secret-configs/wehe-ca.json
-kubectl create secret generic fluentbit-credentials --from-file secrets/fluentbit.json \
-    --dry-run -o json > secret-configs/fluentbit.json
+kubectl create secret generic vector-credentials --from-file secrets/vector.json \
+    --dry-run -o json > secret-configs/vector.json
 kubectl create secret generic snmp-community --from-file secrets/snmp.community \
     --dry-run -o json > secret-configs/snmp-community.json
 # NB: The file containing the user/password pair must be called 'auth'.

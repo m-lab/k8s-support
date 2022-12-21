@@ -54,7 +54,7 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 # Add the required Helm repositories.
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-./linux-amd64/helm repo add fluent https://fluent.github.io/helm-charts
+./linux-amd64/helm repo add vector https://helm.vector.dev
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager --dry-run=client -o json | kubectl apply -f -
@@ -64,7 +64,7 @@ kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install ingress-nginx \
   --namespace ingress-nginx \
-  --values ../config/ingress-nginx/helm-values-overrides.yaml \
+  --values ../helm/ingress-nginx/helm-values-overrides.yaml \
   ingress-nginx/ingress-nginx
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
@@ -74,20 +74,19 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 ./linux-amd64/helm upgrade --install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \
-  --values ../config/cert-manager/helm-values-overrides.yaml \
+  --values ../helm/cert-manager/helm-values-overrides.yaml \
   jetstack/cert-manager
 
-# Install fluent-bit and configure to export to Google Stackdriver.
-
-# Replace per-project variables in fluent-bit's values.yaml.
+# Replace per-project variables in Vector's values.yaml and install Vector.
 sed -e "s|{{PROJECT}}|${PROJECT}|g" \
-    -e "s|{{K8S_FLUENTBIT_VERSION}}|${K8S_FLUENTBIT_VERSION}|g" \
-    ../config/fluentbit/values.yaml.template > \
-    ../config/fluentbit/values.yaml
+    -e "s|{{IMAGE}}|${K8S_VECTOR_IMAGE}|g" \
+    ../helm/vector/values.yaml.template > \
+    ../helm/vector/values.yaml
 
-./linux-amd64/helm upgrade --install fluent-bit \
-  --values ../config/fluentbit/values.yaml \
-  fluent/fluent-bit
+./linux-amd64/helm upgrade --install vector \
+  --values ../helm/vector/values.yaml \
+  --version ${K8S_VECTOR_CHART} \
+  vector/vector
 
 # Apply the configuration
 
