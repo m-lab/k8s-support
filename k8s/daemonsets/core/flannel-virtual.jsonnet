@@ -75,7 +75,13 @@
               },
             },
             securityContext: {
-              privileged: true,
+              privileged: false,
+              capabilities: {
+                add: [
+                  'NET_ADMIN',
+                  'NET_RAW',
+                ],
+              },
             },
             volumeMounts: [
               {
