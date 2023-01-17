@@ -5,6 +5,7 @@ customConfig:
   sinks:
     stackdriver:
       type: gcp_stackdriver_logs
+      credentials_path: "/etc/vector/keys/vector.json"
       inputs:
       - kernel_log
       - kubernetes_logs
@@ -28,9 +29,6 @@ customConfig:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
-env:
-- name: GOOGLE_APPLICATION_CREDENTIALS
-  value: /etc/vector/keys/vector.json
 extraVolumes:
 - name: credentials
   secret:
