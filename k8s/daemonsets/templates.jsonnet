@@ -173,7 +173,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1',
-      '-uuid-prefix-file=' + uuid.prefixfile,
+      # '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-IPCacheTimeout=10m',
       '-IPCacheUpdatePeriod=1m',
