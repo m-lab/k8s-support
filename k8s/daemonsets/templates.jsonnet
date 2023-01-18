@@ -163,10 +163,10 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   else []
 ;
 
-local Traceroute(expName, tcpPort, hostNetwork) = [
+local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.9.0',
+    image: 'measurementlab/traceroute-caller:v0.11.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -181,6 +181,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
       '-scamper.tracelb-W=15',
       '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
+      '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
       {
@@ -209,7 +210,7 @@ local Traceroute(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
-local Pcap(expName, tcpPort, hostNetwork, siteType) = [
+local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
     image: 'measurementlab/packet-headers:v0.7.0',
@@ -221,6 +222,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType) = [
       '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
+      '-anonymize.ip=' + anonMode,
     ] + if siteType == 'virtual' then [
       // Only virtual nodes need to limit RAM beyond default values.
       '-maxidleram=1500MB',
@@ -518,9 +520,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType
         containers:
           std.flattenArrays([
             Tcpinfo(name, 9991, hostNetwork, anonMode),
-            if anonMode == "none" then
-              Traceroute(name, 9992, hostNetwork) else [],
-            Pcap(name, 9993, hostNetwork, siteType),
+            Traceroute(name, 9992, hostNetwork, anonMode),
+            Pcap(name, 9993, hostNetwork, siteType, anonMode),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
           ]),
