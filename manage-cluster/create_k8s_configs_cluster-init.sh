@@ -5,6 +5,8 @@ set -euxo pipefail
 # Source the main configuration file.
 source ./k8s_deploy.conf
 
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
 GCS_BUCKET_K8S="GCS_BUCKET_K8S_${project//-/_}"
 
 # Create the json configuration for the entire cluster (except for secrets)

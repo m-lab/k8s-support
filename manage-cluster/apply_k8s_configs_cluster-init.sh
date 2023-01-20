@@ -5,10 +5,7 @@ set -euxo pipefail
 # Source the main configuration file.
 source ./k8s_deploy.conf
 
-if [[ -z $KUBECONFIG ]]; then
-  echo "KUBECONFIG not defined. Exiting..."
-  exit 1
-fi
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 # Upload the evaluated setup_k8s.sh template to GCS.
 # TODO(kinkade): Move setup_k8s.sh to the epoxy-images repo to be baked into
