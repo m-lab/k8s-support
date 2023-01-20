@@ -6,8 +6,12 @@ cainjector:
 ingressShim:
   defaultIssuerName: letsencrypt
   defaultIssuerKind: ClusterIssuer
+installCRDs: true
 nodeSelector:
   "node-role.kubernetes.io/control-plane": ""
+startupapicheck:
+  tolerations:
+  - operator: Exists
 strategy:
   type: Recreate
 tolerations:
@@ -17,3 +21,4 @@ webhook:
     "node-role.kubernetes.io/control-plane": ""
   tolerations:
   - operator: Exists
+
