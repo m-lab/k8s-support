@@ -39,6 +39,8 @@ kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
 
 # Install cert-manager and configure it to use the "letsencrypt" ClusterIssuer
 # by default.
+# https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/${K8S_CERTMANAGER_VERSION}/cert-manager.crds.yaml
 ./linux-amd64/helm upgrade --install cert-manager \
   --namespace cert-manager \
   --version ${K8S_CERTMANAGER_VERSION} \

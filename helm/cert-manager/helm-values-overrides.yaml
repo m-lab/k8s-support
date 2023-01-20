@@ -6,7 +6,6 @@ cainjector:
 ingressShim:
   defaultIssuerName: letsencrypt
   defaultIssuerKind: ClusterIssuer
-installCRDs: true
 nodeSelector:
   "node-role.kubernetes.io/control-plane": ""
 startupapicheck:
