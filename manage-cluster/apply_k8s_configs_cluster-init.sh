@@ -14,6 +14,13 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 cache_control="Cache-Control:private, max-age=0, no-transform"
 gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${project}/latest/stage3_ubuntu/setup_k8s.sh
 
+# We call 'kubectl apply -f system.json' several times because kubectl doesn't
+# support defining and declaring certain objects in the same file. This is a
+# bug in kubectl, and so we call it two times here and a final time at the end
+# of this script as a workaround for the bug.
+kubectl apply -f system.json || true
+kubectl apply -f system.json || true
+
 # Download helm and use it to install cert-manager and ingress-nginx
 curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
@@ -63,11 +70,6 @@ sed -e "s|{{PROJECT}}|${project}|g" \
 # part of secret-configs public.  They are our passwords and private keys!
 kubectl apply -f secret-configs/
 
-# We call 'kubectl apply -f system.json' three times because kubectl doesn't
-# support defining and declaring certain objects in the same file. This is a
-# bug in kubectl, and so we call it three times as a workaround for the bug.
-kubectl apply -f system.json || true
-kubectl apply -f system.json || true
 # Sleep for a bit to give all pods a chance to start. Specifically, this
 # command will fail, causing the build to fail, if cert-manager-webhook is
 # not up and running.
