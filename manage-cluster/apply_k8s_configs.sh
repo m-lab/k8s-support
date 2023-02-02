@@ -40,13 +40,6 @@ fi
 # ... but otherwise it can't really hurt.
 gcloud --quiet components update kubectl
 
-# Upload the evaluated setup_k8s.sh template to GCS.
-# TODO(kinkade): Move setup_k8s.sh to the epoxy-images repo to be baked into
-# stage3 images, obviating the need for the static "version" path in GCS of
-# "latest": https://github.com/m-lab/k8s-support/issues/569
-cache_control="Cache-Control:private, max-age=0, no-transform"
-gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/latest/stage3_ubuntu/setup_k8s.sh
-
 # Download helm and use it to install cert-manager and ingress-nginx
 curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz

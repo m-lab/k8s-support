@@ -75,15 +75,3 @@ kubectl create secret generic locate-verify-keys --from-file secrets/locate/ \
 kubectl create secret generic locate-heartbeat-key --from-file secrets/locate-heartbeat/ \
     --dry-run -o json > secret-configs/locate-heartbeat-key.json
 
-# Download the platform cluster CA cert.
-gsutil cp gs://k8s-support-${PROJECT}/pki/ca.crt .
-
-# Generate a hash of the CA cert.
-# https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/#token-based-discovery-with-ca-pinning
-ca_cert_hash=$(openssl x509 -pubkey -in ./ca.crt | \
-    openssl rsa -pubin -outform der 2>/dev/null | \
-    openssl dgst -sha256 -hex | sed 's/^.* //')
-
-# Evaluate the setup_k8s.sh.template using the generated hash of the CA cert.
-sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template \
-    > ./setup_k8s.sh
