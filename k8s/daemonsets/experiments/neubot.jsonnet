@@ -1,6 +1,9 @@
 local datatypes = ['dash'];
 local exp = import '../templates.jsonnet';
 local expName = 'neubot';
+local services = [
+  'neubot/dash=https:///negotiate/dash',
+];
 
 exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
   spec+: {
@@ -11,6 +14,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
         },
       },
       spec+: {
+        serviceAccountName: 'heartbeat-experiment',
         containers+: [
             {
               name: 'dash',
@@ -56,7 +60,9 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
               periodSeconds: 30,
             },
           },
-        ],
+        ] + std.flattenArrays([
+          exp.Heartbeat(expName, false, services),
+        ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
