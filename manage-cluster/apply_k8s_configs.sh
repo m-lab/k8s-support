@@ -13,7 +13,7 @@ if [[ -n "${KUBECONFIG}" ]]; then
   export KUBECONFIG="${KUBECONFIG}"
 else
   # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
-  # fetch it from the first master node in the cluster.
+  # fetch it from the first control plane node in the cluster.
 
   # Create a string representing region and zone variable names for this project.
   GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
@@ -25,7 +25,7 @@ else
 
   GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
   GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
-  GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
+  GCE_NAME="api-${GCE_BASE_NAME}-${GCE_ZONE}"
 
   GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 

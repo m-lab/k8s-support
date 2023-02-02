@@ -34,8 +34,8 @@ METRO="${SITE/[0-9]*/}"
 export PATH=$PATH:/sbin:/usr/sbin:/opt/bin:/opt/mlab/bin
 
 # Make sure to download any and all necessary auth tokens prior to this point.
-# It should be a simple wget from the master node to make that happen.
-MASTER_NODE="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
+# It should be a simple wget from the control plane node to make that happen.
+LOAD_BALANCER="api-platform-cluster.${GCP_PROJECT}.measurementlab.net"
 
 # Capture K8S version for later usage.
 RELEASE=$(kubelet --version | awk '{print $2}')
@@ -63,10 +63,7 @@ if [[ -n $ERROR_408 ]]; then
   /sbin/reboot
 fi
 
-# TODO: Stop regenerating the CA on every call to setup_cloud_k8s_master.sh so
-# that we can hard-code the CA hash below without having to change it all the
-# time.
-kubeadm join "${MASTER_NODE}:6443" \
+kubeadm join "${LOAD_BALANCER}:6443" \
   --v 4 \
   --token "${TOKEN}" \
   --discovery-token-ca-cert-hash sha256:{{CA_CERT_HASH}}
