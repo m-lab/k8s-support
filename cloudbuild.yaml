@@ -6,9 +6,17 @@ steps:
     '/workspace/manage-cluster/create_k8s_configs.sh $PROJECT_ID'
   ]
 
+# Fetch the KUBECONFIG file from GCS.
+- name: gcr.io/$PROJECT_ID/gcloud-jsonnet-cbif
+  dir: '/workspace/manage-cluster'
+  args: [
+    'gsutil cp gs://k8s-support-$PROJECT_ID/admin.conf /workspace/admin.conf'
+  ]
+
 # Push the configs.
 - name: gcr.io/$PROJECT_ID/gcloud-jsonnet-cbif
   dir: '/workspace/manage-cluster'
   args: [
-    '/workspace/manage-cluster/apply_k8s_configs.sh $PROJECT_ID'
+    '/workspace/manage-cluster/apply_k8s_configs.sh $PROJECT_ID /workspace/admin.conf'
   ]
+
