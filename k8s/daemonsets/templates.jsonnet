@@ -329,7 +329,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.4.7',
+    image: 'measurementlab/uuid-annotator:v0.5.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
