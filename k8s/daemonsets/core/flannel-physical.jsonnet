@@ -118,7 +118,7 @@
           },
         ],
         nodeSelector: {
-          'beta.kubernetes.io/arch': 'amd64',
+          'kubernetes.io/arch': 'amd64',
           'mlab/type': 'physical',
         },
         serviceAccountName: 'flannel',

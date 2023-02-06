@@ -19,3 +19,4 @@ steps:
   args: [
     '/workspace/manage-cluster/apply_k8s_configs.sh $PROJECT_ID /workspace/admin.conf'
   ]
+

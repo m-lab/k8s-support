@@ -13,7 +13,7 @@ if [[ -n "${KUBECONFIG}" ]]; then
   export KUBECONFIG="${KUBECONFIG}"
 else
   # If a KUBECONFIG wasn't passed as an argument to the script, then attempt to
-  # fetch it from the first master node in the cluster.
+  # fetch it from the first control plane node in the cluster.
 
   # Create a string representing region and zone variable names for this project.
   GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
@@ -25,7 +25,7 @@ else
 
   GCE_ZONE="${GCE_REGION}-$(echo ${GCE_ZONES} | awk '{print $1}')"
   GCE_ARGS=("--zone=${GCE_ZONE}" "--project=${PROJECT}" "--quiet")
-  GCE_NAME="master-${GCE_BASE_NAME}-${GCE_ZONE}"
+  GCE_NAME="api-${GCE_BASE_NAME}-${GCE_ZONE}"
 
   GCS_BUCKET_K8S="GCS_BUCKET_K8S_${PROJECT//-/_}"
 
@@ -40,12 +40,12 @@ fi
 # ... but otherwise it can't really hurt.
 gcloud --quiet components update kubectl
 
-# Upload the evaluated setup_k8s.sh template to GCS.
-# TODO(kinkade): Move setup_k8s.sh to the epoxy-images repo to be baked into
-# stage3 images, obviating the need for the static "version" path in GCS of
-# "latest": https://github.com/m-lab/k8s-support/issues/569
-cache_control="Cache-Control:private, max-age=0, no-transform"
-gsutil -h "$cache_control" cp ./setup_k8s.sh gs://epoxy-${PROJECT}/latest/stage3_ubuntu/setup_k8s.sh
+# We call 'kubectl apply -f system.json' several times because kubectl doesn't
+# support defining and declaring certain objects in the same file. This is a
+# bug in kubectl, and so we call it twice here and a final time at the end of
+# this script as a workaround for this bug.
+kubectl apply -f system.json || true
+kubectl apply -f system.json || true
 
 # Download helm and use it to install cert-manager and ingress-nginx
 curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
@@ -95,11 +95,6 @@ sed -e "s|{{PROJECT}}|${PROJECT}|g" \
 # part of secret-configs public.  They are our passwords and private keys!
 kubectl apply -f secret-configs/
 
-# We call 'kubectl apply -f system.json' three times because kubectl doesn't
-# support defining and declaring certain objects in the same file. This is a
-# bug in kubectl, and so we call it three times as a workaround for the bug.
-kubectl apply -f system.json || true
-kubectl apply -f system.json || true
 # Sleep for a bit to give all pods a chance to start. Specifically, this
 # command will fail, causing the build to fail, if cert-manager-webhook is
 # not up and running.
