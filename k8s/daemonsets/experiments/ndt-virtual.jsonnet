@@ -38,6 +38,9 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
             args: [
+              '-ndt5_addr=127.0.0.1:3002', // any non-public port.
+              '-ndt5_ws_addr=:3001', // default, public ndt5 port.
+              '-ndt5.token.required=true',
               '-ndt7.token.required=true',
               '-htmldir=html/mlab',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
