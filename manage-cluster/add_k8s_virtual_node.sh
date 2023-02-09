@@ -214,6 +214,15 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
   # https://kubernetes.io/docs/concepts/architecture/nodes/#addresses
   echo "KUBELET_EXTRA_ARGS='--node-ip=${INTERNAL_IP}'" > /etc/default/kubelet
 
+  # Fix the containerd config to use the systemd cgroup driver.
+  mkdir -p /etc/containerd
+  containerd config default \
+    | sed 's/SystemdCgroup.*/SystemdCgroup = true/' \
+    > /etc/containerd/config.toml
+
+  # Restart container so it picks up the above change.
+  systemctl restart containerd
+
   # Enable and start the kubelet service
   systemctl enable --now kubelet.service
   systemctl daemon-reload
