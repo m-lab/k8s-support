@@ -1,4 +1,4 @@
-local datatypes_autoloaded = ['ndtm1', 'ndtm2'];
+local datatypes_autoloaded = ['ndtm'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
 local services = [
