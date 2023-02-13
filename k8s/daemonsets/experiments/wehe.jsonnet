@@ -4,7 +4,7 @@ local services = [
   'wehe/replay=wss://:4443/v0/envelope/access',
 ];
 
-exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay']) + {
+exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay'], []) + {
   spec+: {
     template+: {
       metadata+: {

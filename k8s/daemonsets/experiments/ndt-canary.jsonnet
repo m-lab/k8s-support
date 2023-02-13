@@ -6,7 +6,7 @@ local services = [
   'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
 ];
 
-exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
   metadata+: {
     name: expName + '-canary',
   },
