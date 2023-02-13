@@ -554,6 +554,7 @@ local Metadata = {
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation', 'scamper1', 'hopannotation1'] + datatypes,
+  local allVolumes = datatypes + datatypes_autoloaded
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -617,7 +618,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded,
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
         ] + [
-          volume(name + '/' + d) for d in datatypes
+          volume(name + '/' + v) for v in allVolumes
         ],
       },
     },
