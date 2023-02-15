@@ -328,7 +328,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
-    local version='v1.0.0',
+    local version='v1.0.1',
     name: 'jostler',
     image: 'measurementlab/jostler:'+version,
     args: [
