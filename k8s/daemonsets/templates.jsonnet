@@ -326,7 +326,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   else []
 ;
 
-local Jostler(expName, tcpPort, datatypes_autoloaded, hostNetwork, bucket) = [
+local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     local version='v1.0.0',
     name: 'jostler',
@@ -347,8 +347,8 @@ local Jostler(expName, tcpPort, datatypes_autoloaded, hostNetwork, bucket) = [
       '-extensions=.json',
       '-missed-age=2h',
       '-missed-interval=5m',
-    ] + ['-datatype=' + d for d in datatypes_autoloaded] +
-        ['-datatype-schema-file=' + d + ':/var/spool/datatypes/' + d + '.json' for d in datatypes_autoloaded],
+    ] + ['-datatype=' + d for d in datatypesAutoloaded] +
+        ['-datatype-schema-file=' + d + ':/var/spool/datatypes/' + d + '.json' for d in datatypesAutoloaded],
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -552,9 +552,9 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded, hostNetwork, siteType='physical') = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation', 'scamper1', 'hopannotation1'] + datatypes,
-  local allVolumes = datatypes + datatypes_autoloaded,
+  local allVolumes = datatypes + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -586,7 +586,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded,
             Pcap(name, 9993, hostNetwork, siteType, anonMode),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
-          ] + if datatypes_autoloaded != [] then [Jostler(name, 9997, datatypes_autoloaded, hostNetwork, bucket)] else []),
+          ] + if datatypesAutoloaded != [] then [Jostler(name, 9997, datatypesAutoloaded, hostNetwork, bucket)] else []),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
@@ -631,7 +631,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded,
   },
 };
 
-local Experiment(name, index, bucket, anonMode, datatypes=[], datatypes_autoloaded=[]) = ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded, false) + {
+local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloaded=[]) = ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, false) + {
   spec+: {
     template+: {
       metadata+: {
@@ -659,7 +659,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypes_autoload
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypes_autoloaded, hostNetwork, siteType),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -668,7 +668,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypes_autoload
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
-  Experiment(name, index, bucket, anonMode, datatypes, datatypes_autoloaded):: Experiment(name, index, bucket, anonMode, datatypes, datatypes_autoloaded),
+  Experiment(name, index, bucket, anonMode, datatypes, datatypesAutoloaded):: Experiment(name, index, bucket, anonMode, datatypes, datatypesAutoloaded),
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
@@ -681,7 +681,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypes_autoload
   // Returns a "container" configuration for jostler that will upload the named experiment datatypes.
   // Because jostler uploads files to pusher's buckets, users MUST
   // declare a "pusher-credentials" volume as part of the deployment.
-  Jostler(expName, tcpPort, datatypes_autoloaded, hostNetwork, bucket):: Jostler(expName, tcpPort, datatypes_autoloaded, hostNetwork, bucket),
+  Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket):: Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket),
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
