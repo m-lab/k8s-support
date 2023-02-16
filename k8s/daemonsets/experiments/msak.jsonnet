@@ -55,7 +55,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 readOnly: true,
               },
             ] + [
-              exp.VolumeMount(expName + '/' + d) for d in datatypesAutoloaded
+              exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
           },
           {
