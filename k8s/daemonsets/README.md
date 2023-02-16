@@ -55,9 +55,6 @@ of this writing the ports are as follows:
 * 9996: heartbeat
 * 9997: jostler
 
-Note: The `utilization` service assigns port 9989 to `pusher` (see
-k8s/daemonsets/core/utilization.jsonnet).
-
 To access metrics or pprof data for a given service, simply modify the URL
 to specify `<podname>:<port>`.
 
