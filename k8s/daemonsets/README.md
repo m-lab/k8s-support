@@ -53,6 +53,7 @@ of this writing the ports are as follows:
 * 9994: uuid-annotator
 * 9995: pusher
 * 9996: heartbeat
+* 9997: jostler
 
 To access metrics or pprof data for a given service, simply modify the URL
 to specify `<podname>:<port>`.

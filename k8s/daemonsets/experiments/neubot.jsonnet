@@ -5,7 +5,7 @@ local services = [
   'neubot/dash=https:///negotiate/dash',
 ];
 
-exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
+exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
   spec+: {
     template+: {
       metadata+: {

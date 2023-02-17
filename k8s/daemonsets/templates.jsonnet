@@ -326,6 +326,70 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   else []
 ;
 
+local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
+  {
+    name: 'jostler',
+    image: 'measurementlab/jostler:v1.0.1',
+    args: [
+      // TODO: Add the following commented-out lines when Prometheus support
+      // is added to jostler.
+      // if hostNetwork then
+        // '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      // else
+        // '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      '-gcs-bucket=' + bucket,
+      '-gcs-data-dir=autoload/v1',
+      '-experiment=' + expName,
+      '-bundle-size-max=52428800', // 50*1024*1024
+      '-bundle-age-max=1h',
+      '-local-data-dir=/var/spool/' + expName,
+      '-extensions=.json',
+      '-missed-age=2h',
+      '-missed-interval=5m',
+    ] + ['-datatype=' + d for d in datatypesAutoloaded] +
+        ['-datatype-schema-file=' + d + ':/var/spool/datatypes/' + d + '.json' for d in datatypesAutoloaded],
+    env: [
+      {
+        name: 'GOOGLE_APPLICATION_CREDENTIALS',
+        value: '/etc/credentials/pusher.json', // jostler uses pusher's credentials
+      },
+      {
+        name: 'MLAB_NODE_NAME',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'spec.nodeName',
+          },
+        },
+      },
+    ] + if hostNetwork then [] else [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
+    ],
+    ports: if hostNetwork then [] else [
+      {
+        containerPort: tcpPort,
+      },
+    ],
+    volumeMounts: [
+      VolumeMount(expName),
+      {
+        mountPath: '/etc/credentials',
+        name: 'pusher-credentials', // jostler uses pusher's credentials
+        readOnly: true,
+      },
+    ],
+  }] +
+  if hostNetwork then
+    [RBACProxy('jostler', tcpPort)]
+  else []
+;
+
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
@@ -487,8 +551,9 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical') = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation', 'scamper1', 'hopannotation1'] + datatypes,
+  local allVolumes = datatypes + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -520,7 +585,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType
             Pcap(name, 9993, hostNetwork, siteType, anonMode),
             UUIDAnnotator(name, 9994, hostNetwork),
             Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
-          ]),
+          ] + if datatypesAutoloaded != [] then [Jostler(name, 9997, datatypesAutoloaded, hostNetwork, bucket)] else []),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
@@ -552,7 +617,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
         ] + [
-          volume(name + '/' + d) for d in datatypes
+          volume(name + '/' + v) for v in allVolumes
         ],
       },
     },
@@ -565,7 +630,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType
   },
 };
 
-local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoIndex(name, bucket, anonMode, datatypes, false) + {
+local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloaded=[]) = ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, false) + {
   spec+: {
     template+: {
       metadata+: {
@@ -593,7 +658,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, hostNetwork, siteType),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -602,7 +667,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
 
   // Returns all the trappings for a new experiment. New experiments should
   // need to add one new container.
-  Experiment(name, index, bucket, anonMode, datatypes):: Experiment(name, index, bucket, anonMode, datatypes),
+  Experiment(name, index, bucket, anonMode, datatypes, datatypesAutoloaded):: Experiment(name, index, bucket, anonMode, datatypes, datatypesAutoloaded),
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
@@ -611,6 +676,11 @@ local Experiment(name, index, bucket, anonMode, datatypes=[]) = ExperimentNoInde
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
   Pusher(expName, tcpPort, datatypes, hostNetwork, bucket):: Pusher(expName, tcpPort, datatypes, hostNetwork, bucket),
+
+  // Returns a "container" configuration for jostler that will upload the named experiment datatypes.
+  // Because jostler uploads files to pusher's buckets, users MUST
+  // declare a "pusher-credentials" volume as part of the deployment.
+  Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket):: Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket),
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
