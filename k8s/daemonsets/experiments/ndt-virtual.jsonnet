@@ -37,15 +37,20 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
-            // Virtual machines are part of managed instances groups, and each
-            // VM name ends in a random suffix. The load balancer name for the
-            // machine (no suffix) is the name used to generate tokens, so we
-            // strip off suffix and use that name as the value for the
+            // Virtual machines are part of managed instances groups (MIG), and
+            // each VM name ends in a random suffix. The load balancer name for
+            // the machine (no suffix) is the name used to generate tokens, so
+            // we strip off suffix and use that name as the value for the
             // -token.machine flag.
             command: [
               '/bin/sh',
               '-c',
-              '/ndt-server -token.machine=${NODE_NAME%-*} $@',
+              // MIGs are currently only present in sandbox, so limit stripping
+              // anything from the node name to sandbox.
+              if std.extVar('PROJECT_ID') == 'mlab-sandbox' then 
+                '/ndt-server -token.machine=${NODE_NAME%-*} $@',
+              else
+                '/ndt-server -token.machine=${NODE_NAME} $@',
               '--',
             ],
             args: [
