@@ -37,6 +37,17 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtVersion,
+            // Virtual machines are part of managed instances groups, and each
+            // VM name ends in a random suffix. The load balancer name for the
+            // machine (no suffix) is the name used to generate tokens, so we
+            // strip off suffix and use that name as the value for the
+            // -token.machine flag.
+            command: [
+              '/bin/sh',
+              '-c',
+              '/ndt-server -token.machine=${NODE_NAME%-*} $@',
+              '--',
+            ],
             args: [
               '-ndt5_addr=127.0.0.1:3002', // any non-public port.
               '-ndt5_ws_addr=:3001', // default, public ndt5 port.
@@ -48,7 +59,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-datadir=/var/spool/' + expName,
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
-              '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-txcontroller.device=ens4',
               // GCE VMs have an egress rate limit of 7Gbps to Internet
