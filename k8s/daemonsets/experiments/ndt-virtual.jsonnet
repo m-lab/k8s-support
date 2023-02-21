@@ -48,9 +48,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               // MIGs are currently only present in sandbox, so limit stripping
               // anything from the node name to sandbox.
               if std.extVar('PROJECT_ID') == 'mlab-sandbox' then 
-                '/ndt-server -token.machine=${NODE_NAME%-*} $@',
+                '/ndt-server -token.machine=${NODE_NAME%-*} $@'
               else
-                '/ndt-server -token.machine=${NODE_NAME} $@',
+                '/ndt-server -token.machine=${NODE_NAME} $@'
+              ,
               '--',
             ],
             args: [
