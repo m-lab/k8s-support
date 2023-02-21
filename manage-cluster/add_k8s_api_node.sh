@@ -111,7 +111,7 @@ gcloud compute ssh "${BOOTSTRAP_MASTER}" "${GCP_ARGS[@]}" --zone "${BOOTSTRAP_MA
   kubectl create configmap kubeadm-config -n kube-system \
       --from-file ClusterConfiguration \
       --from-file ClusterStatus \
-      -o yaml --dry-run | kubectl replace -f -
+      -o yaml --dry-run=client | kubectl replace -f -
 EOF
 
 # If they exist, delete the node name from various loadbalancer group resources.

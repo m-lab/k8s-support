@@ -38,7 +38,7 @@ apiServer:
 controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
 controllerManager:
   extraArgs:
-    node-cidr-mask-size: "26"
+    node-cidr-mask-size-ipv4: "26"
     # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
     node-monitor-grace-period: 2m
     pod-eviction-timeout: 1m

@@ -39,7 +39,7 @@ UPGRADE_STATE="new"
 
 for zone in $GCE_ZONES; do
   gce_zone="${GCE_REGION}-${zone}"
-  gce_name="master-${GCE_BASE_NAME}-${gce_zone}"
+  gce_name="api-${GCE_BASE_NAME}-${gce_zone}"
 
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
@@ -121,21 +121,10 @@ for zone in $GCE_ZONES; do
     kubeadm upgrade $UPGRADE_COMMAND
 
     # If this is the first API server being upgraded (i.e., UPGRADE_STATE=new),
-    # mount the GCS bucket, if it is not already mounted, which it shouldn't
-    # be, but we check just to be sure.
+    # copy the updated admin.conf cluster credentials file to the k8s-support
+    # bucket for the project.
     if [[ $UPGRADE_STATE == "new" ]]; then
-      # Create the mount point for the GCS bucket, if it doesn't already exist.
-      # If the directory already exists, then this is a benign noop.
-      mkdir -p ${K8S_PKI_DIR}
-      # If the GCS bucket is not mounted on the directory, then mount it.
-      if ! findmnt ${K8S_PKI_DIR}; then
-        /opt/bin/gcsfuse --implicit-dirs -o rw,allow_other \
-            ${!GCS_BUCKET_K8S} ${K8S_PKI_DIR}
-      fi
-
-      # kubeadm-upgrade renews all certificates. Copy the renewed admin.conf
-      # file to the GCS bucket.
-      cp /etc/kubernetes/admin.conf ${K8S_PKI_DIR}/admin.conf
+      gsutil cp /etc/kubernetes/admin.conf ${!GCS_BUCKET_K8S}/admin.conf
     fi
 
     # Stop the kubelet before we overwrite it, else curl may give "Text file
@@ -151,7 +140,7 @@ for zone in $GCE_ZONES; do
     # Modify the --advertise-address flag to point to the external IP,
     # instead of the internal one that kubeadm populated. This is necessary
     # because external nodes (and especially kube-proxy) need to know of the
-    # master node by its public IP, even though it is technically running in
+    # API node by its public IP, even though it is technically running in
     # a private VPC.
     sed -i -re 's|(advertise-address)=.+|\1=${EXTERNAL_IP}|' \
         /etc/kubernetes/manifests/kube-apiserver.yaml
