@@ -266,7 +266,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
-    local version='v1.20.1',
+    local version='v1.20.2',
     name: 'pusher',
     image: 'measurementlab/pusher:'+version,
     args: [
@@ -393,7 +393,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.5.0',
+    image: 'measurementlab/uuid-annotator:v0.5.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
