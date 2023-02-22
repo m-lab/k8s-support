@@ -62,7 +62,7 @@
                 },
               },
             ],
-            image: 'rancher/mirrored-flannelcni-flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
+            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
             name: 'flannel',
             resources: {
               limits: {
@@ -106,7 +106,7 @@
             command: [
               'cp',
             ],
-            image: 'rancher/mirrored-flannelcni-flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
+            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
             name: 'install-cni',
             volumeMounts: [
               {
