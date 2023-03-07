@@ -63,7 +63,9 @@ kubectl create namespace ingress-nginx --dry-run=client -o json | kubectl apply 
 kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
 
 ./linux-amd64/helm upgrade --install kubereboot \
-  --values ../helm/kured-values-overrides.yaml
+  --set image.tag="${K8S_KURED_VERSION}" \
+  --values ../helm/kured-values-overrides.yaml \
+  --version "${K8S_KURED_CHART}" \
   kubereboot/kured
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
@@ -84,11 +86,11 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 
 # Replace per-project variables in Vector's values.yaml and install Vector.
 sed -e "s|{{PROJECT}}|${PROJECT}|g" \
-    -e "s|{{IMAGE}}|${K8S_VECTOR_IMAGE}|g" \
     ../helm/vector-values-overrides.yaml.template > \
     ../helm/vector-values-overrides.yaml
 
 ./linux-amd64/helm upgrade --install vector \
+  --set image.tag="${K8S_VECTOR_VERSION" \
   --values ../helm/vector-values-overrides.yaml \
   --version ${K8S_VECTOR_CHART} \
   vector/vector

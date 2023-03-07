@@ -2,8 +2,6 @@ configuration:
   lockTtl: 4h
   period: 1h
   rebootSentinel: /run/mlab-reboot
-image:
-  tag: 1.10.2
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/scheme: http
