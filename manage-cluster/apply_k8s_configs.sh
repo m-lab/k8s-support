@@ -87,9 +87,9 @@ sed -e "s|{{PROJECT}}|${PROJECT}|g" \
     ../helm/vector-values-overrides.yaml
 
 ./linux-amd64/helm upgrade --install vector vector/vector \
-  --set image.tag="${K8S_VECTOR_VERSION" \
+  --set image.tag="${K8S_VECTOR_VERSION}" \
   --values ../helm/vector-values-overrides.yaml \
-  --version ${K8S_VECTOR_CHART}
+  --version "${K8S_VECTOR_CHART}"
 
 # Apply the configuration
 
