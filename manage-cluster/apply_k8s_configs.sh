@@ -52,6 +52,7 @@ curl -O https://get.helm.sh/helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 
 # Add the required Helm repositories.
+./linux-amd64/helm repo add kubereboot https://kubereboot.github.io/charts
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ./linux-amd64/helm repo add vector https://helm.vector.dev
@@ -60,6 +61,10 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 kubectl create namespace cert-manager --dry-run=client -o json | kubectl apply -f -
 kubectl create namespace ingress-nginx --dry-run=client -o json | kubectl apply -f -
 kubectl create namespace logging --dry-run=client -o json | kubectl apply -f -
+
+./linux-amd64/helm upgrade --install kubereboot \
+  --values ../helm/kured-values-overrides.yaml
+  kubereboot/kured
 
 # Install ingress-nginx and set it to run on the same node as prometheus-server.
 ./linux-amd64/helm upgrade --install ingress-nginx \
