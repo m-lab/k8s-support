@@ -5,7 +5,7 @@ local expName = 'host';
 
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
 
-exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], 'nodeinfo1', true) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], ['nodeinfo1'], true) + {
   spec+: {
     template+: {
       spec+: {
