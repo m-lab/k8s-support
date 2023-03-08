@@ -377,6 +377,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       },
     ],
     volumeMounts: [
+      VolumeMount('datatypes'),
       VolumeMount(expName),
       {
         mountPath: '/etc/credentials',
