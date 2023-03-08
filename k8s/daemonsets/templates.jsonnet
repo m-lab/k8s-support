@@ -601,7 +601,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         volumes: [
           {
             name: 'datatype-schema-files',
-            emptydir: {},
           },
           {
             name: 'pusher-credentials',
