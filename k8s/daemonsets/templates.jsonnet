@@ -377,12 +377,16 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       },
     ],
     volumeMounts: [
-      VolumeMount('datatypes'),
       VolumeMount(expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
         readOnly: true,
+      },
+      {
+        mountPath: '/var/spool/datatypes',
+        name: 'datatype-schema-files',
+        readOnly: false,
       },
     ],
   }] +
