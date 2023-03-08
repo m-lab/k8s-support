@@ -71,6 +71,7 @@ local datatypeSchemaFiles() = {
     path: '/var/spool/datatypes',
     type: 'DirectoryOrCreate',
   },
+  mountPath: '/var/spool/datatypes',
   name: 'datatype-schema-files',
 };
 
