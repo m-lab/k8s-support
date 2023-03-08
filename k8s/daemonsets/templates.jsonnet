@@ -66,6 +66,14 @@ local volume(name) = {
   name: std.strReplace(name, '/', '-') + '-data',
 };
 
+local datatypeSchemaFiles() = {
+  hostPath: {
+    path: '/var/spool/datatypes',
+    type: 'DirectoryOrCreate',
+  },
+  name: 'datatype-schema-files',
+};
+
 local VolumeMount(name) = {
   mountPath: '/var/spool/' + name,
   name: std.strReplace(name, '/', '-') + '-data',
@@ -377,16 +385,12 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       },
     ],
     volumeMounts: [
+      datatypeSchemaFiles(),
       VolumeMount(expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
         readOnly: true,
-      },
-      {
-        mountPath: '/var/spool/datatypes',
-        name: 'datatype-schema-files',
-        readOnly: false,
       },
     ],
   }] +
