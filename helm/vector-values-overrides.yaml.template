@@ -48,8 +48,6 @@ extraVolumeMounts:
 - name: machine-id
   mountPath: /etc/machine-id
   readOnly: true
-image:
-  tag: {{IMAGE}}
 podAnnotations:
   prometheus.io/scrape: "true"
 podLabels:
