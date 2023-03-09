@@ -12,7 +12,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
         containers+: [
           {
             name: 'nodeinfo',
-            image: 'measurementlab/nodeinfo:v1.3.0', // pre-release
+            image: 'measurementlab/nodeinfo:v1.3.1', // pre-release
             args: [
               '-datadir=/var/spool/' + expName,
               '-wait=6h',
@@ -29,11 +29,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
                 mountPath: '/etc/os-release',
                 name: 'etc-os-release',
                 readOnly: true,
-              },
-              {
-                mountPath: '/var/spool/datatypes',
-                name: 'datatype-schema-files',
-                readOnly: false,
               },
               exp.VolumeMount(expName),
             ],

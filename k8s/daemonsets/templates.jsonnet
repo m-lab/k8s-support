@@ -383,11 +383,6 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
         name: 'pusher-credentials', // jostler uses pusher's credentials
         readOnly: true,
       },
-      {
-        mountPath: '/var/spool/datatypes',
-        name: 'datatype-schema-files',
-        readOnly: false,
-      },
     ],
   }] +
   if hostNetwork then
@@ -599,9 +594,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
           'mlab/type': 'physical',
         },
         volumes: [
-          {
-            name: 'datatype-schema-files',
-          },
           {
             name: 'pusher-credentials',
             secret: {
