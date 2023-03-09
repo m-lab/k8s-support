@@ -33,7 +33,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
               {
                 mountPath: '/var/spool/datatypes',
                 name: 'var-spool-datatypes',
-                readonly: false,
+                readOnly: false,
               },
               exp.VolumeMount(expName),
             ],
