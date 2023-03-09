@@ -71,6 +71,11 @@ local VolumeMount(name) = {
   name: std.strReplace(name, '/', '-') + '-data',
 };
 
+local VolumeMountDatatypeSchema() = {
+  mountPath: '/var/spool/datatypes',
+  name: 'var-spool-datatypes',
+};
+
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
   image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
@@ -379,6 +384,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
     ],
     volumeMounts: [
       VolumeMount(expName),
+      VolumeMountDatatypeSchema(),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
@@ -611,6 +617,13 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
             name: 'locate-heartbeat-key',
             secret: {
               secretName: 'locate-heartbeat-key',
+            },
+          },
+          {
+            name: 'var-spool-datatypes',
+            hostPath: {
+              path: '/var/spool/datatypes',
+              type: 'DirectoryOrCreate',
             },
           },
           uuid.volume,
