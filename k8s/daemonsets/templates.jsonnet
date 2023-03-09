@@ -329,7 +329,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     name: 'jostler',
-    image: 'measurementlab/jostler:v1.0.1',
+    image: 'measurementlab/jostler:v1.0.2', // pre-release
     args: [
       // TODO: Add the following commented-out lines when Prometheus support
       // is added to jostler.
@@ -346,6 +346,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       '-extensions=.json',
       '-missed-age=2h',
       '-missed-interval=5m',
+      '-max-tries=6', // give up after 6*10 seconds if /var/spool/datatypes/<datatype>.json still does not exist
     ] + ['-datatype=' + d for d in datatypesAutoloaded] +
         ['-datatype-schema-file=' + d + ':/var/spool/datatypes/' + d + '.json' for d in datatypesAutoloaded],
     env: [
