@@ -63,7 +63,7 @@ local uuid = {
 // data, even in the case where the container writing to the data directory
 // might be a different user (e.g., root in the case of packet-headers).
 local setDataDirOwnership(name) = {
-  local dataDir = '/var/spool/' + name,
+  local dataDir = VolumeMount(name).mountPath,
   initContainer: {
     name: 'set-data-dir-perms',
     image: 'alpine:3.17',
@@ -75,7 +75,9 @@ local setDataDirOwnership(name) = {
     securityContext: {
       runAsUser: '0',
     },
-    VolumeMount(name),
+    volumeMounts: [
+      VolumeMount(name),
+    ],
   },
 };
 
