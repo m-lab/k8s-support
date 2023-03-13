@@ -117,7 +117,7 @@ local setDataDirOwnership(name) = {
       'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
     ],
     securityContext: {
-      runAsUser: '0',
+      runAsUser: 0,
     },
     volumeMounts: [
       VolumeMount(name),
@@ -297,8 +297,8 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
       // Run as root so that the container can capture packets. Container
       // capabilities are not inherited by non-root users:
       // https://github.com/kubernetes/kubernetes/issues/56374
-      runAsGroup: '0',
-      runAsUser: '0',
+      runAsGroup: 0,
+      runAsUser: 0,
     },
     volumeMounts: [
       VolumeMount(expName),
@@ -676,8 +676,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
       },
     },
     securityContext: {
-      runAsGroup: '65534',
-      runAsUser: '65534',
+      runAsGroup: 65534,
+      runAsUser: 65534,
       // Set this so that ndt can listen on port 80.
       sysctls: [
         {
