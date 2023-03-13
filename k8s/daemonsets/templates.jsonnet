@@ -298,7 +298,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
       // https://github.com/kubernetes/kubernetes/issues/56374
       runAsGroup: '0',
       runAsUser: '0',
-    }
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
