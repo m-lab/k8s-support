@@ -71,6 +71,7 @@ local setDataDirOwnership(name) = {
       '/bin/sh',
       '-c',
       'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+    ],
     securityContext: {
       runAsUser: '0',
     },
