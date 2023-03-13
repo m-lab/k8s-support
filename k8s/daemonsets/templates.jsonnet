@@ -58,6 +58,26 @@ local uuid = {
   },
 };
 
+// Set the owner:group of the experiment data directory to nobody:nogroup, and
+// set the setgid bit on the directory so that Pusher can do things with the
+// data, even in the case where the container writing to the data directory
+// might be a different user (e.g., root in the case of packet-headers).
+local setDataDirOwnership(name) = {
+  local dataDir = '/var/spool/' + name,
+  initContainer: {
+    name: 'set-data-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+    securityContext: {
+      runAsUser: '0',
+    },
+    VolumeMount(name),
+  },
+};
+
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
@@ -257,6 +277,25 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
+    securityContext: {
+      capabilities: {
+        // CAP_DAC_OVERWRITE is necessary because
+        // /var/local/tcpinfoeventsocket/tcpevents.sock is owned by
+        // nobody:nobody. CAP_NET_RAW is necessary to capture packets.
+        add: [
+          'DAC_OVERWRITE',
+          'NET_RAW',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      // Run as root so that the container can capture packets. Container
+      // capabilities are not inherited by non-root users:
+      // https://github.com/kubernetes/kubernetes/issues/56374
+      runAsGroup: '0',
+      runAsUser: '0',
+    }
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -593,7 +632,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
-        ],
+        ] + if name == 'ndt' then [setDataDirOwnership.initContainer(name)] else [],
         nodeSelector: {
           'mlab/type': 'physical',
         },
@@ -631,6 +670,17 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
           volume(name + '/' + v) for v in allVolumes
         ],
       },
+    },
+    securityContext: {
+      runAsGroup: '65534',
+      runAsUser: '65534',
+      // Set this so that ndt can listen on port 80.
+      sysctls: [
+        {
+          name: 'net.ipv4.ip_unprivileged_port_start',
+          value: '80',
+        },
+      ],
     },
     updateStrategy: {
       rollingUpdate: {
