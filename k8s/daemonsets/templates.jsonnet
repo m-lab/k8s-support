@@ -58,28 +58,6 @@ local uuid = {
   },
 };
 
-// Set the owner:group of the experiment data directory to nobody:nogroup, and
-// set the setgid bit on the directory so that Pusher can do things with the
-// data, even in the case where the container writing to the data directory
-// might be a different user (e.g., root in the case of packet-headers).
-local setDataDirOwnership(name) = {
-  local dataDir = VolumeMount(name).mountPath,
-  initContainer: {
-    name: 'set-data-dir-perms',
-    image: 'alpine:3.17',
-    command: [
-      '/bin/sh',
-      '-c',
-      'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
-    ],
-    securityContext: {
-      runAsUser: '0',
-    },
-    volumeMounts: [
-      VolumeMount(name),
-    ],
-  },
-};
 
 local volume(name) = {
   hostPath: {
@@ -122,6 +100,29 @@ local RBACProxy(name, port) = {
       containerPort: port,
     },
   ],
+};
+
+// Set the owner:group of the experiment data directory to nobody:nogroup, and
+// set the setgid bit on the directory so that Pusher can do things with the
+// data, even in the case where the container writing to the data directory
+// might be a different user (e.g., root in the case of packet-headers).
+local setDataDirOwnership(name) = {
+  local dataDir = VolumeMount(name).mountPath,
+  initContainer: {
+    name: 'set-data-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: '0',
+    },
+    volumeMounts: [
+      VolumeMount(name),
+    ],
+  },
 };
 
 local tcpinfoServiceVolume = {
