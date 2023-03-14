@@ -283,11 +283,11 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
     } else {},
     securityContext: {
       capabilities: {
-        // CAP_DAC_OVERWRITE is necessary because
+        // CAP_DAC_OVERRIDE is necessary because
         // /var/local/tcpinfoeventsocket/tcpevents.sock is owned by
         // nobody:nobody. CAP_NET_RAW is necessary to capture packets.
         add: [
-          'DAC_OVERWRITE',
+          'DAC_OVERRIDE',
           'NET_RAW',
         ],
         drop: [
