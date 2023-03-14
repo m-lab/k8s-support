@@ -640,6 +640,17 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         nodeSelector: {
           'mlab/type': 'physical',
         },
+        securityContext: {
+          runAsGroup: 65534,
+          runAsUser: 65534,
+          sysctls: [
+            {
+              // Set this so that ndt can listen on port 80 as a non-root user.
+              name: 'net.ipv4.ip_unprivileged_port_start',
+              value: '80',
+            },
+          ],
+        },
         volumes: [
           {
             name: 'pusher-credentials',
@@ -674,17 +685,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
           volume(name + '/' + v) for v in allVolumes
         ],
       },
-    },
-    securityContext: {
-      runAsGroup: 65534,
-      runAsUser: 65534,
-      // Set this so that ndt can listen on port 80.
-      sysctls: [
-        {
-          name: 'net.ipv4.ip_unprivileged_port_start',
-          value: '80',
-        },
-      ],
     },
     updateStrategy: {
       rollingUpdate: {
