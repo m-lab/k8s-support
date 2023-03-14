@@ -636,7 +636,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
-        ] + if name == 'ndt' then [setDataDirOwnership(name).initContainer] else [],
+          setDataDirOwnernship(name).initContainer,
+        ],
         nodeSelector: {
           'mlab/type': 'physical',
         },
