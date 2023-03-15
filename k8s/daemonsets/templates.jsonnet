@@ -71,6 +71,11 @@ local VolumeMount(name) = {
   name: std.strReplace(name, '/', '-') + '-data',
 };
 
+local VolumeMountDatatypeSchema() = {
+  mountPath: '/var/spool/datatypes',
+  name: 'var-spool-datatypes',
+};
+
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
   image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
@@ -329,7 +334,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     name: 'jostler',
-    image: 'measurementlab/jostler:v1.0.1',
+    image: 'measurementlab/jostler:v1.0.3',
     args: [
       // TODO: Add the following commented-out lines when Prometheus support
       // is added to jostler.
@@ -342,7 +347,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       '-experiment=' + expName,
       '-bundle-size-max=52428800', // 50*1024*1024
       '-bundle-age-max=1h',
-      '-local-data-dir=/var/spool/' + expName,
+      '-local-data-dir=/var/spool',  // experiment will be appended by jostler
       '-extensions=.json',
       '-missed-age=2h',
       '-missed-interval=5m',
@@ -378,6 +383,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
     ],
     volumeMounts: [
       VolumeMount(expName),
+      VolumeMountDatatypeSchema(),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
@@ -610,6 +616,13 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
             name: 'locate-heartbeat-key',
             secret: {
               secretName: 'locate-heartbeat-key',
+            },
+          },
+          {
+            name: 'var-spool-datatypes',
+            hostPath: {
+              path: '/var/spool/datatypes',
+              type: 'DirectoryOrCreate',
             },
           },
           uuid.volume,
