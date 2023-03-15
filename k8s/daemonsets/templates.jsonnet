@@ -351,7 +351,6 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       '-extensions=.json',
       '-missed-age=2h',
       '-missed-interval=5m',
-      '-max-tries=6', // give up after 6*10 seconds if /var/spool/datatypes/<datatype>.json still does not exist
     ] + ['-datatype=' + d for d in datatypesAutoloaded] +
         ['-datatype-schema-file=' + d + ':/var/spool/datatypes/' + d + '.json' for d in datatypesAutoloaded],
     env: [
