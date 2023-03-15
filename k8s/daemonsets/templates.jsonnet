@@ -334,7 +334,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     name: 'jostler',
-    image: 'measurementlab/jostler:v1.0.2', // pre-release
+    image: 'measurementlab/jostler:v1.0.3',
     args: [
       // TODO: Add the following commented-out lines when Prometheus support
       // is added to jostler.

@@ -12,7 +12,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
         containers+: [
           {
             name: 'nodeinfo',
-            image: 'measurementlab/nodeinfo:v1.3.3', // pre-release
+            image: 'measurementlab/nodeinfo:v1.3.4',
             args: [
               '-datadir=/var/spool/' + expName,
               '-wait=6h',
