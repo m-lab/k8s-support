@@ -356,7 +356,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
-        value: '/etc/credentials/pusher.json', // jostler uses pusher's credentials
+        value: '/etc/credentials/pusher.json', // uses pusher's credentials for upload and download
       },
       {
         name: 'MLAB_NODE_NAME',
