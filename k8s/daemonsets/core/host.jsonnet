@@ -4,16 +4,15 @@ local exp = import '../templates.jsonnet';
 local expName = 'host';
 
 local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
-local nodeinfo_datatypes = [d.Datatype for d in nodeinfoconfig];
 
-exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nodeinfo_datatypes, [], true) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], ['nodeinfo1'], true) + {
   spec+: {
     template+: {
       spec+: {
         containers+: [
           {
             name: 'nodeinfo',
-            image: 'measurementlab/nodeinfo:v1.2.1',
+            image: 'measurementlab/nodeinfo:v1.3.4',
             args: [
               '-datadir=/var/spool/' + expName,
               '-wait=6h',
@@ -30,6 +29,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", nod
                 mountPath: '/etc/os-release',
                 name: 'etc-os-release',
                 readOnly: true,
+              },
+              {
+                mountPath: '/var/spool/datatypes',
+                name: 'var-spool-datatypes',
+                readOnly: false,
               },
               exp.VolumeMount(expName),
             ],
