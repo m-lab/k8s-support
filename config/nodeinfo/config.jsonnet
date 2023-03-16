@@ -1,52 +1,34 @@
 [
   {
-    Datatype: 'lshw',
-    Filename: 'lshw.json',
-    Cmd: ['lshw', '-json'],
+    Name: 'lshw',
+    Cmd: ['lshw'],
   },
   {
-    Datatype: 'lspci',
-    Filename: 'lspci.txt',
+    Name: 'lspci',
     Cmd: ['lspci', '-mm', '-vv', '-k', '-nn'],
   },
   {
-    Datatype: 'lsusb',
-    Filename: 'lsusb.txt',
+    Name: 'lsusb',
     Cmd: ['lsusb', '-v'],
   },
   {
-    Datatype: 'ipaddress',
-    Filename: 'ip-address.txt',
+    Name: 'ipaddress',
     Cmd: ['ip', 'address', 'show'],
   },
   {
-    Datatype: 'iproute4',
-    Filename: 'ip-route-4.txt',
+    Name: 'iproute4',
     Cmd: ['ip', '-4', 'route', 'show'],
   },
   {
-    Datatype: 'iproute6',
-    Filename: 'ip-route-6.txt',
+    Name: 'iproute6',
     Cmd: ['ip', '-6', 'route', 'show'],
   },
   {
-    Datatype: 'uname',
-    Filename: 'uname.txt',
+    Name: 'uname',
     Cmd: ['uname', '-a'],
   },
   {
-    Datatype: 'osrelease',
-    Filename: 'os-release.txt',
+    Name: 'osrelease',
     Cmd: ['cat', '/etc/os-release'],
-  },
-  {
-    Datatype: 'biosversion',
-    Filename: 'bios_version.txt',
-    Cmd: ['cat', '/sys/class/dmi/id/bios_version'],
-  },
-  {
-    Datatype: 'chassisserial',
-    Filename: 'chassis_serial.txt',
-    Cmd: ['cat', '/sys/class/dmi/id/chassis_serial'],
   },
 ]
