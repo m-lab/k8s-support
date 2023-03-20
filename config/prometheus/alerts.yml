@@ -572,7 +572,7 @@ groups:
 
   - alert: PlatformCluster_PusherDailyDataVolumeTooLow
     expr: |
-      datatype:pusher_bytes_per_tarfile:increase24h{datatype!~"biosversion|chassisserial|ipaddress|iproute4|iproute6|lshw|lspci|lsusb|osrelease|replay|uname"}
+      datatype:pusher_bytes_per_tarfile:increase24h{datatype!~"nodeinfo1"}
         < (0.7 * quantile by(datatype)(0.5,
           label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 1d, "delay", "1d", "", ".*") or
           label_replace(datatype:pusher_bytes_per_tarfile:increase24h offset 3d, "delay", "3d", "", ".*") or
@@ -627,8 +627,8 @@ groups:
 
   - alert: PlatformCluster_PusherDailyDataVolumeTooLow_NodeinfoMissing
     expr: |
-      datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"biosversion|chassisserial|ipaddress|iproute4|iproute6|lshw|lspci|lsusb|osrelease|uname"} == 0 OR
-        absent(datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"biosversion|chassisserial|ipaddress|iproute4|iproute6|lshw|lspci|lsusb|osrelease|uname"})
+      datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"nodeinfo1"} == 0 OR
+        absent(datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"nodeinfo1"})
     for: 2h
     labels:
       repo: dev-tracker
