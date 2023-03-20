@@ -625,10 +625,10 @@ groups:
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_replaypusherdailydatavolumetoolow
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
 
-  - alert: PlatformCluster_PusherDailyDataVolumeTooLow_NodeinfoMissing
+  - alert: PlatformCluster_JostlerDailyDataVolumeTooLow_NodeinfoMissing
     expr: |
-      datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"nodeinfo1"} == 0 OR
-        absent(datatype:pusher_bytes_per_tarfile:increase24h{datatype=~"nodeinfo1"})
+      datatype:jostler_bytes_per_bundle:increase24h{datatype="nodeinfo1"} == 0 OR
+        absent(datatype:jostler_bytes_per_bundle:increase24h{datatype="nodeinfo1"})
     for: 2h
     labels:
       repo: dev-tracker
@@ -636,7 +636,7 @@ groups:
       cluster: platform
     annotations:
       summary: Test data volume for nodeinfo is either missing or dropped to zero.
-      description: Are machines online? Is data being collected? Is pusher working?
+      description: Are machines online? Is data being collected? Is jostler working?
         A new rollout?
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
 
