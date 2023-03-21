@@ -644,13 +644,13 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         securityContext: {
           runAsGroup: 65534,
           runAsUser: 65534,
-          sysctls: [
+          sysctls: if name == 'ndt' then [
             {
               // Set this so that ndt can listen on port 80 as a non-root user.
               name: 'net.ipv4.ip_unprivileged_port_start',
               value: '80',
             },
-          ],
+          ] else [],
         },
         volumes: [
           {

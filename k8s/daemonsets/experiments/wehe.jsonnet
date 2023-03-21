@@ -69,6 +69,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               capabilities: {
                 add: [
                   'NET_ADMIN',
+                  'NET_RAW',
                 ],
                 drop: [
                   'all',
