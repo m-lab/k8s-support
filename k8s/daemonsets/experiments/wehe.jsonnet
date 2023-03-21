@@ -49,8 +49,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               '-envelope.subject=wehe',
               '-envelope.machine=$(MLAB_NODE_NAME)',
               '-envelope.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              # TODO(soltesz): Restore functionality after 2023/02/01.
-              '-envelope.token-required=false',
+              '-envelope.token-required=true',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=10m',
             ],
