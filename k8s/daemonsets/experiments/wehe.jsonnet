@@ -70,7 +70,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 add: [
                   'NET_ADMIN',
                 ],
+                drop: [
+                  'all',
+                ],
               },
+              runAsUser: 0,
+              runAsGroup: 0,
             },
             volumeMounts: [
               {
