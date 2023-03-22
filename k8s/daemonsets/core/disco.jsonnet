@@ -2,7 +2,7 @@ local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
 local version = 'v0.1.13';
-local dataDir = exp.VolumeMount('utilization').mountPath,
+local dataDir = exp.VolumeMount('utilization').mountPath;
 
 {
   apiVersion: 'apps/v1',
