@@ -336,12 +336,10 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
     name: 'jostler',
     image: 'measurementlab/jostler:v1.0.5',
     args: [
-      // TODO: Add the following commented-out lines when Prometheus support
-      // is added to jostler.
-      // if hostNetwork then
-        // '-prometheusx.listen-address=127.0.0.1:' + tcpPort
-      // else
-        // '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
+      if hostNetwork then
+        '-prometheusx.listen-address=127.0.0.1:' + tcpPort
+      else
+        '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       '-gcs-bucket=' + bucket,
       '-gcs-data-dir=autoload/v1',
       '-experiment=' + expName,
