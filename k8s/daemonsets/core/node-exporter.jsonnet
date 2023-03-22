@@ -1,3 +1,5 @@
+local exp = import '../templates.jsonnet';
+
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -21,6 +23,9 @@
         },
       },
       spec: {
+        initContainers: [
+          exp.setDataDirOwnership('node-exporter').initContainer,
+        ],
         containers: [
           {
             args: [
