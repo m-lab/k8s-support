@@ -644,13 +644,18 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         securityContext: {
           runAsGroup: 65534,
           runAsUser: 65534,
-          sysctls: if name == 'ndt' then [
+          // ndt-virtual and responsiveness run with hostNetwork=true, and you
+          // cannot set this sysctl in those cases. In those cases, the
+          // containers run as root with cap_net_bind_service enabled.
+          sysctls: if name == 'ndt-virtual' || name == 'responsiveness' then []
+          else [
             {
-              // Set this so that ndt can listen on port 80 as a non-root user.
+              // Set this so that experiments can listen on port 80 as a
+              // non-root user.
               name: 'net.ipv4.ip_unprivileged_port_start',
               value: '80',
             },
-          ] else [],
+          ],
         },
         volumes: [
           {
