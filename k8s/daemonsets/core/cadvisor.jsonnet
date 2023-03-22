@@ -69,6 +69,10 @@
             ],
           },
         ],
+        securityContext: {
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        },
         tolerations: [
           {
             effect: 'NoSchedule',
