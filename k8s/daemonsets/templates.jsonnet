@@ -644,11 +644,9 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         securityContext: {
           runAsGroup: 65534,
           runAsUser: 65534,
-          // ndt-virtual and responsiveness run with hostNetwork=true, and you
-          // cannot set this sysctl in those cases. In those cases, the
-          // containers run as root with cap_net_bind_service enabled.
-          sysctls: if name == 'ndt-virtual' || name == 'responsiveness' then []
-          else [
+          // Pods with hostNetwork=true cannot set this sysctl.  Those
+          // containers will run run as root with cap_net_bind_service enabled.
+          sysctls: if hostNetwork then [] else [
             {
               // Set this so that experiments can listen on port 80 as a
               // non-root user.
