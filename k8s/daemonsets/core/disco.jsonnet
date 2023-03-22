@@ -107,7 +107,7 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
         securityContext: {
           runAsUser: 65534,
           runAsGroup: 65534,
-        }
+        },
         volumes: [
           {
             name: 'pusher-credentials',
