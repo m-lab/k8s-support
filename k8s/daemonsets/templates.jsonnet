@@ -125,6 +125,27 @@ local setDataDirOwnership(name) = {
   },
 };
 
+// The datatypes directory is where autoloading experiments drop their schema.
+// This directory is different from where experiments store their data.
+local setDatatypesDirOwnership() = {
+  local dataDir = VolumeMountDatatypeSchema().mountPath,
+  initContainer: {
+    name: 'set-datatypes-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R nobody:nogroup ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMountDatatypeSchema(),
+    ],
+  },
+};
+
 local tcpinfoServiceVolume = {
   volumemount: {
     mountPath: '/var/local/tcpinfoeventsocket',
@@ -637,6 +658,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         initContainers: [
           uuid.initContainer,
           setDataDirOwnership(name).initContainer,
+          setDatatypesDirOwnership().initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
