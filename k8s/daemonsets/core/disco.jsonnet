@@ -2,6 +2,7 @@ local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
 local version = 'v0.1.13';
+local dataDir = exp.VolumeMount('utilization').mountPath,
 
 {
   apiVersion: 'apps/v1',
@@ -27,6 +28,25 @@ local version = 'v0.1.13';
         },
       },
       spec: {
+        // Set the owner:group of the experiment data directory to nobody:nogroup, and
+        // set the setgid bit on the directory so that Pusher can do things with the
+        // data, even in the case where the container writing to the data directory
+        // might be a different user (e.g., root in the case of packet-headers).
+        initContainers: {
+          name: 'set-data-dir-perms',
+          image: 'alpine:3.17',
+          command: [
+            '/bin/sh',
+            '-c',
+            'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+          ],
+          securityContext: {
+            runAsUser: 0,
+          },
+          volumeMounts: [
+            exp.VolumeMount('utilization'),
+          ],
+        },
         containers: [
           {
             args: [
@@ -84,6 +104,10 @@ local version = 'v0.1.13';
           'mlab/type': 'physical',
         },
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
+        securityContext: {
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        }
         volumes: [
           {
             name: 'pusher-credentials',
