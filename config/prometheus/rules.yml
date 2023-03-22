@@ -181,6 +181,11 @@ groups:
   - record: datatype:pusher_bytes_per_tarfile:increase24h
     expr: sum by(datatype) (increase(pusher_bytes_per_tarfile_sum{datatype!="dash"}[1d]))
 
+## Jostler Daily Volume metrics
+
+  - record: datatype:jostler_bytes_per_bundle:increase24h
+    expr: sum by(datatype) (increase(jostler_bytes_per_bundle_sum[1d]))
+
 ## Ops: Tactical & SRE Overview Dashboard.
 
   # The platform cluster has tens of thousands of containers, which makes
