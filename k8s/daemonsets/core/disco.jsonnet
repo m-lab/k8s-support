@@ -32,21 +32,23 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
         // set the setgid bit on the directory so that Pusher can do things with the
         // data, even in the case where the container writing to the data directory
         // might be a different user (e.g., root in the case of packet-headers).
-        initContainers: {
-          name: 'set-data-dir-perms',
-          image: 'alpine:3.17',
-          command: [
-            '/bin/sh',
-            '-c',
-            'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
-          ],
-          securityContext: {
-            runAsUser: 0,
+        initContainers: [
+          {
+            name: 'set-data-dir-perms',
+            image: 'alpine:3.17',
+            command: [
+              '/bin/sh',
+              '-c',
+              'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+            ],
+            securityContext: {
+              runAsUser: 0,
+            },
+            volumeMounts: [
+              exp.VolumeMount('utilization'),
+            ],
           },
-          volumeMounts: [
-            exp.VolumeMount('utilization'),
-          ],
-        },
+        ],
         containers: [
           {
             args: [
