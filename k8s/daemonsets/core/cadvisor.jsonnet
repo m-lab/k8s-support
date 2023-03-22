@@ -70,8 +70,18 @@
           },
         ],
         securityContext: {
-          runAsUser: 65534,
-          runAsGroup: 65534,
+          // cAdvisor runs as root, but only has a single capability
+          // "CAP_DAC_READ_SEARCH", which gives it permission to read any file
+          // or list any directory, which it apparently needs. I tried running
+          // it as non-root, but it didn't work.
+          capabilities: {
+            add: [
+              'DAC_READ_SEARCH',
+            ],
+            drop: [
+              'all',
+            ],
+          },
         },
         tolerations: [
           {
