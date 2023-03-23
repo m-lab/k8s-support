@@ -102,10 +102,10 @@ local RBACProxy(name, port) = {
   ],
 };
 
-// Set the owner:group of the experiment data directory to nobody:nogroup, and
-// set the setgid bit on the directory so that Pusher can do things with the
-// data, even in the case where the container writing to the data directory
-// might be a different user (e.g., root in the case of packet-headers).
+// Set the owner:group of the experiment data directory to nobody:nogroup. We
+// are unable to use the fsGroup securityContext feature on hostPath volumes:
+// https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+// https://github.com/kubernetes/minikube/issues/1990
 local setDataDirOwnership(name) = {
   local dataDir = VolumeMount(name).mountPath,
   initContainer: {
@@ -381,6 +381,21 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    // Pusher needs to be able to read and delete all the files in the data
+    // directory, some of which will be owned by root and some by nobody. Run
+    // Pusher as root, but with only the CAP_DAC_OVERRIDE capability.
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      runAsUser: 0,
+      runAsGroup: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       {
