@@ -58,6 +58,7 @@ local uuid = {
   },
 };
 
+
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
@@ -99,6 +100,50 @@ local RBACProxy(name, port) = {
       containerPort: port,
     },
   ],
+};
+
+// Set the owner:group of the experiment data directory to nobody:nogroup. We
+// are unable to use the fsGroup securityContext feature on hostPath volumes:
+// https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+// https://github.com/kubernetes/minikube/issues/1990
+local setDataDirOwnership(name) = {
+  local dataDir = VolumeMount(name).mountPath,
+  initContainer: {
+    name: 'set-data-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R nobody:nogroup ' + dataDir + ' && chmod 2775 ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMount(name),
+    ],
+  },
+};
+
+// The datatypes directory is where autoloading experiments drop their schema.
+// This directory is different from where experiments store their data.
+local setDatatypesDirOwnership() = {
+  local dataDir = VolumeMountDatatypeSchema().mountPath,
+  initContainer: {
+    name: 'set-datatypes-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R nobody:nogroup ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMountDatatypeSchema(),
+    ],
+  },
 };
 
 local tcpinfoServiceVolume = {
@@ -257,6 +302,25 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
+    securityContext: {
+      capabilities: {
+        // CAP_DAC_OVERRIDE is necessary because
+        // /var/local/tcpinfoeventsocket/tcpevents.sock is owned by
+        // nobody:nobody. CAP_NET_RAW is necessary to capture packets.
+        add: [
+          'DAC_OVERRIDE',
+          'NET_RAW',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      // Run as root so that the container can capture packets. Container
+      // capabilities are not inherited by non-root users:
+      // https://github.com/kubernetes/kubernetes/issues/56374
+      runAsGroup: 0,
+      runAsUser: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -317,6 +381,21 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    // Pusher needs to be able to read and delete all the files in the data
+    // directory, some of which will be owned by root and some by nobody. Run
+    // Pusher as root, but with only the CAP_DAC_OVERRIDE capability.
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      runAsUser: 0,
+      runAsGroup: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       {
@@ -593,9 +672,25 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
+          setDataDirOwnership(name).initContainer,
+          setDatatypesDirOwnership().initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
+        },
+        securityContext: {
+          runAsGroup: 65534,
+          runAsUser: 65534,
+          // Pods with hostNetwork=true cannot set this sysctl.  Those
+          // containers will run run as root with cap_net_bind_service enabled.
+          sysctls: if hostNetwork then [] else [
+            {
+              // Set this so that experiments can listen on port 80 as a
+              // non-root user.
+              name: 'net.ipv4.ip_unprivileged_port_start',
+              value: '80',
+            },
+          ],
         },
         volumes: [
           {
@@ -707,6 +802,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // The NDT tag to use for canary nodes.
   ndtCanaryVersion: ndtCanaryVersion,
+
+  // Changes the owner:group of the base data directory to nobody:nogroup, and
+  // sets the permissions to 2775.
+  setDataDirOwnership(name):: setDataDirOwnership(name),
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,

@@ -39,6 +39,18 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             command: [
               '/server/networkqualityd',
             ],
+            securityContext: {
+              capabilities: {
+                add: [
+                  'NET_BIND_SERVICE',
+                ],
+                drop: [
+                  'all',
+                ],
+              },
+              runAsUser: 0,
+              runAsGroup: 0,
+            },
             volumeMounts: [
               {
                 mountPath: '/certs',
