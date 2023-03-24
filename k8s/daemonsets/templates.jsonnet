@@ -101,8 +101,14 @@ local RBACProxy(name, port) = {
   ],
 };
 
-// Set the owner:group of the experiment data directory to 65534:65534. We
-// are unable to use the fsGroup securityContext feature on hostPath volumes:
+// Set the owner:group of the experiment data directory to 65534:65534.
+// Additionally, for each experiment create all datatype directories and set
+// the ownership and permission properly. This is done here because, if the
+// datatype directories don't exist, then they could be created either by
+// pusher or by the sidecar or experiment containers. Depending on timing,
+// this may result in inconsitent ownership and permissions, since pusher runs
+// as root and most other containers are not root. We are unable to use the
+// fsGroup securityContext feature on hostPath volumes:
 // https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
 // https://github.com/kubernetes/minikube/issues/1990
 local setDataDirOwnership(name, datatypes) = {
