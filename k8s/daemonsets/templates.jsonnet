@@ -113,7 +113,7 @@ local setDataDirOwnership(name, datatypes) = {
     command: [
       '/bin/sh',
       '-c',
-      'cd ' + dataDir + ' && mkdir ' + std.join(' ', datatypes) + ' && chown -R 65534:65534 . && chmod -R 2775 .',
+      'cd ' + dataDir + ' && mkdir -p ' + std.join(' ', datatypes) + ' && chown -R 65534:65534 . && chmod -R 2775 .',
     ],
     securityContext: {
       runAsUser: 0,
