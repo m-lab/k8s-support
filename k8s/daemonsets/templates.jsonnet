@@ -101,6 +101,50 @@ local RBACProxy(name, port) = {
   ],
 };
 
+// Set the owner:group of the experiment data directory to 65534:65534. We
+// are unable to use the fsGroup securityContext feature on hostPath volumes:
+// https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+// https://github.com/kubernetes/minikube/issues/1990
+local setDataDirOwnership(name) = {
+  local dataDir = VolumeMount(name).mountPath,
+  initContainer: {
+    name: 'set-data-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R 65534:65534 ' + dataDir + ' && chmod -R 2775 ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMount(name),
+    ],
+  },
+};
+
+// The datatypes directory is where autoloading experiments drop their schema.
+// This directory is different from where experiments store their data.
+local setDatatypesDirOwnership() = {
+  local dataDir = VolumeMountDatatypeSchema().mountPath,
+  initContainer: {
+    name: 'set-datatypes-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R 65534:65534 ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMountDatatypeSchema(),
+    ],
+  },
+};
+
 local tcpinfoServiceVolume = {
   volumemount: {
     mountPath: '/var/local/tcpinfoeventsocket',
@@ -257,6 +301,24 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
+    securityContext: {
+      capabilities: {
+        // CAP_DAC_OVERRIDE is necessary because
+        // /var/local/tcpinfoeventsocket/tcpevents.sock is owned by
+        // nobody:nobody. CAP_NET_RAW is necessary to capture packets.
+        add: [
+          'DAC_OVERRIDE',
+          'NET_RAW',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      // Run as root so that the container can capture packets. Container
+      // capabilities are not inherited by non-root users:
+      // https://github.com/kubernetes/kubernetes/issues/56374
+      runAsUser: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -317,6 +379,20 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    // Pusher needs to be able to read and delete all the files in the data
+    // directory, some of which will be owned by root and some by nobody. Run
+    // Pusher as root, but with only the CAP_DAC_OVERRIDE capability.
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      runAsUser: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       {

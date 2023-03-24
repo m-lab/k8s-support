@@ -89,6 +89,17 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 },
               },
             ],
+            securityContext: {
+              capabilities: {
+                add: [
+                  'NET_BIND_SERVICE',
+                ],
+                drop: [
+                  'all',
+                ],
+              },
+              runAsUser: 0,
+            },
             volumeMounts: [
               {
                 mountPath: '/certs',
