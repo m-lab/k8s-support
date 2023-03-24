@@ -786,6 +786,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
   // The NDT tag to use for canary nodes.
   ndtCanaryVersion: ndtCanaryVersion,
 
+  // Changes the owner:group of the base data directory to nobody:nogroup, and
+  // sets the permissions to 2775.
+  setDataDirOwnership(name, datatypes):: setDataDirOwnership(name, datatypes),
+
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,
 }
