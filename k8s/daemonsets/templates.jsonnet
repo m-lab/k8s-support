@@ -105,7 +105,7 @@ local RBACProxy(name, port) = {
 // are unable to use the fsGroup securityContext feature on hostPath volumes:
 // https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
 // https://github.com/kubernetes/minikube/issues/1990
-local setDataDirOwnership(name) = {
+local setDataDirOwnership(name, datatypes) = {
   local dataDir = VolumeMount(name).mountPath,
   initContainer: {
     name: 'set-data-dir-perms',
@@ -113,7 +113,7 @@ local setDataDirOwnership(name) = {
     command: [
       '/bin/sh',
       '-c',
-      'chown -R 65534:65534 ' + dataDir + ' && chmod -R 2775 ' + dataDir,
+      'cd ' + dataDir + ' && mkdir ' + std.join(' ', datatypes) + ' && chown -R 65534:65534 . && chmod -R 2775 .',
     ],
     securityContext: {
       runAsUser: 0,
@@ -669,6 +669,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
+          setDataDirOwnership(name, allDatatypes).initContainer,
+          setDatatypesDirOwnership().initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
