@@ -2,7 +2,7 @@ local datatypes = ['ndt8'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
 local services = [
-  'msak/ndt8=ws:///msak/ndt8/download,ws:///msak/ndt8/upload,wss:///msak/ndt8/download,wss:///msak/ndt8/upload',
+  'msak/ndt8=ws:///ndt/v8/download,ws:///ndt/v8/upload,wss:///ndt/v8/download,wss:///ndt/v8/upload',
 ];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
