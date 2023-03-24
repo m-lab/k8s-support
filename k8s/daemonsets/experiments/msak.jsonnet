@@ -1,8 +1,8 @@
-local datatypes = ['ndtm'];
+local datatypes = ['ndt8'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
 local services = [
-  'msak/ndtm=ws:///msak/ndtm/download,ws:///msak/ndtm/upload,wss:///msak/ndtm/download,wss:///msak/ndtm/upload',
+  'msak/ndt8=ws:///msak/ndt8/download,ws:///msak/ndt8/upload,wss:///msak/ndt8/download,wss:///msak/ndt8/upload',
 ];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
@@ -26,7 +26,6 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-token.verify=true',
-              '-debug=true',
             ],
             env: [
               {
@@ -38,7 +37,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
-            image: 'evfirerob/msak:latest',
+            image: 'measurementlab/msak:latest',
             name: 'msak',
             command: [
               '/msak/msak-server',
