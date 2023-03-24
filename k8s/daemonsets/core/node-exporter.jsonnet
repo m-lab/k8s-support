@@ -21,6 +21,9 @@
         },
       },
       spec: {
+        initContainers: [
+          exp.setDataDirOwnership('node-exporter', []).initContainer,
+        ],
         containers: [
           {
             args: [
