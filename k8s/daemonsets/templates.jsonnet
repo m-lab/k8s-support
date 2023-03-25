@@ -262,7 +262,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         drop: [
           'ALL',
         ],
-      }
+      },
       runAsUser: 0,
     },
     volumeMounts: [
