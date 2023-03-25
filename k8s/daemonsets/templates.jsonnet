@@ -252,6 +252,19 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      // scamper apparently needs to chroot to /var/empty, so we run this
+      // container as root with only the CAP_SYS_CHROOT privilege.
+      capabilities: {
+        add: [
+          'SYS_CHROOT',
+        ],
+        drop: [
+          'ALL',
+        ],
+      }
+      runAsUser: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
