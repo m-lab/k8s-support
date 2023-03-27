@@ -1,40 +1,33 @@
 local exp = import '../templates.jsonnet';
-local expName = 'disco';
-local config = import '../../../config/disco.jsonnet';
-local version = 'v0.1.13';
 
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: expName,
+    name: 'utilization',
     namespace: 'default',
   },
   spec: {
     selector: {
       matchLabels: {
-        workload: expName,
+        workload: 'utilization',
       },
     },
     template: {
       metadata: {
         annotations: {
           'prometheus.io/scrape': 'true',
-          'prometheus.io/scheme': 'http'
+          'prometheus.io/scheme': 'https'
         },
         labels: {
-          workload: expName,
+          workload: 'utilization',
         },
       },
       spec: {
         containers: [
           {
-            args: [
-              '-datadir=/var/spool/utilization',
-              '-write-interval=5m',
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-metrics=/etc/' + expName + '/metrics.yaml',
-            ],
+            name: 'utility-support',
+            image: 'measurementlab/utility-support:v2.0.11',
             env: [
               {
                 name: 'HOSTNAME',
@@ -53,37 +46,31 @@ local version = 'v0.1.13';
                   },
                 },
               },
-              {
-                "name": "PRIVATE_IP",
-                "valueFrom": {
-                  "fieldRef": {
-                    "fieldPath": "status.podIP"
-                  },
-                },
-              },
-            ],
-            image: 'measurementlab/' + expName + ':' + version,
-            name: expName,
-            ports: [
-              {
-                containerPort: 9990,
-              },
             ],
             volumeMounts: [
-              exp.VolumeMount('utilization'),
               {
-                mountPath: '/etc/' + expName,
-                name: expName + '-config',
-                readOnly: true,
+                mountPath: '/var/spool/node-exporter',
+                name: 'node-exporter-data',
+                readOnly: false,
+              },
+              {
+                mountPath: '/var/spool/mlab_utility',
+                name: 'utilization-data',
+                readOnly: false,
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher('utilization', 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
+            // We want this port to be separate from the ports used by the
+            // sidecar services, so we count down from 9990, rather than up.
+            exp.Pusher('utilization', 9989, ['switch', 'system'], true, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
+        hostNetwork: true,
+        // hostPID: true,
         nodeSelector: {
           'mlab/type': 'physical',
         },
-        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
+        serviceAccountName: 'kube-rbac-proxy',
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 180,
         volumes: [
           {
             name: 'pusher-credentials',
@@ -92,27 +79,20 @@ local version = 'v0.1.13';
             },
           },
           {
-            name: 'utilization' + '-data',
+            name: 'utilization-data',
             hostPath: {
               path: '/cache/data/utilization',
               type: 'DirectoryOrCreate',
             },
           },
           {
-            name: expName + '-config',
-            configMap: {
-              name: config.metadata.name
+            name: 'node-exporter-data',
+            hostPath: {
+              path: '/cache/data/node-exporter',
+              type: 'DirectoryOrCreate',
             },
           },
         ],
-        dnsConfig: {
-          options: [
-            {
-              name: 'ndots',
-              value: '2',
-            },
-          ],
-        }
       },
     },
     updateStrategy: {
