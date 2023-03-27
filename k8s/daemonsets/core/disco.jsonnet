@@ -28,7 +28,7 @@ local version = 'v0.1.13';
       },
       spec: {
         initContainers: [
-          exp.setDataDirOwnership('utilization', ['switch']).initContainer,
+          exp.setDataDirOwnership('utilization').initContainer,
         ],
         containers: [
           {
