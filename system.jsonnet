@@ -27,9 +27,9 @@
       import 'k8s/daemonsets/experiments/msak.jsonnet',
     ] else []
   ) + (
-    if std.extVar('PROJECT_ID') == "mlab-staging' then [
+    if std.extVar('PROJECT_ID') == 'mlab-staging' then [
       import 'k8s/daemonsets/experiments/msak.jsonnet',
-    ]
+    ] else []
   ) + [
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
