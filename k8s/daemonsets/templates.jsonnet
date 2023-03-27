@@ -254,10 +254,15 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
     ],
     securityContext: {
       // scamper apparently needs to chroot to /var/empty, so we run this
-      // container as root with only the CAP_SYS_CHROOT privilege.
+      // container as root with only the CAP_SYS_CHROOT privilege. It also
+      // needs to read the tcp-info event socket, which is owned by nobody. It
+      // also attempts to manipulate the uid and gid of some processes, so
+      // needs those capabilities as well.
       capabilities: {
         add: [
           'DAC_OVERRIDE',
+          'SETGID',
+          'SETUID',
           'SYS_CHROOT',
         ],
         drop: [
