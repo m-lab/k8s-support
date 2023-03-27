@@ -257,6 +257,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
       // container as root with only the CAP_SYS_CHROOT privilege.
       capabilities: {
         add: [
+          'DAC_OVERRIDE',
           'SYS_CHROOT',
         ],
         drop: [
