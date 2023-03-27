@@ -101,17 +101,13 @@ local RBACProxy(name, port) = {
   ],
 };
 
-// Set the owner:group of the experiment data directory to 65534:65534.
-// Additionally, for each experiment create all datatype directories and set
-// the ownership and permission properly. This is done here because, if the
-// datatype directories don't exist, then they could be created either by
-// pusher or by the sidecar or experiment containers. Depending on timing,
-// this may result in inconsitent ownership and permissions, since pusher runs
-// as root and most other containers are not root. We are unable to use the
-// fsGroup securityContext feature on hostPath volumes:
+// Set the owner:group of the experiment data directory to 65534:65534, and set
+// the directory with setguid. hostPath volumes will be owned by the kubelet
+// user (i.e., root). We are unable to use the fsGroup securityContext feature
+// on hostPath volumes:
 // https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
 // https://github.com/kubernetes/minikube/issues/1990
-local setDataDirOwnership(name, datatypes) = {
+local setDataDirOwnership(name) = {
   local dataDir = VolumeMount(name).mountPath,
   initContainer: {
     name: 'set-data-dir-perms',
@@ -119,7 +115,7 @@ local setDataDirOwnership(name, datatypes) = {
     command: [
       '/bin/sh',
       '-c',
-      'cd ' + dataDir + ' && mkdir -p ' + std.join(' ', datatypes) + ' && chown -R 65534:65534 . && chmod -R 2775 .',
+      'cd ' + dataDir + ' && chown -R 65534:65534 . && chmod -R 2775 .',
     ],
     securityContext: {
       runAsUser: 0,
@@ -694,7 +690,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
-          setDataDirOwnership(name, allDatatypes).initContainer,
+          setDataDirOwnership(name).initContainer,
           setDatatypesDirOwnership().initContainer,
         ],
         nodeSelector: {
@@ -813,7 +809,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Changes the owner:group of the base data directory to nobody:nogroup, and
   // sets the permissions to 2775.
-  setDataDirOwnership(name, datatypes):: setDataDirOwnership(name, datatypes),
+  setDataDirOwnership(name):: setDataDirOwnership(name),
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,

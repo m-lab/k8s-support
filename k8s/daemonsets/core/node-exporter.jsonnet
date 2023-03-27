@@ -22,9 +22,7 @@
       },
       spec: {
         initContainers: [
-          // Pass dot to the datatypes param. node-exporter doesn't have
-          // datatypes. Dot will result in "mkdir -p .", which is a no-op.
-          exp.setDataDirOwnership('node-exporter', ['.']).initContainer,
+          exp.setDataDirOwnership('node-exporter').initContainer,
         ],
         containers: [
           {
