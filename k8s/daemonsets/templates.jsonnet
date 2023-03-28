@@ -183,7 +183,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
-      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation1',
+      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation2',
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-anonymize.ip=' + anonMode,
     ],
@@ -403,7 +403,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-datadir=' + VolumeMount(expName).mountPath + '/annotation',
+      '-datadir=' + VolumeMount(expName).mountPath + '/annotation2',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-maxmind.url=gs://downloader-' + PROJECT_ID + '/Maxmind/current/GeoLite2-City.tar.gz',
@@ -556,7 +556,7 @@ local Metadata = {
 };
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation', 'scamper1', 'hopannotation1'] + datatypes,
+  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypes,
   local allVolumes = datatypes + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
