@@ -130,7 +130,7 @@ local uuidannotatorServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
-    image: 'measurementlab/tcp-info:v1.5.3',
+    image: 'measurementlab/tcp-info:v1.6.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -217,7 +217,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.7.0',
+    image: 'measurementlab/packet-headers:v0.7.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
