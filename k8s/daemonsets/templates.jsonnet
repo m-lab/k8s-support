@@ -58,6 +58,7 @@ local uuid = {
   },
 };
 
+
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
@@ -686,9 +687,19 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
           'mlab/type': 'physical',
         },
         securityContext: {
-          runAsUser: 65534,
           runAsGroup: 65534,
-        }
+          runAsUser: 65534,
+          // Pods with hostNetwork=true cannot set this sysctl.  Those
+          // containers will run run as root with cap_net_bind_service enabled.
+          sysctls: if hostNetwork then [] else [
+            {
+              // Set this so that experiments can listen on port 80 as a
+              // non-root user.
+              name: 'net.ipv4.ip_unprivileged_port_start',
+              value: '80',
+            },
+          ],
+        },
         volumes: [
           {
             name: 'pusher-credentials',
