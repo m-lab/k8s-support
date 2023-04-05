@@ -69,6 +69,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               capabilities: {
                 add: [
                   'NET_ADMIN',
+                  'NET_RAW',
+                ],
+                drop: [
+                  'all',
                 ],
               },
               runAsUser: 0,
@@ -107,7 +111,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.2.6',
+            image: 'measurementlab/wehe-py3:v0.2.7',
             name: expName,
             /* TODO: enable with k8s v1.18+
             startupProbe+: {
@@ -148,9 +152,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
             ],
             volumeMounts: [
-              exp.VolumeMount('wehe/replay') + {
-                mountPath: '/data/RecordReplay/ReplayDumpsTimestamped',
-              },
+              exp.VolumeMount('wehe/replay'),
               {
                 mountPath: '/wehe/ssl/',
                 name: 'wehe-ca-cache',

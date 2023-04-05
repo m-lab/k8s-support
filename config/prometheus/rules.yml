@@ -106,9 +106,10 @@ groups:
 ## NETWORK METRICS
 #
 # These network metric expressions deliberately exclude the 'host',
-# 'node-exporter' experiments which run with hostNetwork=true. Because of this
-# they capture essentially all node network traffic, which duplicates regular
-# experiment metrics as well as being just generally not useful.
+# 'node-exporter' and 'utilization' experiments which run with
+# hostNetwork=true. Because of this they capture essentially all node network
+# traffic, which duplicates regular experiment metrics as well as being just
+# generally not useful.
 
   # Calculates aggregate DaemonSet network trasmit bytes on the platform.
   - record: workload:container_network_transmit_bytes_total:sum
@@ -117,7 +118,7 @@ groups:
         rate(
           container_network_transmit_bytes_total{
             container_label_workload != "",
-            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter)",
+            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
         [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
@@ -132,7 +133,7 @@ groups:
         rate(
           container_network_receive_bytes_total{
             container_label_workload != "",
-            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter)",
+            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
         [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
@@ -147,7 +148,7 @@ groups:
         rate(
           container_network_transmit_bytes_total{
             container_label_workload != "",
-            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter)",
+            container_label_workload !~ "(flannel-virtual|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
         [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(
@@ -162,7 +163,7 @@ groups:
         rate(
           container_network_receive_bytes_total{
             container_label_workload != "",
-            container_label_workload !~ "(flannel-virutal|flannel-physical|host|node-exporter)",
+            container_label_workload !~ "(flannel-virutal|flannel-physical|host|node-exporter|utilization)",
             machine =~ "mlab[1-4].*"
           }
         [1h]) * 8 * on(machine) group_left(label_mlab_type) label_replace(

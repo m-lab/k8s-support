@@ -126,6 +126,10 @@ local exp = import '../templates.jsonnet';
         hostNetwork: true,
         hostPID: true,
         serviceAccountName: 'kube-rbac-proxy',
+        securityContext: {
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        },
         tolerations: [
           {
             effect: 'NoSchedule',
