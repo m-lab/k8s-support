@@ -103,6 +103,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
             env: [
               {
+                name: 'MPLCONFIGDIR',
+                value: '/tmp/matplotlib',
+              },
+              {
                 name: 'MLAB_NODE_NAME',
                 valueFrom: {
                   fieldRef: {
