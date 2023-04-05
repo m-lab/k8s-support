@@ -685,6 +685,10 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         nodeSelector: {
           'mlab/type': 'physical',
         },
+        securityContext: {
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        }
         volumes: [
           {
             name: 'pusher-credentials',
