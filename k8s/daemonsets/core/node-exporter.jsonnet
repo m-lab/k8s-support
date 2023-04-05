@@ -1,3 +1,5 @@
+local exp = import '../templates.jsonnet';
+
 {
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
