@@ -218,7 +218,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.11.1',
+    image: 'measurementlab/traceroute-caller:v0.11.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -249,14 +249,6 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
-    securityContext: {
-      // scamper does all sorts of things that require elevated privileges
-      // (e.g., chroot, setuid). I was working my way through figuring out
-      // which precise capabilities it needed, but the list started getting
-      // long, and scamper started failing strage ways. Just run it as root
-      // with all the default capabilities, which works.
-      runAsUser: 0,
-    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -272,7 +264,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.7.1',
+    image: 'measurementlab/packet-headers:v0.7.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -312,24 +304,6 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
-    securityContext: {
-      capabilities: {
-        // CAP_DAC_OVERRIDE is necessary because
-        // /var/local/tcpinfoeventsocket/tcpevents.sock is owned by
-        // nobody:nobody. CAP_NET_RAW is necessary to capture packets.
-        add: [
-          'DAC_OVERRIDE',
-          'NET_RAW',
-        ],
-        drop: [
-          'all',
-        ],
-      },
-      // Run as root so that the container can capture packets. Container
-      // capabilities are not inherited by non-root users:
-      // https://github.com/kubernetes/kubernetes/issues/56374
-      runAsUser: 0,
-    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -390,20 +364,6 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
-    // Pusher needs to be able to read and delete all the files in the data
-    // directory, some of which will be owned by root and some by nobody. Run
-    // Pusher as root, but with only the CAP_DAC_OVERRIDE capability.
-    securityContext: {
-      capabilities: {
-        add: [
-          'DAC_OVERRIDE',
-        ],
-        drop: [
-          'all',
-        ],
-      },
-      runAsUser: 0,
-    },
     volumeMounts: [
       VolumeMount(expName),
       {
