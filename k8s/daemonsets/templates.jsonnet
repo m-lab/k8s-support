@@ -364,6 +364,20 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    // ndt-virtual and responsiveness still run as root, so Pusher, for now,
+    // needs to run as root to be able to manage data files owned by both root
+    // and nobody. But only give it the DAC_OVERRIDE capability.
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      runAsUser: 0,
+    }
     volumeMounts: [
       VolumeMount(expName),
       {
