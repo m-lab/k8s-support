@@ -377,7 +377,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         ],
       },
       runAsUser: 0,
-    }
+    },
     volumeMounts: [
       VolumeMount(expName),
       {
