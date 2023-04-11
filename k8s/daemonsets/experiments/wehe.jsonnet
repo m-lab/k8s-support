@@ -115,7 +115,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.2.8',
+            image: 'measurementlab/wehe-py3:v0.2.9',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -139,19 +139,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 containerPort: 9091,
               },
             ],
-            // Wehe runs packet captures, which requires being root. Run as
-            // root, but with only the NET_RAW capability.
-            securityContext: {
-              capabilities: {
-                add: [
-                  'NET_RAW',
-                ],
-                drop: [
-                  'all'
-                ],
-              },
-              runAsUser: 0,
-            },
             /* TODO: enable with k8s v1.18+
             startupProbe+: {
               httpGet: {
