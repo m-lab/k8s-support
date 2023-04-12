@@ -75,7 +75,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               },
             ],
             securityContext: {
-              capabiltities: {
+              capabilities: {
                 drop: [
                   'all',
                 ],

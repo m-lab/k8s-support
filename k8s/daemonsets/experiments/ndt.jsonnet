@@ -90,7 +90,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           exp.Heartbeat(expName, false, services),
         ]),
         securityContext: {
-          capabiltities: {
+          capabilities: {
             drop: [
               'all',
             ],

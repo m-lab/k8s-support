@@ -154,7 +154,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             */
             // wehe needs net_raw to run tcpdump
             securityContext: {
-              capabiltities: {
+              capabilities: {
                 add: [
                   'NET_RAW',
                 ],

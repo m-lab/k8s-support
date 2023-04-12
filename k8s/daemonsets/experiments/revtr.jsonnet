@@ -13,7 +13,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], [])
               '/plvp.config',
             ],
             securityContext: {
-              capabiltities: {
+              capabilities: {
                 drop: [
                   'all',
                 ],
