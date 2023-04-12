@@ -89,6 +89,13 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
         ]),
+        securityContext: {
+          capabiltities: {
+            drop: [
+              'all',
+            ],
+          },
+        },
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
