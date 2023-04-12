@@ -63,6 +63,13 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               {
                 mountPath: '/certs',
@@ -89,13 +96,6 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
         ]),
-        securityContext: {
-          capabilities: {
-            drop: [
-              'all',
-            ],
-          },
-        },
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
