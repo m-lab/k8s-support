@@ -164,4 +164,5 @@ runcmd:
 - systemctl start configure-tc-fq.service
 - systemctl enable check-reboot.service
 - systemctl enable check-reboot.timer
+- systemctl start check-reboot.timer
 
