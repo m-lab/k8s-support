@@ -204,6 +204,13 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -249,6 +256,21 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
+    // scamper requires a lot of highly privileged capabilities :(
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+          'NET_RAW',
+          'SETGID',
+          'SETUID',
+          'SYS_CHROOT',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -304,6 +326,16 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
+    securityContext: {
+      capabilities: {
+        add: [
+          'NET_RAW',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -440,6 +472,13 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       VolumeMountDatatypeSchema(),
@@ -501,6 +540,13 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -587,6 +633,13 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       {
         mountPath: '/etc/credentials',

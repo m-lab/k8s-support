@@ -65,6 +65,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
             image: 'measurementlab/access:v0.0.10',
             name: 'access',
+            // The access envelope needs to be able to manipulate firewall
+            // rules.
             securityContext: {
               capabilities: {
                 add: [
@@ -150,6 +152,17 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               periodSeconds: 10,
             },
             */
+            // wehe needs net_raw to run tcpdump
+            securityContext: {
+              capabiltities: {
+                add: [
+                  'NET_RAW',
+                ],
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               exp.VolumeMount('wehe/replay'),
               {
