@@ -14,6 +14,16 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], [])
             ],
             securityContext: {
               capabilities: {
+                // The container processes run as nobody:nogroup, but the
+                // scamper binary has/needs these capabilities.
+                add: [
+                  'CHOWN',
+                  'DAC_OVERRIDE',
+                  'NET_RAW',
+                  'SETGID',
+                  'SETUID',
+                  'SYS_CHROOT',
+                ],
                 drop: [
                   'all',
                 ],
