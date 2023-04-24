@@ -100,6 +100,13 @@ local RBACProxy(name, port) = {
       containerPort: port,
     },
   ],
+  securityContext: {
+    capabilities: [
+      drop: [
+        'all',
+      ],
+    ],
+  },
 };
 
 // Set the owner:group of the experiment data directory to 65534:65534, and set
