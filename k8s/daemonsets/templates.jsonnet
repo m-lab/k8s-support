@@ -101,11 +101,11 @@ local RBACProxy(name, port) = {
     },
   ],
   securityContext: {
-    capabilities: [
+    capabilities: {
       drop: [
         'all',
       ],
-    ],
+    },
   },
 };
 
