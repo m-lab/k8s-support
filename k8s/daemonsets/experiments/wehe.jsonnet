@@ -131,8 +131,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               periodSeconds: 30,
             },
             resources+: {
-              requests: {
-                memory: 5Gi,
+              limits: {
+                memory: "5Gi",
               },
             },
             // Advertise the prometheus port so it can be discovered by Prometheus.
