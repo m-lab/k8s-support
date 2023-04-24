@@ -39,6 +39,10 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             command: [
               '/server/networkqualityd',
             ],
+            // TODO(kinkade): remove this securityContext block if this
+            // experiment ever gets it's own experiment index and
+            // hostNetworking is turned off. This is only necessary because of
+            // hostNetwork=true.
             securityContext: {
               capabilities: {
                 add: [
