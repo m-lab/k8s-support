@@ -724,7 +724,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
           runAsGroup: 65534,
           runAsUser: 65534,
           // Pods with hostNetwork=true cannot set this sysctl.  Those
-          // containers will run run as root with cap_net_bind_service enabled.
+          // containers will run as root with cap_net_bind_service enabled.
           sysctls: if hostNetwork then [] else [
             {
               // Set this so that experiments can listen on port 80 as a
