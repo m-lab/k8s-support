@@ -23,7 +23,11 @@
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
-      import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
+      // responsiveness commented out by Kinkade. It's stuck in sandbox and not
+      // really being used, and must be run as root because is has
+      // hostNetwork=true. If we want to resume the experiment we can just
+      // uncomment the following line.
+      //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
       import 'k8s/daemonsets/experiments/msak.jsonnet',
     ] else []
   ) + (
