@@ -137,7 +137,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 containerPort: 9091,
               },
             ],
-            /* TODO: enable with k8s v1.18+
             startupProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -147,8 +146,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               failureThreshold: 30,
               periodSeconds: 10,
             },
-            */
-            // wehe needs net_raw to run tcpdump
+            // Wehe needs net_raw to run tcpdump
             securityContext: {
               capabilities: {
                 add: [
