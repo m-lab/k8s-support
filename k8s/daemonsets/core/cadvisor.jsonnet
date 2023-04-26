@@ -40,6 +40,19 @@
                 name: 'scrape',
               },
             ],
+            // cAdvisor runs as root, but only has a single capability
+            // "CAP_DAC_READ_SEARCH", which gives it permission to read any
+            // file or list any directory.
+            securityContext: {
+              capabilities: {
+                add: [
+                  'DAC_READ_SEARCH',
+                ],
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               {
                 mountPath: '/rootfs',

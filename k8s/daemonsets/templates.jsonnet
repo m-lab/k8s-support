@@ -58,6 +58,7 @@ local uuid = {
   },
 };
 
+
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
@@ -99,6 +100,59 @@ local RBACProxy(name, port) = {
       containerPort: port,
     },
   ],
+  securityContext: {
+    capabilities: {
+      drop: [
+        'all',
+      ],
+    },
+  },
+};
+
+// Set the owner:group of the experiment data directory to 65534:65534, and set
+// the directory with setguid. hostPath volumes will be owned by the kubelet
+// user (i.e., root). We are unable to use the fsGroup securityContext feature
+// on hostPath volumes:
+// https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+// https://github.com/kubernetes/minikube/issues/1990
+local setDataDirOwnership(name) = {
+  local dataDir = VolumeMount(name).mountPath,
+  initContainer: {
+    name: 'set-data-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'cd ' + dataDir + ' && chown -R 65534:65534 . && chmod 2775 .',
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMount(name),
+    ],
+  },
+};
+
+// The datatypes directory is where autoloading experiments drop their schema.
+// This directory is different from where experiments store their data.
+local setDatatypesDirOwnership() = {
+  local dataDir = VolumeMountDatatypeSchema().mountPath,
+  initContainer: {
+    name: 'set-datatypes-dir-perms',
+    image: 'alpine:3.17',
+    command: [
+      '/bin/sh',
+      '-c',
+      'chown -R 65534:65534 ' + dataDir,
+    ],
+    securityContext: {
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      VolumeMountDatatypeSchema(),
+    ],
+  },
 };
 
 local tcpinfoServiceVolume = {
@@ -157,6 +211,13 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -171,7 +232,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.11.1',
+    image: 'measurementlab/traceroute-caller:v0.11.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -202,6 +263,21 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         containerPort: tcpPort,
       },
     ],
+    // scamper requires a lot of highly privileged capabilities :(
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+          'NET_RAW',
+          'SETGID',
+          'SETUID',
+          'SYS_CHROOT',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -217,7 +293,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.7.1',
+    image: 'measurementlab/packet-headers:v0.7.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -257,6 +333,16 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         memory: '3G',
       },
     } else {},
+    securityContext: {
+      capabilities: {
+        add: [
+          'NET_RAW',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -271,7 +357,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
 
 local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
-    local version='v1.20.2',
+    local version='v1.20.3',
     name: 'pusher',
     image: 'measurementlab/pusher:'+version,
     args: [
@@ -317,6 +403,20 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    // ndt-virtual and responsiveness still run as root, so Pusher, for now,
+    // needs to run as root to be able to manage data files owned by both root
+    // and nobody. But only give it the DAC_OVERRIDE capability.
+    securityContext: {
+      capabilities: {
+        add: [
+          'DAC_OVERRIDE',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      runAsUser: 0,
+    },
     volumeMounts: [
       VolumeMount(expName),
       {
@@ -379,6 +479,13 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       VolumeMountDatatypeSchema(),
@@ -440,6 +547,13 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       VolumeMount(expName),
       tcpinfoServiceVolume.volumemount,
@@ -526,6 +640,13 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         containerPort: tcpPort,
       },
     ],
+    securityContext: {
+      capabilities: {
+        drop: [
+          'all',
+        ],
+      },
+    },
     volumeMounts: [
       {
         mountPath: '/etc/credentials',
@@ -593,9 +714,25 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
+          setDataDirOwnership(name).initContainer,
+          setDatatypesDirOwnership().initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
+        },
+        securityContext: {
+          runAsGroup: 65534,
+          runAsUser: 65534,
+          // Pods with hostNetwork=true cannot set this sysctl.  Those
+          // containers will run as root with cap_net_bind_service enabled.
+          sysctls: if hostNetwork then [] else [
+            {
+              // Set this so that experiments can listen on port 80 as a
+              // non-root user.
+              name: 'net.ipv4.ip_unprivileged_port_start',
+              value: '80',
+            },
+          ],
         },
         volumes: [
           {
@@ -707,6 +844,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // The NDT tag to use for canary nodes.
   ndtCanaryVersion: ndtCanaryVersion,
+
+  // Changes the owner:group of the base data directory to nobody:nogroup, and
+  // sets the permissions to 2775.
+  setDataDirOwnership(name):: setDataDirOwnership(name),
 
   // How long k8s should give a pod to shut itself down cleanly.
   terminationGracePeriodSeconds: terminationGracePeriodSeconds,

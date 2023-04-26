@@ -2,6 +2,7 @@ local exp = import '../templates.jsonnet';
 local expName = 'disco';
 local config = import '../../../config/disco.jsonnet';
 local version = 'v0.1.13';
+local dataDir = exp.VolumeMount('utilization').mountPath;
 
 {
   apiVersion: 'apps/v1',
@@ -27,6 +28,9 @@ local version = 'v0.1.13';
         },
       },
       spec: {
+        initContainers: [
+          exp.setDataDirOwnership('utilization').initContainer,
+        ],
         containers: [
           {
             args: [
@@ -84,6 +88,10 @@ local version = 'v0.1.13';
           'mlab/type': 'physical',
         },
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
+        securityContext: {
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        },
         volumes: [
           {
             name: 'pusher-credentials',

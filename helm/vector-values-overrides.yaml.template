@@ -53,6 +53,13 @@ podAnnotations:
 podLabels:
   workload: vector
 role: Agent
+securityContext:
+  capabilities:
+    add:
+    - DAC_READ_SEARCH
+    drop:
+    - all
+  runAsUser: 0
 service:
   enabled: false
 tolerations:

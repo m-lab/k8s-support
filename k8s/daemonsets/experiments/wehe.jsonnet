@@ -65,12 +65,19 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
             image: 'measurementlab/access:v0.0.10',
             name: 'access',
+            // The access envelope needs to be able to manipulate firewall
+            // rules.
             securityContext: {
               capabilities: {
                 add: [
                   'NET_ADMIN',
+                  'NET_RAW',
+                ],
+                drop: [
+                  'all',
                 ],
               },
+              runAsUser: 0,
             },
             volumeMounts: [
               {
@@ -106,19 +113,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.2.6',
-            name: expName,
-            /* TODO: enable with k8s v1.18+
-            startupProbe+: {
-              httpGet: {
-                path: '/metrics',
-                port: 9090,
-              },
-              // Allow up to 5min for the service to startup: 30*10.
-              failureThreshold: 30,
-              periodSeconds: 10,
-            },
-            */
+            image: 'measurementlab/wehe-py3:v0.2.9',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -130,11 +125,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               timeoutSeconds: 10,
               periodSeconds: 30,
             },
-            resources+: {
-              limits: {
-                [if std.extVar('PROJECT_ID') != "mlab-oti" then 'memory']: "5Gi",
-              },
-            },
+            name: expName,
             // Advertise the prometheus port so it can be discovered by Prometheus.
             ports: [
               {
@@ -146,10 +137,35 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 containerPort: 9091,
               },
             ],
-            volumeMounts: [
-              exp.VolumeMount('wehe/replay') + {
-                mountPath: '/data/RecordReplay/ReplayDumpsTimestamped',
+            resources+: {
+              limits: {
+                [if std.extVar('PROJECT_ID') != "mlab-oti" then 'memory']: "5Gi",
               },
+            },
+            // Wehe runs packet captures, which requires being root. Run as
+            // root, but with only the NET_RAW capability.
+            securityContext: {
+              capabilities: {
+                add: [
+                  'NET_RAW',
+                ],
+                drop: [
+                  'all'
+                ],
+              },
+              runAsUser: 0,
+            },
+            startupProbe+: {
+              httpGet: {
+                path: '/metrics',
+                port: 9090,
+              },
+              // Allow up to 5min for the service to startup: 30*10.
+              failureThreshold: 30,
+              periodSeconds: 10,
+            },
+            volumeMounts: [
+              exp.VolumeMount('wehe/replay'),
               {
                 mountPath: '/wehe/ssl/',
                 name: 'wehe-ca-cache',
