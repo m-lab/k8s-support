@@ -132,7 +132,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             },
             resources+: {
               limits: {
-                [if std.extVar('PROJECT_ID') != "mlab-oti" then 'memory']: "5Gi",
+                [if std.extVar('PROJECT_ID') == "mlab-oti" then 'memory']: "5Gi",
               },
             },
             // Advertise the prometheus port so it can be discovered by Prometheus.
