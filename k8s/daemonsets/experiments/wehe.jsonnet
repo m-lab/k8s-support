@@ -164,17 +164,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               failureThreshold: 30,
               periodSeconds: 10,
             },
-            // Wehe needs net_raw to run tcpdump
-            securityContext: {
-              capabilities: {
-                add: [
-                  'NET_RAW',
-                ],
-                drop: [
-                  'all',
-                ],
-              },
-            },
             volumeMounts: [
               exp.VolumeMount('wehe/replay'),
               {
