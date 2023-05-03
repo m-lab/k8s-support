@@ -141,6 +141,9 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               limits: {
                 [if std.extVar('PROJECT_ID') != "mlab-oti" then 'memory']: "5Gi",
               },
+              requests: {
+                [if std.extVar('PROJECT_ID') != "mlab-oti" then 'memory']: "1Gi",
+              },
             },
             // Wehe runs packet captures, which requires being root. Run as
             // root, but with only the NET_RAW capability.
