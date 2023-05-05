@@ -113,7 +113,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.2.9',
+            image: 'measurementlab/wehe-py3:v0.2.10',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
