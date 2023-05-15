@@ -40,6 +40,9 @@ local uuid = {
         },
       },
     ],
+    securityContext: {
+      runAsUser: 0,
+    },
     volumeMounts: [
       uuid.volumemount {
         readOnly: false,
