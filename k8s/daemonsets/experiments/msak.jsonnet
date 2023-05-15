@@ -5,7 +5,7 @@ local services = [
   'msak/ndt8=ws:///ndt/v8/download,ws:///ndt/v8/upload,wss:///ndt/v8/download,wss:///ndt/v8/upload',
 ];
 
-exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   spec+: {
     template+: {
       metadata+: {
