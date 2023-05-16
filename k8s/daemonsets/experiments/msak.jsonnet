@@ -18,14 +18,13 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
         serviceAccountName: 'heartbeat-experiment',
         initContainers+: [
           {
-            // Run the generate-schema utility to create the JSON schema file
-            // for the ndt8 datatype.
-            name: 'generate-jostler-schema',
+            // Copy the JSON schema where jostler expects it to be.
+            name: 'copy-schema',
             image: 'measurementlab/msak:' + expVersion,
             command: [
               '/bin/sh',
               '-c',
-              '/msak/generate-schema',
+              'cp /msak/ndt8.json /var/spool/datatypes/ndt8.json',
             ],
             volumeMounts: [
               {
