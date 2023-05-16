@@ -23,7 +23,9 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             name: 'generate-jostler-schema',
             image: 'measurementlab/msak:' + expVersion,
             command: [
-              'generate-schema',
+              '/bin/sh',
+              '-c',
+              './generate-schema',
             ],
             volumeMounts: [
               {
