@@ -1,7 +1,7 @@
 local datatypes = ['ndt8'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
-local expVersion = 'v0.0-alpha1',
+local expVersion = 'v0.0-alpha1';
 local services = [
   'msak/ndt8=ws:///ndt/v8/download,ws:///ndt/v8/upload,wss:///ndt/v8/download,wss:///ndt/v8/upload',
 ];
