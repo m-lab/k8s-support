@@ -25,7 +25,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             command: [
               '/bin/sh',
               '-c',
-              './generate-schema',
+              '/msak/generate-schema',
             ],
             volumeMounts: [
               {
