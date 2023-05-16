@@ -22,7 +22,9 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             // for the ndt8 datatype.
             name: 'generate-jostler-schema',
             image: 'measurementlab/msak:' + expVersion,
-            command: 'generate-schema',
+            command: [
+              'generate-schema',
+            ],
             volumeMounts: [
               {
                 mountPath: '/var/spool/datatypes',
