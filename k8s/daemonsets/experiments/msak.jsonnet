@@ -1,11 +1,12 @@
 local datatypes = ['ndt8'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
+local expVersion = 'v0.0-alpha1';
 local services = [
   'msak/ndt8=ws:///ndt/v8/download,ws:///ndt/v8/upload,wss:///ndt/v8/download,wss:///ndt/v8/upload',
 ];
 
-exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   spec+: {
     template+: {
       metadata+: {
@@ -15,6 +16,25 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
       },
       spec+: {
         serviceAccountName: 'heartbeat-experiment',
+        initContainers+: [
+          {
+            // Copy the JSON schema where jostler expects it to be.
+            name: 'copy-schema',
+            image: 'measurementlab/msak:' + expVersion,
+            command: [
+              '/bin/sh',
+              '-c',
+              'cp /msak/ndt8.json /var/spool/datatypes/ndt8.json',
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/var/spool/datatypes',
+                name: 'var-spool-datatypes',
+                readOnly: false,
+              },
+            ],
+          },
+        ],
         containers+: [
           {
             args: [
@@ -37,7 +57,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
-            image: 'measurementlab/msak:v0.0-alpha1',
+            image: 'measurementlab/msak:' + expVersion,
             name: 'msak',
             command: [
               '/msak/msak-server',
