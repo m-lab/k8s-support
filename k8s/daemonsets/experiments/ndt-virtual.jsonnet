@@ -94,9 +94,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 add: [
                   'NET_BIND_SERVICE',
                 ],
-                drop: [
-                  'all',
-                ],
               },
               runAsUser: 0,
             },
