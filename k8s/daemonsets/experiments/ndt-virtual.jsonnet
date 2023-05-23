@@ -99,7 +99,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 ],
               },
               runAsUser: 0,
-              runAsGroup: 65534,
             },
             volumeMounts: [
               {
