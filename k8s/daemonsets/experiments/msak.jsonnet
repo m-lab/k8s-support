@@ -46,6 +46,8 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-token.verify=true',
+              '-uuid-prefix-file=' + exp.uuid.prefixfile,
+              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
             ],
             env: [
               {
@@ -53,6 +55,14 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                 valueFrom: {
                   fieldRef: {
                     fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
                   },
                 },
               },
@@ -80,6 +90,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                 name: 'locate-verify-keys',
                 readOnly: true,
               },
+              exp.uuid.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
