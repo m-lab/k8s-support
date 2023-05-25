@@ -28,13 +28,9 @@
       // hostNetwork=true. If we want to resume the experiment we can just
       // uncomment the following line.
       //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
-      import 'k8s/daemonsets/experiments/msak.jsonnet',
-    ] else []
-  ) + (
-    if std.extVar('PROJECT_ID') == 'mlab-staging' then [
-      import 'k8s/daemonsets/experiments/msak.jsonnet',
     ] else []
   ) + [
+    import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
