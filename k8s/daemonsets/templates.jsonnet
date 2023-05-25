@@ -127,7 +127,7 @@ local setDataDirOwnership(name) = {
       '/bin/sh',
       '-c',
       'cd ' + dataDir + ' && chown -R 65534:65534 . && ' +
-      'find . -maxdepth 1 -type d -exec chmod 2775 {} +',
+      'find . -type d -exec chmod 2775 {} \\;',
     ],
     securityContext: {
       runAsUser: 0,
