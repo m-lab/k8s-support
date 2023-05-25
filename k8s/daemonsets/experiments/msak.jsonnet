@@ -58,6 +58,14 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                   },
                 },
               },
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
             ],
             image: 'measurementlab/msak:' + expVersion,
             name: 'msak',
