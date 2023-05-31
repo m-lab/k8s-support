@@ -29,6 +29,9 @@ customConfig:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
+env:
+- name: VECTOR_LOG
+  value: info
 extraVolumes:
 - name: credentials
   secret:
