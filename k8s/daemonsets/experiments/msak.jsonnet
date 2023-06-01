@@ -94,6 +94,11 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
+            ports: [
+              {
+                containerPort: 9990,
+              },
+            ],
           },
           {
             args: [
