@@ -227,7 +227,7 @@ groups:
 
   - alert: PlatformCluster_MachineUpTooLong
     expr: |
-      (time() - node_boot_time_seconds{node=~"(master|mlab[1-4])-.+"}) / (60 * 60 * 24) > 90
+      (time() - node_boot_time_seconds{node=~"(api|master|mlab[1-4])-.+"}) / (60 * 60 * 24) > 90
     for: 10m
     labels:
       repo: ops-tracker
