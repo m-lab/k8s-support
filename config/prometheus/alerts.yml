@@ -650,23 +650,17 @@ groups:
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_pusherfindermtimelowerboundistooold
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/WnaxPZJZz
 
-  - alert: PlatformCluster_TokenServerClusterDownOrMissing
+  - alert: PlatformCluster_EpoxyExtensionServerDownOrMissing
     expr: |
-      up{job="token-server"} == 0 OR absent(up{job="token-server"})
+      up{job="epoxy-extension-server"} == 0 OR absent(up{job="epoxy-extension-server"})
     for: 1h
     labels:
       repo: ops-tracker
       severity: ticket
       cluster: platform
     annotations:
-      summary: token-server metrics cannot be scraped or are missing.
-      description: The token-server is run as a Docker container on each API
-        server. The instsances sit behind a GCP internal load balancer.
-        Scraping the load balancer is failing, which means that something is
-        wrong with the load balancer, or possibly all three instances of the
-        token-server are down.  Login to one or all of the API servers to
-        discover why the token-server container is not running. Check the
-        status of the load balancer in the GCP console.
+      summary: epoxy-extension-server metrics cannot be scraped or are missing.
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_epoxyextensionserverdownormissing
 
 # PlatformCluster_PrometheusPersistentDiskTooFull fires when the persistent
 # disk mounted on the Prometheus VM gets too full (less than 5% free).

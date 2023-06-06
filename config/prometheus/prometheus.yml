@@ -336,14 +336,15 @@ scrape_configs:
         target_label: site
         replacement: ${1}
 
-  # Scrape the token-server. The address we are scraping is actually a GCP
-  # internal load balancer. Scraping the load balancer address won't guarantee
-  # that all token-server instances are up and running, but more importantly
-  # will let us know whether enough are up to satisfy a booting machine.
-  - job_name: 'token-server'
+  # Scrape the epoxy-extension-server. The address we are scraping is actually
+  # a GCP internal load balancer. Scraping the load balancer address won't
+  # guarantee that all epoxy-extension-server instances are up and running, but
+  # more importantly will let us know whether enough are up to satisfy a
+  # booting machine.
+  - job_name: 'epoxy-extension-server'
     scheme: http
     static_configs:
-      - targets: ['token-server.{{PROJECT}}.measurementlab.net:8800']
+      - targets: ['epoxy-extension-server.{{PROJECT}}.measurementlab.net:8800']
 
   # Scrape the Github Maintenance Exporter.
   - job_name: 'github-maintenance-exporter'
