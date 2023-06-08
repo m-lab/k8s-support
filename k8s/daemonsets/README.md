@@ -14,7 +14,7 @@ Operators can access these targets by following these steps. The steps differ de
 Each sidecar service (and ndt-server) listens on a particular port. At the time
 of this writing the ports are as follows:
 
-* 9990: ndt-server
+* 9990: measurement service (e.g. ndt-server, msak, etc)
 * 9991: tcp-info
 * 9992: traceroute-caller
 * 9993: packet-headers
