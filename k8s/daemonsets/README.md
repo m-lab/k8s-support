@@ -9,7 +9,21 @@ pusher) are built with native prometheus metrics and pprof instrumentation.
 Access to the `/metrics` and `/debug/pprof` targets are only accessible to the
 private k8s network.
 
-Operators can access these targets by following these steps.
+Operators can access these targets by following these steps. The steps differ depending on whether the services are listening on the cluster's private network, or as part of the host network using localhost.
+
+Each sidecar service (and measurement service) listens on a particular port. At the time
+of this writing the ports are as follows:
+
+* 9990: measurement service (e.g. ndt-server, msak, etc)
+* 9991: tcp-info
+* 9992: traceroute-caller
+* 9993: packet-headers
+* 9994: uuid-annotator
+* 9995: pusher
+* 9996: heartbeat
+* 9997: jostler
+
+### Private Network
 
 Identify a pod of interest. For example:
 
@@ -24,6 +38,7 @@ cluster). By default `kubectl proxy` will create a local listener on port
 
 ```sh
 $ kubectl proxy
+Starting to serve on 127.0.0.1:8001
 ```
 
 Using the local listener created by `kubectl proxy`, make an API call to the
@@ -43,18 +58,35 @@ $ go tool pprof -top http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6
 $ google-chrome http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9992/proxy/debug/pprof/
 ```
 
-Each sidecar service (and ndt-server) listens on a particular port. At the time
-of this writing the ports are as follows:
-
-* 9990: ndt-server
-* 9991: tcp-info
-* 9992: traceroute-caller
-* 9993: packet-headers
-* 9994: uuid-annotator
-* 9995: pusher
-* 9996: heartbeat
-* 9997: jostler
-
 To access metrics or pprof data for a given service, simply modify the URL
 to specify `<podname>:<port>`.
 
+### Host Network Localhost
+
+Identify a pod of interest. For example:
+
+```sh
+$ kubectl get pods -l workload=ndt-virtual -o wide | grep mlab1-lax0t
+ndt-virtual-46gnr 14/14 Running 0 2d2h 10.0.0.27 mlab1-lax0t...
+```
+
+In one terminal, use kubectl to port forward from your local system to the
+remote system on localhost.
+
+```sh
+$ kubectl port-forward pod/ndt-virtual-5mlnd 9991:9991
+Forwarding from 127.0.0.1:9991 -> 9991
+Forwarding from [::1]:9991 -> 9991
+```
+
+Using localhost:9991 you can now access the remote services.
+
+```sh
+$ curl http://localhost:9991/debug/pprof/
+$ curl http://localhost:9991/metrics/
+$ go tool pprof -top http://localhost:9991/debug/pprof/heap
+$ google-chrome http://localhost:9991/debug/pprof/
+```
+
+To access metrics or pprof data for another service, simply use an alternate
+port for `kubectl port-forward`.
