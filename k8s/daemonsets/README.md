@@ -11,7 +11,7 @@ private k8s network.
 
 Operators can access these targets by following these steps. The steps differ depending on whether the services are listening on the cluster's private network, or as part of the host network using localhost.
 
-Each sidecar service (and ndt-server) listens on a particular port. At the time
+Each sidecar service (and measurement service) listens on a particular port. At the time
 of this writing the ports are as follows:
 
 * 9990: measurement service (e.g. ndt-server, msak, etc)
