@@ -188,7 +188,7 @@ local uuidannotatorServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
-    image: 'measurementlab/tcp-info:v1.6.0',
+    image: 'measurementlab/tcp-info:v1.7.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -198,6 +198,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-exclude-srcport=9100,9990,9991,9992,9993,9994,9995,9996,9997',
       '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
