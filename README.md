@@ -145,6 +145,7 @@ capabilities are added to the binaries in the container, added as part of the
 container image build process. These so called "file" capabilities are extended
 filesystem attributes that the kernel reads when a binary is executed.
 
+```
 access: root:nobody (CAP\_NET\_ADMIN, CAP\_NET\_RAW: needs to manipulate iptables rules)
 cadvisor: root:root (CAP\_DAC\_READ\_SEARCH: allows it to read all the files it needs to gather data)
 dash: nobody:nogroup
@@ -167,4 +168,5 @@ traceroute-caller: nobody:nogroup (CAP\_DAC\_OVERRIDE, CAP\_NET\_RAW, CAP\_SETGI
 uuid-annotator: nobody:nogroup
 vector: root:root (CAP\_DAC\_READ\_SEARCH: so that it can read all the necessary log files)
 wehe: nobody:nogroup (CAP\_NET\_RAW: it needs to do packet captures)
+```
 
