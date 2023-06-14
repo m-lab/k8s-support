@@ -73,6 +73,13 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
                 containerPort: 9990,
               },
             ],
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               exp.VolumeMount('utilization'),
               {
@@ -89,11 +96,6 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
         },
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
         securityContext: {
-          capabilities: {
-            drop: [
-              'all',
-            ],
-          },
           runAsUser: 65534,
           runAsGroup: 65534,
         },

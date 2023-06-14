@@ -59,6 +59,13 @@ local exp = import '../templates.jsonnet';
                 memory: '180Mi',
               },
             },
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               {
                 mountPath: '/host/proc',
@@ -121,17 +128,19 @@ local exp = import '../templates.jsonnet';
                 memory: '20Mi',
               },
             },
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
           },
         ],
         hostNetwork: true,
         hostPID: true,
         serviceAccountName: 'kube-rbac-proxy',
         securityContext: {
-          capabilities: {
-            drop: [
-              'all',
-            ],
-          },
           runAsUser: 65534,
           runAsGroup: 65534,
         },
