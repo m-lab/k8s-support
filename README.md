@@ -134,3 +134,37 @@ did for this repository, and then pushing to the epoxy-images repository.
 Pushing to the repository (or tagging, for production) will cause all boot
 images to be rebuilt, after which a rolling reboot of the cluster nodes should
 cause them to boot with the upgraded versions of Kubernetes components.
+
+# Running containers as non-root
+The following table outlines which processes run as which uid:gid, as well as
+which capabilities the process has and why. In the table, "root", "nobody"
+and "nogroup" represents uid/gid 0, uid 65534 and gid 65534, respectively. Our
+configs use uid and gid, but it's easier to think about the logical names, even
+though they may differ between systems.  Additionally, in several cases,
+capabilities are added to the binaries in the container, added as part of the
+container image build process. These so called "file" capabilities are extended
+filesystem attributes that the kernel reads when a binary is executed.
+
+access: root:nobody (CAP\_NET\_ADMIN, CAP\_NET\_RAW: needs to manipulate iptables rules)
+cadvisor: root:root (CAP\_DAC\_READ\_SEARCH: allows it to read all the files it needs to gather data)
+dash: nobody:nogroup
+disco: nobody:nogroup
+flannel: root:root (CAP\_NET\_ADMIN, CAP\_NET\_RAW: flannel needs to do various privileged network operations)
+heartbeat: nobody:nogroup
+jostler: nobody:nogroup
+kube-rbac-proxy: nobody:nogroup
+kured: root:root (privileged=true: [MLB-014: Kured container vulnerable to break out](https://github.com/m-lab/ops-tracker/issues/1653))
+msak: nobody:nogroup
+ndt-server: nobody:nogroup
+ndt-server (virtual): root:nogroup (CAP\_NET\_BIND\_SERVICE: to bind to port 80)
+node-exporter: nobody:nogroup
+nodeinfo: nobody:nogroup
+packet-headers: nobody:nogroup (CAP\_NET\_RAW: so that it can do packet captures)
+pusher: root:nobody (CAP\_DAC\_OVERRIDE: so that it can operate on files owned by other users)
+revtrvp nobody:nogroup (CAP\_CHOWN, CAP\_DAC\_OVERRIDE, CAP\_NET\_RAW, CAP\_SETGID, CAP\_SETUID, CAP\_SYS\_CHROOT: scamper requires all of these to operate)
+tcp-info: nobody:nogroup
+traceroute-caller: nobody:nogroup (CAP\_DAC\_OVERRIDE, CAP\_NET\_RAW, CAP\_SETGID, CAP\_SETUID, CAP\_SYS\_CHROOT: scamper requires these to operate)
+uuid-annotator: nobody:nogroup
+vector: root:root (CAP\_DAC\_READ\_SEARCH: so that it can read all the necessary log files)
+wehe: nobody:nogroup (CAP\_NET\_RAW: it needs to do packet captures)
+
