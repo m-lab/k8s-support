@@ -127,6 +127,11 @@ local exp = import '../templates.jsonnet';
         hostPID: true,
         serviceAccountName: 'kube-rbac-proxy',
         securityContext: {
+          capabilities: {
+            drop: [
+              'all',
+            ],
+          },
           runAsUser: 65534,
           runAsGroup: 65534,
         },
