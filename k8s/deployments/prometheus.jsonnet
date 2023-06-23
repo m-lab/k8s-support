@@ -41,7 +41,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--storage.tsdb.retention.time=120d',
               '--enable-feature=memory-snapshot-on-shutdown',
             ],
-            image: 'measurementlab/prometheus:v2.32.1-idle30k',
+            image: 'prom/prometheus:v2.32.1',
             name: 'prometheus',
             ports: [
               {
