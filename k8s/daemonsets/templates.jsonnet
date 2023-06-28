@@ -207,7 +207,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       '-output=' + data.mount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
-      '-exclude-srcport=9100,9990,9991,9992,9993,9994,9995,9996,9997',
+      '-exclude-srcport=9100,9989,9990,9991,9992,9993,9994,9995,9996,9997',
       '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
@@ -832,6 +832,10 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
   // Returns a volumemount for jostler datatypes directory. Must be included for
   // all experiments producing autoloaded data.
   VolumeMountDatatypes(name):: datatypes.mount(name),
+
+  // Returns a volumemount for jostler datatypes directory. Must be included for
+  // all experiments producing autoloaded data.
+  VolumeMountDatatypeSchema():: VolumeMountDatatypeSchema(),
 
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
