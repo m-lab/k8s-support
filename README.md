@@ -1,8 +1,8 @@
 This repo contains all of the scripts and configs required to set up the
 world-spanning M-Lab kubernetes (k8s) cluster.  The organization is as follows:
 - [manage-cluster/](manager-cluster/) contains all the scripts necessary to set
-  up and configure the cloud master node(s) as well as new nodes in Google cloud
-  for monitoring services and the like.
+  up and configure the cloud control plane node(s) as well as new nodes in
+  Google cloud for monitoring services and the like.
 - [config/](config/) contains service configuration files.
 - [k8s/](k8s/) contains Kubernetes config files.
 - [node/](node/) DEPRECATED. The files in this directory will eventually move to
@@ -110,7 +110,7 @@ API cluster nodes report the correct version, and that all pods in the cluster
 are running normally. You can do this with something like:
 
 ```
-$ kubectl --context <project> get nodes | grep master-platform-cluster
+$ kubectl --context <project> get nodes | grep api-platform-cluster
 $ kubectl --context <project> get pods --all-namespaces | grep -v Running
 ```
 
@@ -129,7 +129,7 @@ or for someone to notice something is amiss.
 a project is updated, then you will still need to upgrade all the cluster
 nodes. This is done in the [epoxy-images
 repository](https://github.com/m-lab/epoxy-images) by [editing the same version
-strings](https://github.com/m-lab/epoxy-images/blob/master/config.sh#L6) you
+strings](https://github.com/m-lab/epoxy-images/blob/main/config.sh#L6) you
 did for this repository, and then pushing to the epoxy-images repository.
 Pushing to the repository (or tagging, for production) will cause all boot
 images to be rebuilt, after which a rolling reboot of the cluster nodes should
