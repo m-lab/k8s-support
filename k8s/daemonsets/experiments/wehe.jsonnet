@@ -195,6 +195,11 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
               // TODO(soltesz): verify this is used by wehe server.
               exp.uuid.volumemount,
+              {
+                mountPath: '/var/spool/datatypes',
+                name: 'var-spool-datatypes',
+                readOnly: false,
+              },
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in autoloadedDatatypes
             ],
