@@ -47,6 +47,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             name: 'copy-uuid-prefix',
             volumeMounts: [
               exp.uuid.volumemount,
+              {
+                mountPath: '/res/',
+                name: 'wehe-res',
+              },
             ],
           },
         ],
@@ -220,6 +224,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             secret: {
               secretName: 'locate-verify-keys',
             },
+          },
+          {
+            emptyDir: {},
+            name: 'wehe-res',
           },
         ],
       },
