@@ -66,6 +66,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               '-envelope.machine=$(MLAB_NODE_NAME)',
               '-envelope.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-envelope.token-required=true',
+              '-prometheusx.listen-address=:9989',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=10m',
             ],
@@ -110,7 +111,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             // Advertise the prometheus port so it can be discovered by Prometheus.
             ports: [
               {
-                containerPort: 9990,
+                containerPort: 9989,
               },
             ],
           },
@@ -195,11 +196,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
               // TODO(soltesz): verify this is used by wehe server.
               exp.uuid.volumemount,
-              {
-                mountPath: '/var/spool/datatypes',
-                name: 'var-spool-datatypes',
-                readOnly: false,
-              },
+              exp.VolumeMountDatatypeSchema(),
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in autoloadedDatatypes
             ],
