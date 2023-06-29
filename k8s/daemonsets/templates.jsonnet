@@ -831,7 +831,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a volumemount for jostler datatypes directory. Must be included for
   // all experiments producing autoloaded data.
-  VolumeMountDatatypeSchema(name):: datatypes.mount(name),
+  VolumeMountDatatypes(name):: datatypes.mount(name),
 
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
