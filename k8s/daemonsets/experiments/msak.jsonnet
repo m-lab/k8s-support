@@ -27,11 +27,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               'cp /msak/throughput1.json /var/spool/datatypes/throughput1.json',
             ],
             volumeMounts: [
-              {
-                mountPath: '/var/spool/datatypes',
-                name: 'var-spool-datatypes',
-                readOnly: false,
-              },
+              exp.VolumeMountDatatypes(expName),
             ],
           },
         ],
