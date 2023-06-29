@@ -65,7 +65,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               '-envelope.subject=wehe',
               '-envelope.machine=$(MLAB_NODE_NAME)',
               '-envelope.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-envelope.token-required=true',
+              // TODO(soltesz): restore after testing.
+              '-envelope.token-required=false',
               '-prometheusx.listen-address=:9989',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=10m',
@@ -130,7 +131,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 },
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.3.1',
+            image: 'measurementlab/wehe-py3:v0.3.3',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -196,7 +197,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
               // TODO(soltesz): verify this is used by wehe server.
               exp.uuid.volumemount,
-              exp.VolumeMountDatatypeSchema(),
+              exp.VolumeMountDatatypes(expName),
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in autoloadedDatatypes
             ],
