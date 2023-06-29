@@ -43,26 +43,24 @@ for zone in $GCE_ZONES; do
 
   GCE_ARGS=("--zone=${gce_zone}" "${GCP_ARGS[@]}")
 
+  # The GCP internal DNS name of the machine.
+  INTERNAL_DNS="${gce_name}.${gce_zone}.c.${PROJECT}.internal"
+
   # Get the instance's internal IP address.
-  INTERNAL_IP=$(gcloud compute instances list \
-      --filter "name=${gce_name} AND zone:(${gce_zone})" \
+  INTERNAL_IP=$(gcloud compute instances describe "${gce_name}" \
       --format "value(networkInterfaces[0].networkIP)" \
-      "${GCP_ARGS[@]}" || true)
+      "${GCE_ARGS[@]}" || true)
 
   # Get the instance's external IP address.
-  EXTERNAL_IP=$(gcloud compute addresses list \
-      --filter "name=${gce_name} AND region:${GCE_REGION}" \
-      --format "value(address)" \
-      "${GCP_ARGS[@]}")
+  EXTERNAL_IP=$(gcloud compute instances describe "${gce_name}" \
+      --format "value(networkInterfaces[0].accessConfigs.natIP)" \
+      "${GCE_ARGS[@]}" || true)
 
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
-    UPGRADE_COMMAND="apply ${K8S_VERSION} --force --certificate-renewal=true"
+    UPGRADE_COMMAND="apply ${K8S_VERSION} --config ./kubeadm-config.yml --force --certificate-renewal=true"
   else
     UPGRADE_COMMAND="node"
   fi
-
-  # Copy kubeadm config template to the node.
-  gcloud compute scp *.template "${gce_name}": "${GCE_ARGS[@]}"
 
   # Evaluate the kubeadm config template with a beastly sed statement.
   gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
@@ -80,22 +78,31 @@ for zone in $GCE_ZONES; do
     # expired.
     export KUBECONFIG=/etc/kubernetes/admin.conf
 
+    # Fetch the cluster_data attribute to extract the API address.
+    cluster_data=\$(
+      curl --header "Metadata-Flavor: Google" --silent \
+      "http://metadata.google.internal/computeMetadata/v1/instance/attributes/cluster_data"
+    )
+    api_load_balancer=\$(echo "\${cluster_data}" | jq --raw-output '.cluster_attributes.api_load_balancer')
+
     # Create the kubeadm config from the template
     sed -e 's|{{PROJECT}}|${PROJECT}|g' \
         -e 's|{{INTERNAL_IP}}|${INTERNAL_IP}|g' \
-        -e 's|{{MASTER_NAME}}|${gce_name}|g' \
-        -e 's|{{LOAD_BALANCER_NAME}}|api-${GCE_BASE_NAME}|g' \
+        -e 's|{{INTERNAL_DNS}}|${INTERNAL_DNS}|g' \
+        -e 's|{{MACHINE_NAME}}|${gce_name}|g' \
+        -e "s|{{API_LOAD_BALANCER}}|\$api_load_balancer|g" \
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
-        -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
-        -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
-        ./kubeadm-config.yml.template > \
+        -e 's|{{CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
+        -e 's|{{SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
+        /opt/mlab/conf/kubeadm-config.yml.template > \
         ./kubeadm-config.yml
 
-    # The template variables {{TOKEN}} and {{CA_CERT_HASH}} are not used when
-    # upgrading k8s on a node.  Here we simply replace the variables with
-    # some meaningless text so that the YAML can be parsed.
+    # The template variables {{TOKEN}}, {{CA_CERT_HASH}} and {{CERT_KEY}} are
+    # not used when upgrading k8s on a node.  Here we simply replace the
+    # variables with some meaningless text so that the YAML can be parsed.
     sed -i -e 's|{{TOKEN}}|NOT_USED|' \
            -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
+           -e 's|{{CERT_KEY}}|NOT_USED|' \
            kubeadm-config.yml
 
     # Drain the node of most workloads, except DaemonSets, since some of those

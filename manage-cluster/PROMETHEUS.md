@@ -21,4 +21,4 @@ documentation](https://cloud.google.com/compute/docs/disks/add-persistent-disk#r
 for how to do this is quite detailed and clear (i.e., resize2fs). All of this
 can be done without interrupting the VM or any running processes. When done,
 be sure to update the default disk size in the [Prometheus bootstrap
-script](https://github.com/m-lab/k8s-support/blob/master/manage-cluster/bootstrap_prometheus.sh#L49)
+script](https://github.com/m-lab/k8s-support/blob/main/manage-cluster/bootstrap_prometheus.sh#L49)
