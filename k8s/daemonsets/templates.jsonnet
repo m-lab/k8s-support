@@ -61,24 +61,53 @@ local uuid = {
   },
 };
 
+local data = {
+  volume(name):: {
+    hostPath: {
+      path: '/cache/data/' + name,
+      type: 'DirectoryOrCreate',
+    },
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
+  },
+  mount(name):: {
+    mountPath: '/var/spool/' + name,
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
+  },
+};
 
+local datatypes = {
+  volume(name):: {
+    hostPath: {
+      path: '/cache/datatypes/' + name,
+      type: 'DirectoryOrCreate',
+    },
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-datatypes'),
+  },
+  mount(name):: {
+    mountPath: '/var/spool/datatypes',
+    name: std.asciiLower(std.strReplace(name, '/', '-')) + '-datatypes',
+  },
+};
+
+/*
 local volume(name) = {
   hostPath: {
     path: '/cache/data/' + name,
     type: 'DirectoryOrCreate',
   },
-  name: std.strReplace(name, '/', '-') + '-data',
+  name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
 };
 
 local VolumeMount(name) = {
   mountPath: '/var/spool/' + name,
-  name: std.strReplace(name, '/', '-') + '-data',
+  name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
 };
 
 local VolumeMountDatatypeSchema() = {
   mountPath: '/var/spool/datatypes',
   name: 'var-spool-datatypes',
 };
+*/
 
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
@@ -140,8 +169,8 @@ local setDataDirOwnership(name) = {
 
 // The datatypes directory is where autoloading experiments drop their schema.
 // This directory is different from where experiments store their data.
-local setDatatypesDirOwnership() = {
-  local dataDir = VolumeMountDatatypeSchema().mountPath,
+local setDatatypesDirOwnership(name) = {
+  local dataDir = datatypes.mount(name).mountPath,
   initContainer: {
     name: 'set-datatypes-dir-perms',
     image: 'alpine:3.17',
@@ -154,7 +183,7 @@ local setDatatypesDirOwnership() = {
       runAsUser: 0,
     },
     volumeMounts: [
-      VolumeMountDatatypeSchema(),
+      datatypes.mount(name),
     ],
   },
 };
@@ -492,8 +521,8 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
-      VolumeMountDatatypeSchema(),
+      data.mount(expName),
+      datatypes.mount(expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
@@ -720,7 +749,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         initContainers: [
           uuid.initContainer,
           setDataDirOwnership(name).initContainer,
-          setDatatypesDirOwnership().initContainer,
+          setDatatypesDirOwnership(name).initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
@@ -758,19 +787,13 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
               secretName: 'locate-heartbeat-key',
             },
           },
-          {
-            name: 'var-spool-datatypes',
-            hostPath: {
-              path: '/var/spool/datatypes',
-              type: 'DirectoryOrCreate',
-            },
-          },
+          datatypes.volume(name),
           uuid.volume,
-          volume(name),
+          data.volume(name),
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
         ] + [
-          volume(name + '/' + v) for v in allVolumes
+          data.volume(name + '/' + v) for v in allVolumes
         ],
       },
     },
@@ -824,7 +847,11 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
-  VolumeMount(name):: VolumeMount(name),
+  VolumeMount(name):: data.mount(name),
+
+  // Returns a volumemount for jostler datatypes directory. Must be included for
+  // all experiments producing autoloaded data.
+  VolumeMountDatatypeSchema(name):: datatypes.mount(name),
 
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.
