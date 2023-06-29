@@ -89,26 +89,6 @@ local datatypes = {
   },
 };
 
-/*
-local volume(name) = {
-  hostPath: {
-    path: '/cache/data/' + name,
-    type: 'DirectoryOrCreate',
-  },
-  name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
-};
-
-local VolumeMount(name) = {
-  mountPath: '/var/spool/' + name,
-  name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
-};
-
-local VolumeMountDatatypeSchema() = {
-  mountPath: '/var/spool/datatypes',
-  name: 'var-spool-datatypes',
-};
-*/
-
 local RBACProxy(name, port) = {
   name: 'kube-rbac-proxy-' + name,
   image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
@@ -710,9 +690,9 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypes,
-  local allVolumes = datatypes + datatypesAutoloaded,
+local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
+  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
