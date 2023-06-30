@@ -59,6 +59,13 @@ local exp = import '../templates.jsonnet';
                 memory: '180Mi',
               },
             },
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               {
                 mountPath: '/host/proc',
@@ -119,6 +126,13 @@ local exp = import '../templates.jsonnet';
               requests: {
                 cpu: '10m',
                 memory: '20Mi',
+              },
+            },
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
               },
             },
           },

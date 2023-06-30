@@ -75,6 +75,9 @@
                   'NET_ADMIN',
                   'NET_RAW',
                 ],
+                drop: [
+                  'all',
+                ],
               },
             },
             volumeMounts: [

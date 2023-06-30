@@ -1,5 +1,6 @@
 This repo contains all of the scripts and configs required to set up the
 world-spanning M-Lab kubernetes (k8s) cluster.  The organization is as follows:
+
 - [manage-cluster/](manager-cluster/) contains all the scripts necessary to set
   up and configure the cloud control plane node(s) as well as new nodes in
   Google cloud for monitoring services and the like.
@@ -35,7 +36,7 @@ Each machine that wants to be controlled by k8s (each Node) needs:
 
 To deploy NDT pod:
 
-1. Check https://grafana.mlab-staging.measurementlab.net/d/K8-zAIuik/k8s-master-cluster?orgId=1&var-datasource=k8s%20platform%20(mlab-staging)&var-master=All
+1. Check <https://grafana.mlab-staging.measurementlab.net/d/K8-zAIuik/k8s-master-cluster?orgId=1&var-datasource=k8s%20platform%20(mlab-staging)&var-master=All>
 1. cd manage-cluster
 1. ./bootstrap_k8s_workloads.sh
 1. kubectl get pods
@@ -69,9 +70,9 @@ addressed in the near future.
 Along with Kubernetes, during an upgrade we also update CNI plugins and crictl.
 The release pages for all components are these, respectively:
 
-* https://github.com/kubernetes/kubernetes/releases
-* https://github.com/containernetworking/plugins/releases
-* https://github.com/kubernetes-sigs/cri-tools/releases
+- <https://github.com/kubernetes/kubernetes/releases>
+- <https://github.com/containernetworking/plugins/releases>
+- <https://github.com/kubernetes-sigs/cri-tools/releases>
 
 Be sure to read the release notes for these as well, as breaking changes could
 exist in the newer versions of these.
@@ -85,15 +86,15 @@ Once you feel confident that any breaking changes have been addressed (or don't
 exist), then you update the file `./manage-cluster/k8s_deploy.conf`, updating
 these variables with the proper version strings:
 
-* K8S\_VERSION
-* K8S\_CNI\_VERSION
-* K8S\_CRICTL\_VERSION
+- K8S\_VERSION
+- K8S\_CNI\_VERSION
+- K8S\_CRICTL\_VERSION
 
 Once that file is updated and saved you do this:
 
 ```
-$ cd manage-cluster
-$ ./upgrade_api_cluster.sh <project>
+cd manage-cluster
+./upgrade_api_cluster.sh <project>
 ```
 
 That command should upgrade the entire API cluster for the specified GCP
@@ -110,8 +111,8 @@ API cluster nodes report the correct version, and that all pods in the cluster
 are running normally. You can do this with something like:
 
 ```
-$ kubectl --context <project> get nodes | grep api-platform-cluster
-$ kubectl --context <project> get pods --all-namespaces | grep -v Running
+kubectl --context <project> get nodes | grep master-platform-cluster
+kubectl --context <project> get pods --all-namespaces | grep -v Running
 ```
 
 There should be no pods in a broken state that cannot be explained by some
@@ -134,3 +135,51 @@ did for this repository, and then pushing to the epoxy-images repository.
 Pushing to the repository (or tagging, for production) will cause all boot
 images to be rebuilt, after which a rolling reboot of the cluster nodes should
 cause them to boot with the upgraded versions of Kubernetes components.
+
+# Running containers as non-root
+
+The following table outlines which processes run as which uid:gid, as well as
+which capabilities the process has and why. In the table, "root", "nobody"
+and "nogroup" represents uid/gid 0, uid 65534 and gid 65534, respectively. Our
+configs use uid and gid, but it's easier to think about the logical names, even
+though they may differ between systems.  Additionally, in several cases,
+capabilities are added to the binaries in the container, added as part of the
+container image build process. These so called "file" capabilities are extended
+filesystem attributes that the kernel reads when a binary is executed.
+
+## Measurement services
+
+```text
+dash: nobody:nogroup
+disco: nobody:nogroup
+msak: nobody:nogroup
+ndt-server: nobody:nogroup
+ndt-server (virtual): root:nogroup (CAP_NET_BIND_SERVICE: to bind to port 80)
+revtrvp nobody:nogroup (CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SYS_CHROOT: scamper requires all of these to operate)
+```
+
+## Sidecar services
+
+```text
+access: root:nobody (CAP_NET_ADMIN, CAP_NET_RAW: needs to manipulate iptables rules)
+heartbeat: nobody:nogroup
+jostler: nobody:nogroup
+nodeinfo: nobody:nogroup
+packet-headers: nobody:nogroup (CAP_NET_RAW: so that it can do packet captures)
+pusher: root:nobody (CAP_DAC_OVERRIDE: so that it can operate on files owned by other users)
+tcp-info: nobody:nogroup
+traceroute-caller: nobody:nogroup (CAP_DAC_OVERRIDE, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SYS_CHROOT: scamper requires these to operate)
+uuid-annotator: nobody:nogroup
+wehe: nobody:nogroup (CAP_NET_RAW: it needs to do packet captures)
+```
+
+## System services
+
+```text
+cadvisor: root:root (CAP_DAC_READ_SEARCH: allows it to read all the files it needs to gather data)
+flannel: root:root (CAP_NET_ADMIN, CAP_NET_RAW: flannel needs to do various privileged network operations)
+kube-rbac-proxy: nobody:nogroup
+kured: root:root (privileged=true: https://github.com/m-lab/ops-tracker/issues/1653)
+node-exporter: nobody:nogroup
+vector: root:root (CAP_DAC_READ_SEARCH: so that it can read all the necessary log files)
+```

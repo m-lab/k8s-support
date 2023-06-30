@@ -73,6 +73,13 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
                 containerPort: 9990,
               },
             ],
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               exp.VolumeMount('utilization'),
               {
