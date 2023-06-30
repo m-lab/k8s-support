@@ -39,23 +39,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ],
           },
         ],
-          # TODO(soltesz): eliminate in favor of native flag to wehe server.
-          /*
-          {
-            args: [
-              'cp', '/var/local/uuid/prefix', '/res/uuid_prefix_tag.txt',
-            ],
-            image: 'busybox:1.34',
-            name: 'copy-uuid-prefix',
-            volumeMounts: [
-              exp.uuid.volumemount,
-              {
-                mountPath: '/res/',
-                name: 'wehe-res',
-              },
-            ],
-          },
-          */
         containers+: [
           {
             args: [
@@ -158,7 +141,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
               {
                 // Analyzer server
-                // TODO(soltesz): update upstream.
                 containerPort: 9091,
               },
             ],
@@ -230,12 +212,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             },
           },
         ],
-          /*
-          {
-            emptyDir: {},
-            name: 'wehe-res',
-          },
-          */
       },
     },
   },
