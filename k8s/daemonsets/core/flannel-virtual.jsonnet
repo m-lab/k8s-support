@@ -4,12 +4,6 @@
 // label mlab/type=virtual. If a node tries to join without an mlab/type, its
 // network will likely not work. Pods running on virtual nodes only get an
 // internal IP address.
-//
-// The toleration "key: node-role.kubernetes.io/master" was removed because of
-// this issue: https://github.com/coreos/flannel/issues/1044. This was needed
-// because flannel pods were not getting scheduled on the master nodes due to a
-// new taint being added to the master because of this issue:
-// https://github.com/kubernetes/kubernetes/issues/44254
 
 {
   apiVersion: 'apps/v1',

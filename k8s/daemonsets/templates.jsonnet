@@ -1,7 +1,7 @@
-local ndtVersion = 'v0.20.17';
+local ndtVersion = 'v0.20.19';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
-local ndtCanaryVersion = 'v0.20.17';
+local ndtCanaryVersion = 'v0.20.19';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -61,23 +61,32 @@ local uuid = {
   },
 };
 
-
-local volume(name) = {
-  hostPath: {
-    path: '/cache/data/' + name,
-    type: 'DirectoryOrCreate',
+local data = {
+  volume(name):: {
+    hostPath: {
+      path: '/cache/data/' + name,
+      type: 'DirectoryOrCreate',
+    },
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
   },
-  name: std.strReplace(name, '/', '-') + '-data',
+  mount(name):: {
+    mountPath: '/var/spool/' + name,
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-data'),
+  },
 };
 
-local VolumeMount(name) = {
-  mountPath: '/var/spool/' + name,
-  name: std.strReplace(name, '/', '-') + '-data',
-};
-
-local VolumeMountDatatypeSchema() = {
-  mountPath: '/var/spool/datatypes',
-  name: 'var-spool-datatypes',
+local datatypes = {
+  volume(name):: {
+    hostPath: {
+      path: '/cache/datatypes/' + name,
+      type: 'DirectoryOrCreate',
+    },
+    name: std.asciiLower(std.strReplace(name, '/', '-') + '-datatypes'),
+  },
+  mount(name):: {
+    mountPath: '/var/spool/datatypes',
+    name: std.asciiLower(std.strReplace(name, '/', '-')) + '-datatypes',
+  },
 };
 
 local RBACProxy(name, port) = {
@@ -119,7 +128,7 @@ local RBACProxy(name, port) = {
 // https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
 // https://github.com/kubernetes/minikube/issues/1990
 local setDataDirOwnership(name) = {
-  local dataDir = VolumeMount(name).mountPath,
+  local dataDir = data.mount(name).mountPath,
   initContainer: {
     name: 'set-data-dir-perms',
     image: 'alpine:3.17',
@@ -133,15 +142,15 @@ local setDataDirOwnership(name) = {
       runAsUser: 0,
     },
     volumeMounts: [
-      VolumeMount(name),
+      data.mount(name),
     ],
   },
 };
 
 // The datatypes directory is where autoloading experiments drop their schema.
 // This directory is different from where experiments store their data.
-local setDatatypesDirOwnership() = {
-  local dataDir = VolumeMountDatatypeSchema().mountPath,
+local setDatatypesDirOwnership(name) = {
+  local dataDir = datatypes.mount(name).mountPath,
   initContainer: {
     name: 'set-datatypes-dir-perms',
     image: 'alpine:3.17',
@@ -154,7 +163,7 @@ local setDatatypesDirOwnership() = {
       runAsUser: 0,
     },
     volumeMounts: [
-      VolumeMountDatatypeSchema(),
+      datatypes.mount(name),
     ],
   },
 };
@@ -195,7 +204,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort
       ,
-      '-output=' + VolumeMount(expName).mountPath + '/tcpinfo',
+      '-output=' + data.mount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-exclude-srcport=9100,9990,9991,9992,9993,9994,9995,9996,9997',
@@ -224,7 +233,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
+      data.mount(expName),
       tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
@@ -243,13 +252,13 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-traceroute-output=' + VolumeMount(expName).mountPath + '/scamper1',
+      '-traceroute-output=' + data.mount(expName).mountPath + '/scamper1',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-IPCacheTimeout=10m',
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=30m',
       '-scamper.tracelb-W=15',
-      '-hopannotation-output=' + VolumeMount(expName).mountPath + '/hopannotation2',
+      '-hopannotation-output=' + data.mount(expName).mountPath + '/hopannotation2',
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-anonymize.ip=' + anonMode,
     ],
@@ -284,7 +293,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
+      data.mount(expName),
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       uuid.volumemount,
@@ -304,7 +313,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-datadir=' + VolumeMount(expName).mountPath + '/pcap',
+      '-datadir=' + data.mount(expName).mountPath + '/pcap',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
       '-anonymize.ip=' + anonMode,
@@ -349,7 +358,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
+      data.mount(expName),
       tcpinfoServiceVolume.volumemount,
       uuid.volumemount,
     ],
@@ -423,7 +432,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       runAsUser: 0,
     },
     volumeMounts: [
-      VolumeMount(expName),
+      data.mount(expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials',
@@ -492,8 +501,8 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
-      VolumeMountDatatypeSchema(),
+      data.mount(expName),
+      datatypes.mount(expName),
       {
         mountPath: '/etc/credentials',
         name: 'pusher-credentials', // jostler uses pusher's credentials
@@ -515,7 +524,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
-      '-datadir=' + VolumeMount(expName).mountPath + '/annotation2',
+      '-datadir=' + data.mount(expName).mountPath + '/annotation2',
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-maxmind.url=gs://downloader-' + PROJECT_ID + '/Maxmind/current/GeoLite2-City.tar.gz',
@@ -560,7 +569,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
       },
     },
     volumeMounts: [
-      VolumeMount(expName),
+      data.mount(expName),
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       {
@@ -681,9 +690,9 @@ local Metadata = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypes,
-  local allVolumes = datatypes + datatypesAutoloaded,
+local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
+  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
@@ -720,7 +729,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
         initContainers: [
           uuid.initContainer,
           setDataDirOwnership(name).initContainer,
-          setDatatypesDirOwnership().initContainer,
+          setDatatypesDirOwnership(name).initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
@@ -758,19 +767,13 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, 
               secretName: 'locate-heartbeat-key',
             },
           },
-          {
-            name: 'var-spool-datatypes',
-            hostPath: {
-              path: '/var/spool/datatypes',
-              type: 'DirectoryOrCreate',
-            },
-          },
+          datatypes.volume(name),
           uuid.volume,
-          volume(name),
+          data.volume(name),
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
         ] + [
-          volume(name + '/' + v) for v in allVolumes
+          data.volume(name + '/' + v) for v in allVolumes
         ],
       },
     },
@@ -824,7 +827,11 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a volumemount for a given datatype. All produced volume mounts
   // in /var/spool/name/
-  VolumeMount(name):: VolumeMount(name),
+  VolumeMount(name):: data.mount(name),
+
+  // Returns a volumemount for jostler datatypes directory. Must be included for
+  // all experiments producing autoloaded data.
+  VolumeMountDatatypes(name):: datatypes.mount(name),
 
   // Returns a "container" configuration for pusher that will upload the named experiment datatypes.
   // Users MUST declare a "pusher-credentials" volume as part of the deployment.

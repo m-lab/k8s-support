@@ -1,9 +1,9 @@
-local datatypes = ['ndt8'];
+local datatypes = ['throughput1'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
-local expVersion = 'v0.1.0';
+local expVersion = 'v0.2.0';
 local services = [
-  'msak/ndt8=ws:///ndt/v8/download,ws:///ndt/v8/upload,wss:///ndt/v8/download,wss:///ndt/v8/upload',
+  'msak/throughput1=ws:///throughput/v1/download,ws:///throughput/v1/upload,wss:///throughput/v1/download,wss:///throughput/v1/upload',
 ];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
@@ -24,14 +24,10 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             command: [
               '/bin/sh',
               '-c',
-              'cp /msak/ndt8.json /var/spool/datatypes/ndt8.json',
+              'cp /msak/throughput1.json /var/spool/datatypes/throughput1.json',
             ],
             volumeMounts: [
-              {
-                mountPath: '/var/spool/datatypes',
-                name: 'var-spool-datatypes',
-                readOnly: false,
-              },
+              exp.VolumeMountDatatypes(expName),
             ],
           },
         ],
