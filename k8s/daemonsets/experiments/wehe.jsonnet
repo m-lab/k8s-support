@@ -38,7 +38,9 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
             ],
           },
+        ],
           # TODO(soltesz): eliminate in favor of native flag to wehe server.
+          /*
           {
             args: [
               'cp', '/var/local/uuid/prefix', '/res/uuid_prefix_tag.txt',
@@ -53,7 +55,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               },
             ],
           },
-        ],
+          */
         containers+: [
           {
             args: [
@@ -130,8 +132,12 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                   },
                 },
               },
+              {
+                name: 'UUID_PREFIX',
+                value: '/var/local/uuid/prefix',
+              },
             ],
-            image: 'measurementlab/wehe-py3:v0.3.3',
+            image: 'measurementlab/wehe-py3:v0.3.4',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -191,11 +197,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 mountPath: '/wehe/ssl/',
                 name: 'wehe-ca-cache',
               },
-              {
-                mountPath: '/res/',
-                name: 'wehe-res',
-              },
-              // TODO(soltesz): verify this is used by wehe server.
               exp.uuid.volumemount,
               exp.VolumeMountDatatypes(expName),
             ] + [
@@ -228,11 +229,13 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               secretName: 'locate-verify-keys',
             },
           },
+        ],
+          /*
           {
             emptyDir: {},
             name: 'wehe-res',
           },
-        ],
+          */
       },
     },
   },
