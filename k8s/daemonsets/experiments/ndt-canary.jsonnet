@@ -42,7 +42,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-ndt5_ws_addr=:3001', // default, public ndt5 port.
               '-ndt5.token.required=true',
               '-ndt7.token.required=true',
-              '-token.machine=${NODE_NAME}',
+              '-token.machine=$(NODE_NAME)',
               '-htmldir=html/mlab',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
