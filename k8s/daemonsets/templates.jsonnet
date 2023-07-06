@@ -208,7 +208,8 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-exclude-srcport=9100,9090,9091,9989,9990,9991,9992,9993,9994,9995,9996,9997',
-      '-exclude-dstip=172.25.0.1',
+      // Exclude k8s api server, kube-ip static ips mlab-oti and mlab-staging.
+      '-exclude-dstip=172.25.0.1,35.202.153.90,35.188.150.110,35.185.54.7,35.243.193.167',
       '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
