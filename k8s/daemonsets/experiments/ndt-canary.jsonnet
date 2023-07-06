@@ -6,7 +6,7 @@ local services = [
   'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
 ];
 
-exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', datatypes, [], true, 'virtual') + {
   metadata+: {
     name: expName + '-canary',
   },
@@ -19,7 +19,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
     template+: {
       metadata+: {
         annotations+: {
-          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+          'secret.reloader.stakater.com/reload': 'measurement-lab-org-tls',
         },
         labels+: {
           workload: expName + '-canary',
@@ -27,49 +27,42 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         },
       },
       spec+: {
-        nodeSelector+: {
-          'mlab/ndt-version': 'canary',
+        hostNetwork: true,
+        nodeSelector: {
           'mlab/type': 'virtual',
+          'mlab/ndt-version': 'canary',
         },
         serviceAccountName: 'heartbeat-experiment',
         containers+: [
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtCanaryVersion,
-            // The max-rate flag value is stored in a file on the host
-            // filesystem, created by the systemd max-rate.service.
-            command: [
-              '/bin/sh',
-              '-c',
-              '/ndt-server -txcontroller.max-rate=$(cat /metadata/iface-max-rate) $@',
-              '--',
-            ],
             args: [
-              '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/' + expName,
-              '-txcontroller.device=bond0',
-              '-htmldir=html/mlab',
-              '-key=/certs/tls.key',
-              '-cert=/certs/tls.crt',
-              '-token.machine=$(NODE_NAME)',
-              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-ndt7.token.required=true',
-              '-label=type=virtual',
-              '-label=deployment=canary',
               '-ndt5_addr=127.0.0.1:3002', // any non-public port.
               '-ndt5_ws_addr=:3001', // default, public ndt5 port.
               '-ndt5.token.required=true',
+              '-ndt7.token.required=true',
+              '-token.machine=$(NODE_NAME)',
+              '-htmldir=html/mlab',
+              '-uuid-prefix-file=' + exp.uuid.prefixfile,
+              '-prometheusx.listen-address=127.0.0.1:9990',
+              '-datadir=/var/spool/' + expName,
+              '-key=/certs/tls.key',
+              '-cert=/certs/tls.crt',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+              '-txcontroller.device=bond0',
+              // Equinix machines of type m3-small-x86 have a 50Gbps
+              // unthrottled link. Set max-rate to 40Gbps.
+              '-txcontroller.max-rate=40000000000',
+              '-label=type=virtual',
+              '-label=deployment=canary',
+              '-label=external-ip=@' + exp.Metadata.path + '/external-ip',
+              '-label=external-ipv6=@' + exp.Metadata.path + '/external-ipv6',
+              '-label=machine-type=@' + exp.Metadata.path + '/machine-type',
+              '-label=network-tier=@' + exp.Metadata.path + '/network-tier',
+              '-label=zone=@' + exp.Metadata.path + '/zone',
             ],
             env: [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
               {
                 name: 'NODE_NAME',
                 valueFrom: {
@@ -81,10 +74,14 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             ],
             securityContext: {
               capabilities: {
+                add: [
+                  'NET_BIND_SERVICE',
+                ],
                 drop: [
                   'all',
                 ],
               },
+              runAsUser: 0,
             },
             volumeMounts: [
               {
@@ -100,18 +97,16 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               exp.uuid.volumemount,
               exp.Metadata.volumemount,
             ] + [
-              exp.VolumeMount(expName + '/' + d) for d in datatypes
+              exp.VolumeMount(expName + '/' + d)
+              for d in datatypes
             ],
-            ports: [
-              {
-                containerPort: 9990,
-              },
-            ],
-
+            ports: [],
           },
+          exp.RBACProxy(expName, 9990),
         ] + std.flattenArrays([
-          exp.Heartbeat(expName, false, services),
+          exp.Heartbeat(expName, true, services),
         ]),
+        [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: exp.terminationGracePeriodSeconds,
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
