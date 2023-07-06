@@ -47,7 +47,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=$(PRIVATE_IP):9990',
               '-datadir=/var/spool/' + expName,
-              '-txcontroller.device=net1',
+              '-txcontroller.device=bond0',
               '-htmldir=html/mlab',
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
@@ -56,6 +56,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-ndt7.token.required=true',
               '-label=type=virtual',
               '-label=deployment=canary',
+              '-ndt5_addr=127.0.0.1:3002', // any non-public port.
+              '-ndt5_ws_addr=:3001', // default, public ndt5 port.
+              '-ndt5.token.required=true',
             ],
             env: [
               {
