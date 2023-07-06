@@ -14,6 +14,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
     selector+: {
       matchLabels+: {
         workload: expName + '-canary',
+        'site-type': 'virtual',
       },
     },
     template+: {
