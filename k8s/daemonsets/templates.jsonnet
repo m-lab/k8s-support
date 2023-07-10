@@ -207,7 +207,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       '-output=' + data.mount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
-      '-exclude-srcport=9100,9989,9990,9991,9992,9993,9994,9995,9996,9997',
+      '-exclude-srcport=9100,9990,9991,9992,9993,9994,9995,9996,9997',
       '-anonymize.ip=' + anonMode,
     ],
     env: if hostNetwork then [] else [
