@@ -238,6 +238,17 @@ groups:
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformhardware_machineuptoolong
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/_fugwnWZk/ops-tactical-and-sre-overview
 
+  - alert: PlatformCluster_TooMuchClockDrift
+    expr: abs(timestamp(node_time_seconds) - node_time_seconds) > 30
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: A machine's clock has drifted by more than 30s
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_toomuchclockdrift
+
   # Too many OS releases on the platform for too long. This could happen, for
   # example, if a new epoxy-images version was only partially deployed to the
   # platform.
