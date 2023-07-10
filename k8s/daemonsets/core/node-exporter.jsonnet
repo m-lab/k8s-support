@@ -42,12 +42,13 @@ local exp = import '../templates.jsonnet';
               '--collector.stat',
               '--collector.textfile',
               '--collector.textfile.directory=/var/spool/node-exporter',
+              '--collector.time',
               '--path.procfs=/host/proc',
               '--path.rootfs=/host/root',
               '--path.sysfs=/host/sys',
               '--web.listen-address=127.0.0.1:9100',
             ],
-            image: 'prom/node-exporter:v1.3.1',
+            image: 'prom/node-exporter:v1.6.0',
             name: 'node-exporter',
             resources: {
               limits: {
