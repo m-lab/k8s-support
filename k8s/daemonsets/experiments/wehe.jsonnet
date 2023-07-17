@@ -1,10 +1,11 @@
+local autoloadedDatatypes = ['replayInfo1', 'clientXputs1', 'decisions1'];
 local exp = import '../templates.jsonnet';
 local expName = 'wehe';
 local services = [
   'wehe/replay=wss://:4443/v0/envelope/access',
 ];
 
-exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay'], []) + {
+exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay'], autoloadedDatatypes) + {
   spec+: {
     template+: {
       metadata+: {
@@ -50,6 +51,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               '-envelope.machine=$(MLAB_NODE_NAME)',
               '-envelope.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-envelope.token-required=true',
+              '-prometheusx.listen-address=:9989',
               // Maximum timeout for a client to hold the envelope open.
               '-timeout=10m',
             ],
@@ -94,7 +96,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             // Advertise the prometheus port so it can be discovered by Prometheus.
             ports: [
               {
-                containerPort: 9990,
+                containerPort: 9989,
               },
             ],
           },
@@ -112,12 +114,16 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                   },
                 },
               },
+              {
+                name: 'UUID_PREFIX',
+                value: '/var/local/uuid/prefix',
+              },
             ],
-            image: 'measurementlab/wehe-py3:v0.2.10',
+            image: 'measurementlab/wehe-py3:v0.3.7',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
-                port: 9090,
+                port: 9990,
               },
               // After startup, liveness should never fail.
               initialDelaySeconds: 300, // TODO: eliminate with k8s v1.18+.
@@ -130,7 +136,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             ports: [
               {
                 // Replay server
-                containerPort: 9090,
+                containerPort: 9990,
               },
               {
                 // Analyzer server
@@ -160,7 +166,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             startupProbe+: {
               httpGet: {
                 path: '/metrics',
-                port: 9090,
+                port: 9990,
               },
               // Allow up to 5min for the service to startup: 30*10.
               failureThreshold: 30,
@@ -172,6 +178,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 mountPath: '/wehe/ssl/',
                 name: 'wehe-ca-cache',
               },
+              exp.uuid.volumemount,
+              exp.VolumeMountDatatypes(expName),
+            ] + [
+              exp.VolumeMount(expName + '/' + d) for d in autoloadedDatatypes
             ],
           },
         ] + std.flattenArrays([
