@@ -520,7 +520,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.5.1',
+    image: 'measurementlab/uuid-annotator:v0.5.3',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
