@@ -589,7 +589,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.14.25',
+    image: 'measurementlab/heartbeat:v0.14.26',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
