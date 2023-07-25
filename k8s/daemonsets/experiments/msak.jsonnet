@@ -1,7 +1,7 @@
 local datatypes = ['throughput1'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
-local expVersion = 'v0.3.0';
+local expVersion = 'v0.3.1';
 local services = [
   'msak/throughput1=ws:///throughput/v1/download,ws:///throughput/v1/upload,wss:///throughput/v1/download,wss:///throughput/v1/upload',
   'msak/latency1=http:///latency/v1/authorize,https:///latency/v1/authorize',
