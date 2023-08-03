@@ -7,7 +7,7 @@ podAnnotations:
   prometheus.io/scheme: http
 podLabels:
   workload: kured
-readinessProbe: {}
+readinessProbe: null
 tolerations:
 - key: lame-duck
   operator: Exists
