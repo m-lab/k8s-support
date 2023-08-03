@@ -2,6 +2,7 @@ configuration:
   lockTtl: 4h
   period: 1h
   rebootSentinel: /run/mlab-reboot
+livenessProbe: null
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/scheme: http
