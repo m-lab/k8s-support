@@ -7,8 +7,8 @@ podAnnotations:
   prometheus.io/scheme: http
 podLabels:
   workload: kured
+readinessProbe: {}
 tolerations:
 - key: lame-duck
   operator: Exists
   effect: NoSchedule
-
