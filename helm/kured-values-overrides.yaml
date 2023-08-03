@@ -3,13 +3,11 @@ configuration:
   metricsPort: 9092
   period: 1h
   rebootSentinel: /run/mlab-reboot
-livenessProbe: null
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/scheme: http
 podLabels:
   workload: kured
-readinessProbe: null
 tolerations:
 - key: lame-duck
   operator: Exists
