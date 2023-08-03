@@ -1,5 +1,6 @@
 configuration:
   lockTtl: 4h
+  metricsPort: 9092
   period: 1h
   rebootSentinel: /run/mlab-reboot
 livenessProbe: null
