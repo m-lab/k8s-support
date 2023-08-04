@@ -11,4 +11,3 @@ tolerations:
 - key: lame-duck
   operator: Exists
   effect: NoSchedule
-
