@@ -23,13 +23,13 @@ customConfig:
     kubernetes_logs:
       type: kubernetes_logs
   transforms:
-    kernel_log:
+    kernel_log_filter:
       type: filter
       inputs:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
-    kubernetes_logs:
+    kubernetes_logs_filter:
       type: filter
       inputs:
       - kubernetes_logs
