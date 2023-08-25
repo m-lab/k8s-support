@@ -29,6 +29,19 @@ customConfig:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
+    kubernetes_logs:
+      type: filter
+      inputs:
+      - kubernetes_logs
+      # 3rd-party service logs
+      condition."kubernetes.container_name.regex" != "(revtrvp|wehe|dash)"
+      # tcp-info
+      condition."message.regex" != "saver\.go:[0-9]+:
+      (Cache|Closed|Closing|Missing|Starting)"
+      # traceroute-caller
+      condition."message.regex" != "command (finished|started|succeeded)
+      # packet-headers
+      condition."message.regex" != "tcp\.go:[0-9]+: (Context|Create|Successfully)"
 env:
 - name: VECTOR_LOG
   value: info
