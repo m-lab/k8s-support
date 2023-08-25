@@ -7,8 +7,8 @@ customConfig:
       type: gcp_stackdriver_logs
       credentials_path: "/etc/vector/keys/vector.json"
       inputs:
-      - kernel_log
-      - kubernetes_logs
+      - kernel_log_filter
+      - kubernetes_logs_filter
       project_id: {{PROJECT}}
       log_id: "${VECTOR_SELF_NODE_NAME}"
       resource:
@@ -23,12 +23,24 @@ customConfig:
     kubernetes_logs:
       type: kubernetes_logs
   transforms:
-    kernel_log:
+    kernel_log_filter:
       type: filter
       inputs:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
+    kubernetes_logs_filter:
+      type: filter
+      inputs:
+      - kubernetes_logs
+      # Filter logs from 3rd-party services and some logs from chatty sidecars
+      condition: >-
+        !match(string!(.kubernetes.container_name), r'(revtrvp|wehe|dash)') &&
+        !match_any(string!(.message), [
+          r'saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)',
+          r'command (finished|started|succeeded)',
+          r'tcp\.go:[0-9]+: (Context|Create|Successfully)'
+        ])
 env:
 - name: VECTOR_LOG
   value: info
