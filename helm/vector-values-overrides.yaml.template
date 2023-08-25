@@ -35,10 +35,10 @@ customConfig:
       - kubernetes_logs
       # Filter logs from 3rd-party services and some logs from chatty sidecars
       condition: >-
-        ".kubernetes.container_name.regex" != "(revtrvp|wehe|dash)" ||
-        ".message.regex" != "saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)" ||
-        ".message.regex" != "command (finished|started|succeeded) ||
-        ".message.regex" != "tcp\.go:[0-9]+: (Context|Create|Successfully)"
+        .kubernetes.container_name.regex != "(revtrvp|wehe|dash)" &&
+        .message.regex != "saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)" &&
+        .message.regex != "command (finished|started|succeeded) &&
+        .message.regex != "tcp\.go:[0-9]+: (Context|Create|Successfully)"
 env:
 - name: VECTOR_LOG
   value: info
