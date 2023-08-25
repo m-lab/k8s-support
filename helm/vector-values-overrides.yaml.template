@@ -7,8 +7,8 @@ customConfig:
       type: gcp_stackdriver_logs
       credentials_path: "/etc/vector/keys/vector.json"
       inputs:
-      - kernel_log
-      - kubernetes_logs
+      - kernel_log_filter
+      - kubernetes_logs_filter
       project_id: {{PROJECT}}
       log_id: "${VECTOR_SELF_NODE_NAME}"
       resource:
