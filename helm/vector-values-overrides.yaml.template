@@ -35,7 +35,7 @@ customConfig:
       - kubernetes_logs
       # Filter logs from 3rd-party services and some logs from chatty sidecars
       condition: >-
-        !match(.kubernetes.container_name, r'(revtrvp|wehe|dash)') &&
+        !match(string!(.kubernetes.container_name), r'(revtrvp|wehe|dash)') &&
         !match_any(string!(.message), [
           r'saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)',
           r'command (finished|started|succeeded)',
