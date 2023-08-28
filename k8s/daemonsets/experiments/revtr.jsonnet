@@ -7,7 +7,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], [])
         labels+: {
           'vector.dev/exclude': 'true',
         },
-      }
+      },
       spec+: {
         containers+: [
           {
