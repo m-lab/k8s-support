@@ -36,9 +36,9 @@ customConfig:
       # Filter certain overly chatty logs entries from sidecar containers.
       condition: >-
         .message != "" &&
-        !contains(.message, "PCAP capture cancelled with no packets") &&
-        !contains(.message, "failed to find destination") &&
-        !contains(.message, "failed to extract hops") &&
+        !contains(string!(.message), "PCAP capture cancelled with no packets") &&
+        !contains(string!(.message), "failed to find destination") &&
+        !contains(string!(.message), "failed to extract hops") &&
         !match_any(string!(.message), [
           r'saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)',
           r'tcp\.go:[0-9]+: (Context|Create|Successfully)',
