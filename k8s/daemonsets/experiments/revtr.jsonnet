@@ -5,7 +5,7 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], [])
     template+: {
       metadata+: {
         labels+: {
-          vector.dev/exclude: 'true',
+          'vector.dev/exclude': 'true',
         },
       }
       spec+: {
