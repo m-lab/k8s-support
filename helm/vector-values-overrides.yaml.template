@@ -33,9 +33,8 @@ customConfig:
       type: filter
       inputs:
       - kubernetes_logs
-      # Filter logs from 3rd-party experiment pods, and some logs from chatty sidecars.
+      # Filter certain overly chatty logs entries from sidecar containers.
       condition: >-
-        !includes(["neubot", "revtr", "wehe"], .kubernetes.pod_labels.workload) &&
         !match_any(string!(.message), [
           r'saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)',
           r'command (finished|started|succeeded)',

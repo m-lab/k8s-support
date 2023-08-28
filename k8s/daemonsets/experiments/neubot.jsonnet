@@ -12,6 +12,9 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
         annotations+: {
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
+        labels+: {
+          "vector.dev/exclude": "true",
+        },
       },
       spec+: {
         serviceAccountName: 'heartbeat-experiment',
