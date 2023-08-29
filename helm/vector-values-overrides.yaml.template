@@ -29,22 +29,6 @@ customConfig:
       - journald
       # This catches anything with priority warning (4) to critical (0).
       condition: .SYSLOG_IDENTIFIER == "kernel" && includes(["0", "1", "2", "3", "4"], .PRIORITY)
-    kubernetes_logs_filter:
-      type: filter
-      inputs:
-      - kubernetes_logs
-      # Filter certain overly chatty logs entries from sidecar containers.
-      condition: >-
-        .message != "" &&
-        !contains(string!(.message), "PCAP capture cancelled with no packets") &&
-        !contains(string!(.message), "failed to find destination") &&
-        !contains(string!(.message), "failed to extract hops") &&
-        !match_any(string!(.message), [
-          r'saver\.go:[0-9]+: (Cache|Closed|Closing|Missing|Starting)',
-          r'tcp\.go:[0-9]+: (Context|Create|Successfully)',
-          r'command (finished|started|succeeded)',
-          r'"type":"(cycle-start|tracelb|cycle-stop)"'
-        ])
 env:
 - name: VECTOR_LOG
   value: info
