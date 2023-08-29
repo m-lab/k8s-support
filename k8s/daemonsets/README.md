@@ -103,4 +103,4 @@ search the logs in some way. Other than that, the main difference is that logs
 in the cluster will only live as long as the log size stays under some
 threshold, whereas GCP will store them unconditionally for 30 days. To enable
 pushing container logs for a pod to GCP, remove the aforementioned label from
-the pod of interest.
+the pod of interest, or change the value to "false".
