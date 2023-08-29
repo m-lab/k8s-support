@@ -13,6 +13,9 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         annotations+: {
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
+        labels+: {
+          "vector.dev/exclude": "true",
+        },
       },
       spec+: {
         nodeSelector+: {
