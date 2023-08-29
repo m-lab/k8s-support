@@ -716,6 +716,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
         labels: {
           workload: name,
           'site-type': 'physical',
+          'vector.dev/exclude': 'true',
         },
       },
       spec: {
