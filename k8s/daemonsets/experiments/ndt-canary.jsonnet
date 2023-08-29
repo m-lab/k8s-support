@@ -24,7 +24,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         labels+: {
           workload: expName + '-canary',
           'site-type': 'virtual',
-          'vector.dev/exclude': 'true',
         },
       },
       spec+: {

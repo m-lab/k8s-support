@@ -8,11 +8,6 @@ local nodeinfoconfig = import '../../../config/nodeinfo/config.jsonnet';
 exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], ['nodeinfo1'], true) + {
   spec+: {
     template+: {
-      metadata+: {
-        labels+: {
-          'vector.dev/exclude': 'true',
-        },
-      },
       spec+: {
         containers+: [
           {

@@ -52,10 +52,10 @@ like:
 For example:
 
 ```sh
-$ curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9990/proxy/debug/pprof/
-$ curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9995/proxy/metrics
-$ go tool pprof -top http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9991/proxy/debug/pprof/heap
-$ google-chrome http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9992/proxy/debug/pprof/
+curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9990/proxy/debug/pprof/
+curl http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9995/proxy/metrics
+go tool pprof -top http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9991/proxy/debug/pprof/heap
+google-chrome http://localhost:8001/api/v1/namespaces/default/pods/ndt-w6tr6:9992/proxy/debug/pprof/
 ```
 
 To access metrics or pprof data for a given service, simply modify the URL
@@ -82,11 +82,25 @@ Forwarding from [::1]:9991 -> 9991
 Using localhost:9991 you can now access the remote services.
 
 ```sh
-$ curl http://localhost:9991/debug/pprof/
-$ curl http://localhost:9991/metrics/
-$ go tool pprof -top http://localhost:9991/debug/pprof/heap
-$ google-chrome http://localhost:9991/debug/pprof/
+curl http://localhost:9991/debug/pprof/
+curl http://localhost:9991/metrics/
+go tool pprof -top http://localhost:9991/debug/pprof/heap
+google-chrome http://localhost:9991/debug/pprof/
 ```
 
 To access metrics or pprof data for another service, simply use an alternate
 port for `kubectl port-forward`.
+
+## Container Logs
+
+By default we do not push any container logs to Google Cloud Logging with
+Vector. Every experiment pod has the `vector.dev/exclude: true` label, which
+causes Vector to ignore logs from any container in the pod. In almost every
+case, container logs that exist in the cluster are good enough. The only case
+where we might want to push container logs to GCP is one in which we need more
+than a couple days worth of logs and need to use Cloud Logging expressions to
+search the logs in some way. Other than that, the main difference is that logs
+in the cluster will only live as long as the log size stays under some
+threshold, whereas GCP will store them unconditionally for 30 days. To enable
+pushing container logs for a pod to GCP, remove the aforementioned label from
+the pod of interest.

@@ -12,9 +12,6 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
         annotations+: {
           "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
         },
-        labels+: {
-          "vector.dev/exclude": "true",
-        },
       },
       spec+: {
         serviceAccountName: 'heartbeat-experiment',

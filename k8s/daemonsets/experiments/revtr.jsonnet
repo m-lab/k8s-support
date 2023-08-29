@@ -3,11 +3,6 @@ local exp = import '../templates.jsonnet';
 exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], []) + {
   spec+: {
     template+: {
-      metadata+: {
-        labels+: {
-          'vector.dev/exclude': 'true',
-        },
-      },
       spec+: {
         containers+: [
           {
