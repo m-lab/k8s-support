@@ -7,7 +7,7 @@ customConfig:
       type: prometheus_exporter
       inputs:
       - vector_metrics
-	  address: 0.0.0.0:9090
+      address: 0.0.0.0:9090
     stackdriver:
       type: gcp_stackdriver_logs
       credentials_path: "/etc/vector/keys/vector.json"
