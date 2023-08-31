@@ -25,8 +25,8 @@ customConfig:
       type: journald
     kubernetes_logs:
       type: kubernetes_logs
-	vector_metrics:
-	  type: vector_metrics
+    vector_metrics:
+      type: vector_metrics
   transforms:
     kernel_log_filter:
       type: filter
