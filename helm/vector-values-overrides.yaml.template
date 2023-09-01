@@ -3,6 +3,11 @@ customConfig:
     enabled: false
   data_dir: /tmp
   sinks:
+    prometheus:
+      type: prometheus_exporter
+      inputs:
+      - vector_metrics
+      address: 0.0.0.0:9090
     stackdriver:
       type: gcp_stackdriver_logs
       credentials_path: "/etc/vector/keys/vector.json"
@@ -21,6 +26,8 @@ customConfig:
       type: journald
     kubernetes_logs:
       type: kubernetes_logs
+    vector_metrics:
+      type: internal_metrics
   transforms:
     kernel_log_filter:
       type: filter
@@ -31,6 +38,8 @@ customConfig:
 env:
 - name: VECTOR_LOG
   value: info
+extraContainersPorts:
+- 9090
 extraVolumes:
 - name: credentials
   secret:
