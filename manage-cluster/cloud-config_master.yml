@@ -158,7 +158,7 @@ write_files:
         stream_server_port = "0"
         stream_idle_timeout = "4h0m0s"
         enable_selinux = false
-        sandbox_image = "k8s.gcr.io/pause:3.1"
+        sandbox_image = "registry.k8s.io/pause:3.1"
         stats_collect_period = 10
         systemd_cgroup = false
         enable_tls_streaming = false

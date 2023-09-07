@@ -34,7 +34,7 @@
                 value: 'default',
               },
             ],
-            image: 'stakater/reloader:v0.0.109',
+            image: 'stakater/reloader:v1.0.40',
             imagePullPolicy: 'IfNotPresent',
             name: 'reloader',
             ports: [
