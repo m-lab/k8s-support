@@ -611,7 +611,7 @@ local Revtr(expName, tcpPort) = [
       },
     ],
     ports: [
-      tcpPort,
+      {containerPort: tcpPort},
     ],
     volumeMounts: [
       tcpinfoServiceVolume.volumemount,
