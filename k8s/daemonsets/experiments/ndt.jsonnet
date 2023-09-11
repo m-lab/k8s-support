@@ -100,7 +100,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           // NOTE: exclude from production until design doc is approved, service
           // is monitored and scales to millions of requests/day.
           if PROJECT_ID == 'mlab-sandbox' then [ exp.Revtr(expName) ] else []
-        ),
+        ]),
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
