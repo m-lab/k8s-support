@@ -610,8 +610,9 @@ local Revtr(expName, tcpPort) = [
         },
       },
     ],
-    // TODO: add ports for monitoring the revtr sidecar.
-    ports: [],
+    ports: [
+      tcpPort,
+    ],
     volumeMounts: [
       tcpinfoServiceVolume.volumemount,
     ],
