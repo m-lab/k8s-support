@@ -50,6 +50,7 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
 gsutil cp gs://${!GCS_BUCKET_K8S}/alertmanager-basicauth.yaml secret-configs/.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/locate secrets/.
 gsutil cp -R gs://${!GCS_BUCKET_K8S}/locate-heartbeat secrets/.
+gsutil cp -R gs://${!GCS_BUCKET_K8S}/revtr-apikey secrets/.
 
 # Convert secret data into configs.
 kubectl create secret generic uuid-annotator-credentials --from-file secrets/uuid-annotator.json \
@@ -74,4 +75,6 @@ kubectl create secret generic locate-verify-keys --from-file secrets/locate/ \
     --dry-run=client -o json > secret-configs/locate-verify-keys.json
 kubectl create secret generic locate-heartbeat-key --from-file secrets/locate-heartbeat/ \
     --dry-run=client -o json > secret-configs/locate-heartbeat-key.json
+kubectl create secret generic revtr-apikey --from-file secrets/revtr-apikey/ \
+    --dry-run=client -o json > secret-configs/revtr-apikey.json
 

@@ -5,6 +5,7 @@ local services = [
   'ndt/ndt7=ws:///ndt/v7/download,ws:///ndt/v7/upload,wss:///ndt/v7/download,wss:///ndt/v7/upload',
   'ndt/ndt5=ws://:3001/ndt_protocol,wss://:3010/ndt_protocol',
 ];
+local PROJECT_ID = std.extVar('PROJECT_ID');
 
 exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
   spec+: {
@@ -95,6 +96,10 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
           }
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
+        ]) + std.flattenArrays([
+          // NOTE: exclude from production until design doc is approved, service
+          // is monitored and scales to millions of requests/day.
+          if PROJECT_ID == 'mlab-sandbox' then exp.Revtr(expName) else []
         ]),
         volumes+: [
           {
@@ -110,6 +115,12 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             },
           },
           exp.Metadata.volume,
+          {
+            name: 'revtr-apikey',
+            secret: {
+              secretName: 'revtr-apikey',
+            },
+          },
         ],
       },
     },

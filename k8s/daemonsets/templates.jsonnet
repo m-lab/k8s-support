@@ -207,7 +207,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
       '-output=' + data.mount(expName).mountPath + '/tcpinfo',
       '-uuid-prefix-file=' + uuid.prefixfile,
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
-      '-exclude-srcport=9100,9090,9091,9989,9990,9991,9992,9993,9994,9995,9996,9997',
+      '-exclude-srcport=9100,9090,9091,9989,9990,9991,9992,9993,9994,9995,9996,9997,9998',
       // Exclude k8s api server, kube-ip static ips mlab-oti and mlab-staging.
       '-exclude-dstip=172.25.0.1,35.202.153.90,35.188.150.110,35.185.54.7,35.243.193.167',
       '-anonymize.ip=' + anonMode,
@@ -586,6 +586,40 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   else []
 ;
 
+local Revtr(expName, tcpPort) = [
+  {
+    name: 'revtr-sidecar',
+    image: 'kvermeul/revtr-sidecar:v1.1.1',
+    args: [
+      '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
+      '-revtr.hostname=revtr.ccs.neu.edu',
+      '-revtr.grpcPort=9999',
+      '-prometheus.port='+tcpPort,
+      '-revtr.sampling=100',
+      '-revtr.APIKey=$(REVTR_APIKEY)',
+      '-loglevel=debug',
+    ],
+    env: [
+      {
+        name: 'REVTR_APIKEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: 'revtr-apikey',
+            key: 'revtr-apikey-txt',
+          },
+        },
+      },
+    ],
+    ports: [
+      {containerPort: tcpPort},
+    ],
+    volumeMounts: [
+      tcpinfoServiceVolume.volumemount,
+    ],
+  }
+]
+;
+
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
@@ -850,6 +884,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Volumes, volumemounts and other data and configs for experiment metadata.
   Metadata:: Metadata,
+
+  // Returns a "container" configuration for the revtr sidecar container.
+  Revtr(expName):: Revtr(expName, 9998),
 
   // Helper object containing uuid-related filenames, volumes, and volumemounts.
   uuid: uuid,
