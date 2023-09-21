@@ -30,19 +30,29 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         hostNetwork: true,
         nodeSelector: {
           'mlab/type': 'virtual',
-          'mlab/run': 'ndt-canary',
+          'mlab/run': expName + '-canary',
         },
         serviceAccountName: 'heartbeat-experiment',
         containers+: [
           {
             name: 'ndt-server',
             image: 'measurementlab/ndt-server:' + exp.ndtCanaryVersion,
+            // Virtual machines are part of managed instances groups (MIG), and
+            // each VM name ends in a random suffix. The load balancer name for
+            // the machine (no suffix) is the name used to generate tokens, so
+            // we strip off suffix and use that name as the value for the
+            // -token.machine flag.
+            command: [
+              '/bin/sh',
+              '-c',
+              '/ndt-server -token.machine=${NODE_NAME/org-*/org} $@',
+              '--',
+            ],
             args: [
               '-ndt5_addr=127.0.0.1:3002', // any non-public port.
               '-ndt5_ws_addr=:3001', // default, public ndt5 port.
               '-ndt5.token.required=true',
               '-ndt7.token.required=true',
-              '-token.machine=$(NODE_NAME)',
               '-htmldir=html/mlab',
               '-uuid-prefix-file=' + exp.uuid.prefixfile,
               '-prometheusx.listen-address=127.0.0.1:9990',
@@ -50,10 +60,11 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-txcontroller.device=bond0',
-              // Equinix machines of type m3-small-x86 have a 50Gbps
-              // unthrottled link. Set max-rate to 40Gbps.
-              '-txcontroller.max-rate=40000000000',
+              '-txcontroller.device=ens4',
+              // GCE VMs have an egress rate limit of 7Gbps to Internet
+              // addresses. Setting max-rate to 4Gbps should leave headroom for
+              // very fast clients.
+              '-txcontroller.max-rate=4000000000',
               '-label=type=virtual',
               '-label=deployment=canary',
               '-label=external-ip=@' + exp.Metadata.path + '/external-ip',
