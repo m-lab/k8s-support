@@ -197,7 +197,7 @@ local uuidannotatorServiceVolume = {
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
-    image: 'measurementlab/tcp-info:v1.8.0',
+    image: 'measurementlab/tcp-info:v1.9.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
