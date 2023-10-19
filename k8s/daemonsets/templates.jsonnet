@@ -589,7 +589,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Revtr(expName, tcpPort) = [
   {
     name: 'revtr-sidecar',
-    image: 'kvermeul/revtr-sidecar:v1.2.1',
+    image: 'kvermeul/revtr-sidecar:v1.3.0',
     args: [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-revtr.hostname=revtr.ccs.neu.edu',
