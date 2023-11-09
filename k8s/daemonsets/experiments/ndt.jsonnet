@@ -99,7 +99,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
         ]) + std.flattenArrays([
           // NOTE: exclude from production until design doc is approved, service
           // is monitored and scales to millions of requests/day.
-          if PROJECT_ID != 'mlab-oti' then exp.Revtr(expName) else []
+          exp.Revtr(expName)
         ]),
         volumes+: [
           {
