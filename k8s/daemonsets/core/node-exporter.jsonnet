@@ -48,7 +48,7 @@ local exp = import '../templates.jsonnet';
               '--path.sysfs=/host/sys',
               '--web.listen-address=127.0.0.1:9100',
             ],
-            image: 'prom/node-exporter:v1.6.0',
+            image: 'prom/node-exporter:v1.7.0',
             name: 'node-exporter',
             resources: {
               limits: {
@@ -111,7 +111,7 @@ local exp = import '../templates.jsonnet';
                 },
               },
             ],
-            image: 'quay.io/brancz/kube-rbac-proxy:v0.11.0',
+            image: 'quay.io/brancz/kube-rbac-proxy:v0.15.0',
             name: 'kube-rbac-proxy',
             ports: [
               {
