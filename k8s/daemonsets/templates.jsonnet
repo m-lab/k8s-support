@@ -450,7 +450,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     name: 'jostler',
-    image: 'measurementlab/jostler:v1.0.9',
+    image: 'measurementlab/jostler:v1.1.2',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
