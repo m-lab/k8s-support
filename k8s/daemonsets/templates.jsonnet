@@ -620,6 +620,22 @@ local Revtr(expName, tcpPort) = [
 ]
 ;
 
+local Metadata = {
+  path: '/metadata',
+  volumemount: {
+    mountPath: Metadata.path,
+    name: 'metadata',
+    readOnly: true,
+  },
+  volume: {
+    hostPath: {
+      path: '/var/local/metadata',
+      type: 'Directory',
+    },
+    name: 'metadata',
+  },
+};
+
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
@@ -703,28 +719,13 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         name: 'locate-heartbeat-key',
         readOnly: true,
       },
+      Metadata.volumemount,
     ],
   }] +
   if hostNetwork then
     [RBACProxy('heartbeat', tcpPort)]
   else []
 ;
-
-local Metadata = {
-  path: '/metadata',
-  volumemount: {
-    mountPath: Metadata.path,
-    name: 'metadata',
-    readOnly: true,
-  },
-  volume: {
-    hostPath: {
-      path: '/var/local/metadata',
-      type: 'Directory',
-    },
-    name: 'metadata',
-  },
-};
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
