@@ -655,7 +655,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-node=$(MLAB_NODE_NAME)',
       '-pod=$(MLAB_POD_NAME)',
       '-namespace=$(MLAB_NAMESPACE)',
-      '-project=PROJECT_ID',
+      '-project=' + PROJECT_ID,
       '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
     ] + ['-services=' + s for s in services],
     env: [
