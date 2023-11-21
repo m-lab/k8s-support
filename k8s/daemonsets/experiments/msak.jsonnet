@@ -114,6 +114,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               secretName: 'locate-verify-keys',
             },
           },
+          exp.Metadata.volume,
         ],
       },
     },

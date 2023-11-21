@@ -77,6 +77,7 @@ exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", dataty
               secretName: 'measurement-lab-org-tls',
             },
           },
+          exp.Metadata.volume,
         ],
       },
     },

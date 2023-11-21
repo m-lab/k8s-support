@@ -210,6 +210,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
               secretName: 'locate-verify-keys',
             },
           },
+          exp.Metadata.volume,
         ],
       },
     },
