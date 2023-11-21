@@ -639,7 +639,7 @@ local Metadata = {
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.14.28',
+    image: 'cristinaleonr/heartbeat:v0.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -655,6 +655,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       '-node=$(MLAB_NODE_NAME)',
       '-pod=$(MLAB_POD_NAME)',
       '-namespace=$(MLAB_NAMESPACE)',
+      '-project=PROJECT_ID',
       '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
     ] + ['-services=' + s for s in services],
     env: [
