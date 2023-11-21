@@ -703,7 +703,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         name: 'locate-heartbeat-key',
         readOnly: true,
       },
-      exp.Metadata.volumemount,
+      Metadata.volumemount,
     ],
   }] +
   if hostNetwork then
