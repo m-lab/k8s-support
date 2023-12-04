@@ -639,7 +639,7 @@ local Metadata = {
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
     name: 'heartbeat',
-    image: 'cristinaleonr/heartbeat:v0.23',
+    image: 'cristinaleonr/heartbeat:v0.24',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
