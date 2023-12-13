@@ -319,11 +319,8 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-stream=false',
       '-anonymize.ip=' + anonMode,
-    ] + if siteType == 'virtual' then [
-      // Only virtual nodes need to limit RAM beyond default values.
       '-maxidleram=1500MB',
       '-maxheap=2GB',
-    ] else [
     ] + if expName == 'host' then [
       // The "host" experiment is currently the only experiment where
       // packet-headers needs to listen explictly on interface eth0.
