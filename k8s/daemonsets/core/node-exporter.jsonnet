@@ -37,6 +37,7 @@ local exp = import '../templates.jsonnet';
               '--collector.hwmon',
               '--collector.loadavg',
               '--collector.meminfo',
+              '--collector.netstat',
               '--collector.netdev',
               '--collector.processes',
               '--collector.stat',
