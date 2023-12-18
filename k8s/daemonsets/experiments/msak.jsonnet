@@ -65,7 +65,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                 },
               },
             ],
-            image: 'measurementlab/msak:' + expVersion,
+            image: 'cristinaleonr/msak:' + expVersion,
             name: 'msak',
             command: [
               '/msak/msak-server',
