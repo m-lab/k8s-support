@@ -1,7 +1,7 @@
 local datatypes = ['throughput1','latency1'];
 local exp = import '../templates.jsonnet';
 local expName = 'msak';
-local expVersion = 'v0.3.3';
+local expVersion = 'v0.0';
 local services = [
   'msak/throughput1=ws:///throughput/v1/download,ws:///throughput/v1/upload,wss:///throughput/v1/download,wss:///throughput/v1/upload',
   'msak/latency1=http:///latency/v1/authorize,https:///latency/v1/authorize,http:///latency/v1/result,https:///latency/v1/result',
@@ -21,7 +21,7 @@ exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
           {
             // Copy the JSON schema where jostler expects it to be.
             name: 'copy-schema',
-            image: 'measurementlab/msak:' + expVersion,
+            image: 'cristinaleonr/msak:' + expVersion,
             command: [
               '/bin/sh',
               '-c',
