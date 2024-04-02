@@ -45,6 +45,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-ndt7.token.required=true',
               '-label=type=physical',
               '-label=deployment=stable',
+              '-label=managed=@' + exp.Metadata.path + '/managed',
             ],
             env: [
               {

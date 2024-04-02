@@ -72,6 +72,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-label=machine-type=@' + exp.Metadata.path + '/machine-type',
               '-label=network-tier=@' + exp.Metadata.path + '/network-tier',
               '-label=zone=@' + exp.Metadata.path + '/zone',
+              '-label=managed=@' + exp.Metadata.path + '/managed',
             ],
             env: [
               {
