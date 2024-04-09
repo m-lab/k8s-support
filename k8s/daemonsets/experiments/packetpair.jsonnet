@@ -1,8 +1,8 @@
 local datatypes = ['pp'];
 local exp = import '../templates.jsonnet';
-local expName = 'packet';
+local expName = 'pp';
 local services = [
-  'packet/pp=http:///packet/pp,https:///packet/pp',
+  'pp/pp=http:///pp/pp,https:///pp/pp',
 ];
 
 exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes) + {
