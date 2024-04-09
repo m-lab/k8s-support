@@ -2,10 +2,10 @@ local datatypes = ['pp'];
 local exp = import '../templates.jsonnet';
 local expName = 'pp';
 local services = [
-  'pp/pp=http:///pp/pp,https:///pp/pp',
+  'pp/pp=http://:1053/pp/pp,https://:1053/pp/pp',
 ];
 
-exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   spec+: {
     template+: {
       metadata+: {
