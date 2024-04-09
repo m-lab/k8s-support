@@ -5,7 +5,7 @@ local services = [
   'pp/pp=http:///pp/pp,https:///pp/pp',
 ];
 
-exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
+exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   spec+: {
     template+: {
       metadata+: {
