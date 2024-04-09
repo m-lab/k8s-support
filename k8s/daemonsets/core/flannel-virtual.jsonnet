@@ -103,7 +103,7 @@
             command: [
               'cp',
             ],
-            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
+            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION'),
             name: 'install-cni',
             volumeMounts: [
               {
