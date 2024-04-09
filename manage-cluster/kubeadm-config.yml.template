@@ -41,7 +41,6 @@ controllerManager:
     node-cidr-mask-size-ipv4: "26"
     # https://github.com/kubernetes-sigs/kubespray/blob/master/docs/kubernetes-reliability.md#medium-update-and-average-reaction
     node-monitor-grace-period: 2m
-    pod-eviction-timeout: 1m
 networking:
   podSubnet: {{K8S_CLUSTER_CIDR}}
   serviceSubnet: {{K8S_SERVICE_CIDR}}
