@@ -63,6 +63,11 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
+            orts: [
+              {
+                containerPort: 9990,
+              },
+            ],
           },
         ] + std.flattenArrays([
           exp.Heartbeat(expName, false, services),
