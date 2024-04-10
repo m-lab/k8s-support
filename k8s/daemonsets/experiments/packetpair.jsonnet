@@ -42,6 +42,13 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
             command: [
               '/pp/server',
             ],
+            securityContext: {
+              capabilities: {
+                drop: [
+                  'all',
+                ],
+              },
+            },
             volumeMounts: [
               {
                 mountPath: '/certs',
