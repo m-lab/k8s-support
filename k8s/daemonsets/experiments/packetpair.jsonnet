@@ -36,6 +36,14 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                   },
                 },
               },
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
+                  },
+                },
+              },
             ],
             image: 'cristinaleonr/packetpair:v0.0',
             name: 'pp',
