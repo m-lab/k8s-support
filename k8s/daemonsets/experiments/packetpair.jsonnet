@@ -45,7 +45,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
-            image: 'cristinaleonr/packetpair:v0.2',
+            image: 'cristinaleonr/packetpair:v0.3',
             name: 'pp',
             command: [
               '/pp/server',
