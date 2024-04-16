@@ -1,9 +1,7 @@
-local datatypes = ['pp'];
+local datatypes = ['packet-test'];
 local exp = import '../templates.jsonnet';
-local expName = 'pp';
-local services = [
-  'pp/pp=http://:1053/pp/pp,https://:1053/pp/pp',
-];
+local expName = 'packet-test';
+local services = [];
 
 exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
   spec+: {
@@ -45,10 +43,10 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 },
               },
             ],
-            image: 'cristinaleonr/packetpair:v0.3',
-            name: 'pp',
+            image: 'measurementlab/packet-test:latest',
+            name: 'packet-test',
             command: [
-              '/pp/server',
+              '/packet-test/server',
             ],
             securityContext: {
               capabilities: {
