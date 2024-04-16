@@ -56,7 +56,7 @@
                 },
               },
             ],
-            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION'),
+            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
             name: 'flannel',
             resources: {
               limits: {
@@ -103,7 +103,7 @@
             command: [
               'cp',
             ],
-            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION'),
+            image: 'flannel/flannel:' + std.extVar('K8S_FLANNEL_VERSION') + '-amd64',
             name: 'install-cni',
             volumeMounts: [
               {
