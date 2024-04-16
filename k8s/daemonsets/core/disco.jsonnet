@@ -93,6 +93,7 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
+          'mlab/managed': 'switch-machine',
         },
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: 120,
         securityContext: {
