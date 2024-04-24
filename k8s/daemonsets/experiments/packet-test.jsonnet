@@ -1,9 +1,8 @@
-local datatypes = ['packet-test'];
 local exp = import '../templates.jsonnet';
-local expName = 'packet-test';
+local expName = 'pt';
 local services = [];
 
-exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], []) + {
   spec+: {
     template+: {
       metadata+: {
