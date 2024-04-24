@@ -1,8 +1,9 @@
+local datatypes = ['pair1','train1'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
 
-exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], []) + {
+exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
   spec+: {
     template+: {
       metadata+: {
