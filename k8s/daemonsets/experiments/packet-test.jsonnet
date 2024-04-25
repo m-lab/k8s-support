@@ -1,6 +1,6 @@
-local datatypes = ['packet-test'];
+local datatypes = ['pair1','train1'];
 local exp = import '../templates.jsonnet';
-local expName = 'packet-test';
+local expName = 'pt';
 local services = [];
 
 exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
