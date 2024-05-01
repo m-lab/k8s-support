@@ -82,6 +82,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                 name: 'locate-verify-keys',
                 readOnly: true,
               },
+              exp.uuid.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
