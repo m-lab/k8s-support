@@ -13,6 +13,22 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
       },
       spec+: {
         serviceAccountName: 'heartbeat-experiment',
+        initContainers+: [
+          {
+            // Copy the JSON schema where jostler expects it to be.
+            name: 'copy-schema',
+            image: 'measurementlab/packet-test:latest',
+            command: [
+              '/bin/sh',
+              '-c',
+              'cp /packet-test/pair1.json /var/spool/datatypes/pair1.json && ' +
+              'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
+            ],
+            volumeMounts: [
+              exp.VolumeMountDatatypes(expName),
+            ],
+          },
+        ],
         containers+: [
           {
             args: [
