@@ -3,7 +3,7 @@ local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
 
-exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   spec+: {
     template+: {
       metadata+: {
@@ -13,17 +13,27 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
       },
       spec+: {
         serviceAccountName: 'heartbeat-experiment',
+        initContainers+: [
+          {
+            // Copy the JSON schema where jostler expects it to be.
+            name: 'copy-schema',
+            image: 'measurementlab/packet-test:latest',
+            command: [
+              '/bin/sh',
+              '-c',
+              'cp /packet-test/pair1.json /var/spool/datatypes/pair1.json && ' +
+              'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
+            ],
+            volumeMounts: [
+              exp.VolumeMountDatatypes(expName),
+            ],
+          },
+        ],
         containers+: [
           {
             args: [
-              '-ws_addr=:80',
-              '-wss_addr=:443',
-              '-cert=/certs/tls.crt',
-              '-key=/certs/tls.key',
               '-datadir=/var/spool/' + expName,
-              '-token.machine=$(NODE_NAME)',
-              '-token.verify=false',
-              '-debug=true',
+              '-hostname=$(NODE_NAME)',
             ],
             env: [
               {
@@ -66,6 +76,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
                 name: 'locate-verify-keys',
                 readOnly: true,
               },
+              exp.uuid.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d) for d in datatypes
             ],
