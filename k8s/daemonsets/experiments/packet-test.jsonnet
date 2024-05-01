@@ -32,14 +32,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
         containers+: [
           {
             args: [
-              '-ws_addr=:80',
-              '-wss_addr=:443',
-              '-cert=/certs/tls.crt',
-              '-key=/certs/tls.key',
               '-datadir=/var/spool/' + expName,
-              '-token.machine=$(NODE_NAME)',
-              '-token.verify=false',
-              '-debug=true',
             ],
             env: [
               {
