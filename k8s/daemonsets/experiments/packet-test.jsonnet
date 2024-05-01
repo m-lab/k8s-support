@@ -33,7 +33,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
           {
             args: [
               '-datadir=/var/spool/' + expName,
-              '-hostname=$(MLAB_NODE_NAME)',
+              '-hostname=$(NODE_NAME)',
             ],
             env: [
               {
