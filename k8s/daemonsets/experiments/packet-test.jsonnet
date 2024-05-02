@@ -54,6 +54,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               },
             ],
             image: 'measurementlab/packet-test:latest',
+            imagePullPolicy: 'Always',
             name: 'packet-test',
             command: [
               '/packet-test/server',
