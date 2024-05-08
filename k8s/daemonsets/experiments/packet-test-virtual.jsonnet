@@ -4,7 +4,7 @@ local expName = 'pt';
 local services = [];
 
 
-exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
+exp.Experiment(expName, 7, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
   metadata+: {
     name: expName + '-virtual',
   },
