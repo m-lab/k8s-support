@@ -27,7 +27,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         hostNetwork: true,
         nodeSelector: {
           'mlab/type': 'virtual',
-          'mlab/run': expName,
         },
         serviceAccountName: 'heartbeat-experiment',
         initContainers+: [
