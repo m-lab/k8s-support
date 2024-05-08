@@ -97,7 +97,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 readOnly: true,
               },
               exp.uuid.volumemount,
-              exp.Metadata.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d)
               for d in datatypes
@@ -121,7 +120,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               secretName: 'locate-verify-keys',
             },
           },
-          exp.Metadata.volume,
         ],
       },
     },
