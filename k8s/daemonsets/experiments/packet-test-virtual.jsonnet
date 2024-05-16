@@ -29,6 +29,9 @@ local services = [];
         hostNetwork: true,
         nodeSelector: {
           'mlab/type': 'virtual',
+          // This is added so k8s doesn't try to schedule the pods to prometheus or
+          // API nodes.
+          'mlab/run:ndt',
         },
         serviceAccountName: 'heartbeat-experiment',
         initContainers: [
