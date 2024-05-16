@@ -105,7 +105,6 @@ local services = [];
             ],
             ports: [],
           },
-          exp.RBACProxy(expName, 9998),
         ],
         volumes: [
           {
