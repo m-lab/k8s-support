@@ -7,7 +7,7 @@ local services = [];
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: expName + 'virtual',
+    name: expName + '-virtual',
   },
   spec: {
     selector: {
@@ -43,7 +43,10 @@ local services = [];
               'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
             ],
             volumeMounts: [
-              exp.VolumeMountDatatypes(expName),
+              {
+                mountPath: '/var/spool/datatypes',
+                name: std.asciiLower(std.strReplace(expName, '/', '-')) + '-datatypes',
+              },
             ],
           },
         ],
@@ -98,7 +101,6 @@ local services = [];
                 name: 'locate-verify-keys',
                 readOnly: true,
               },
-              exp.uuid.volumemount,
               exp.Metadata.volumemount,
             ] + [
               exp.VolumeMount(expName + '/' + d)
