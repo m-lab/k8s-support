@@ -121,9 +121,23 @@ local services = [];
             },
           },
           {
-            name: std.asciiLower(std.strReplace(expName, '/', '-') + '-datatypes'),
+            name: expName + '-datatypes',
             hostPath: {
               path: '/cache/datatypes/' + expName,
+              type: 'DirectoryOrCreate',
+            },
+          },
+          {
+            name: expName + '-pair1-data',
+            hostPath: {
+              path: '/cache/data/' + expName + '/pair1',
+              type: 'DirectoryOrCreate',
+            },
+          },
+          {
+            name: expName + '-train1-data',
+            hostPath: {
+              path: '/cache/data/' + expName + '/train1',
               type: 'DirectoryOrCreate',
             },
           },
