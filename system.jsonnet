@@ -29,6 +29,7 @@
       // uncomment the following line.
       //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
       import 'k8s/daemonsets/experiments/packet-test.jsonnet',
+      import 'k8s/daemonsets/experiments/packet-test-virtual.jsonnet',
     ] else []
   ) + [
     import 'k8s/daemonsets/experiments/msak.jsonnet',
