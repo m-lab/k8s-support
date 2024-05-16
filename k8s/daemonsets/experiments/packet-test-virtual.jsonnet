@@ -3,33 +3,35 @@ local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
 
-exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', datatypes, [], true, 'virtual') + {
-  metadata+: {
-    name: expName + '-virtual',
+{
+  apiVersion: 'apps/v1',
+  kind: 'DaemonSet',
+  metadata: {
+    name: expName + 'virtual',
   },
-  spec+: {
-    selector+: {
-      matchLabels+: {
+  spec: {
+    selector: {
+      matchLabels: {
         workload: expName + '-virtual',
       },
     },
-    template+: {
-      metadata+: {
-        annotations+: {
+    template: {
+      metadata: {
+        annotations: {
           'secret.reloader.stakater.com/reload': 'measurement-lab-org-tls',
         },
-        labels+: {
+        labels: {
           workload: expName + '-virtual',
           'site-type': 'virtual',
         },
       },
-      spec+: {
+      spec: {
         hostNetwork: true,
         nodeSelector: {
           'mlab/type': 'virtual',
         },
         serviceAccountName: 'heartbeat-experiment',
-        initContainers+: [
+        initContainers: [
           {
             // Copy the JSON schema where jostler expects it to be.
             name: 'copy-schema',
@@ -45,7 +47,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             ],
           },
         ],
-        containers+: [
+        containers: [
           {
             args: [
               '-datadir=/var/spool/' + expName,
@@ -105,9 +107,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             ports: [],
           },
           exp.RBACProxy(expName, 9990),
-        ] + std.flattenArrays([
-          exp.Heartbeat(expName, true, services),
-        ]),
+        ],
         volumes+: [
           {
             name: 'measurement-lab-org-tls',
@@ -124,6 +124,12 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
           exp.Metadata.volume,
         ],
       },
+    },
+    updateStrategy: {
+      rollingUpdate: {
+        maxUnavailable: 2,
+      },
+      type: 'RollingUpdate',
     },
   },
 }
