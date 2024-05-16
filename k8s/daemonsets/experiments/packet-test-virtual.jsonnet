@@ -108,7 +108,7 @@ local services = [];
           },
           exp.RBACProxy(expName, 9990),
         ],
-        volumes+: [
+        volumes: [
           {
             name: 'measurement-lab-org-tls',
             secret: {
