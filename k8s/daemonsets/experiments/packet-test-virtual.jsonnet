@@ -43,10 +43,7 @@ local services = [];
               'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
             ],
             volumeMounts: [
-              {
-                mountPath: '/var/spool/datatypes',
-                name: std.asciiLower(std.strReplace(expName, '/', '-')) + '-datatypes',
-              },
+              exp.VolumeMountDatatypes(expName),
             ],
           },
         ],
@@ -121,6 +118,13 @@ local services = [];
             name: 'locate-verify-keys',
             secret: {
               secretName: 'locate-verify-keys',
+            },
+          },
+          {
+            name: std.asciiLower(std.strReplace(expName, '/', '-') + '-datatypes'),
+            hostPath: {
+              path: '/cache/datatypes/' + expName,
+              type: 'DirectoryOrCreate',
             },
           },
           exp.Metadata.volume,
