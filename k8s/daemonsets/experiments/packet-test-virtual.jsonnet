@@ -29,6 +29,7 @@ local services = [];
         hostNetwork: true,
         nodeSelector: {
           'mlab/type': 'virtual',
+          'mlab/run': expName,
         },
         serviceAccountName: 'heartbeat-experiment',
         initContainers: [
