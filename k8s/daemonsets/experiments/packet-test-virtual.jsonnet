@@ -144,6 +144,13 @@ local services = [];
               type: 'DirectoryOrCreate',
             },
           },
+          {
+            name: expName + '-ndt7-data',
+            hostPath: {
+              path: '/cache/data/' + expName + '/ndt7',
+              type: 'DirectoryOrCreate',
+            },
+          },
           exp.Metadata.volume,
         ],
       },
