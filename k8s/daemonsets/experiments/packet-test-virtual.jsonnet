@@ -1,4 +1,4 @@
-local datatypes = ['pair1','train1'];
+local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
@@ -43,7 +43,8 @@ local services = [];
               '/bin/sh',
               '-c',
               'cp /packet-test/pair1.json /var/spool/datatypes/pair1.json && ' +
-              'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
+              'cp /packet-test/train1.json /var/spool/datatypes/train1.json && ' +
+              'cp /packet-test/ndt7.json /var/spool/datatypes/ndt7.json',
             ],
             volumeMounts: [
               exp.VolumeMountDatatypes(expName),
@@ -140,6 +141,13 @@ local services = [];
             name: expName + '-train1-data',
             hostPath: {
               path: '/cache/data/' + expName + '/train1',
+              type: 'DirectoryOrCreate',
+            },
+          },
+          {
+            name: expName + '-ndt7-data',
+            hostPath: {
+              path: '/cache/data/' + expName + '/ndt7',
               type: 'DirectoryOrCreate',
             },
           },

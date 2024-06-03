@@ -1,4 +1,4 @@
-local datatypes = ['pair1','train1'];
+local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
@@ -22,7 +22,8 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               '/bin/sh',
               '-c',
               'cp /packet-test/pair1.json /var/spool/datatypes/pair1.json && ' +
-              'cp /packet-test/train1.json /var/spool/datatypes/train1.json',
+              'cp /packet-test/train1.json /var/spool/datatypes/train1.json && ' +
+              'cp /packet-test/ndt7.json /var/spool/datatypes/ndt7.json',
             ],
             volumeMounts: [
               exp.VolumeMountDatatypes(expName),
