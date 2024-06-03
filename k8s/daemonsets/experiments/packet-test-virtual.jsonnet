@@ -43,7 +43,7 @@ local services = [];
               '/bin/sh',
               '-c',
               'cp /packet-test/pair1.json /var/spool/datatypes/pair1.json && ' +
-              'cp /packet-test/train1.json /var/spool/datatypes/train1.json && ', +
+              'cp /packet-test/train1.json /var/spool/datatypes/train1.json && ' +
               'cp /packet-test/ndt7.json /var/spool/datatypes/ndt7.json',
             ],
             volumeMounts: [
