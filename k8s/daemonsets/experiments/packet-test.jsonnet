@@ -1,4 +1,4 @@
-local datatypes = ['pair1','train1'];
+local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
 local services = [];
