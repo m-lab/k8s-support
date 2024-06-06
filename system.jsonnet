@@ -34,6 +34,13 @@
   ) + [
     import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
+  ] + (
+    if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+      // A internal Google service we are experimenting with only in sandbox
+      // and staging.
+      import 'k8s/daemonsets/core/flooefi.jsonnet',
+    ] else []
+  ) + [
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
     import 'k8s/deployments/prometheus.jsonnet',
