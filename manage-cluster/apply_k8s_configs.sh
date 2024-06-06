@@ -40,6 +40,10 @@ fi
 # ... but otherwise it can't really hurt.
 gcloud --quiet components update kubectl
 
+# A seperate namespace for experimenting with deploying a Google-internal
+# service named flooefi in sandbox and staging.
+kubectl create namespace flooefi --dry-run=client -o json | kubectl apply -f -
+
 # We call 'kubectl apply -f system.json' several times because kubectl doesn't
 # support defining and declaring certain objects in the same file. This is a
 # bug in kubectl, and so we call it twice here and a final time at the end of
