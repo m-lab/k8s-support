@@ -26,10 +26,21 @@ local expName = 'flooefi';
       spec: {
         containers: [
           {
+            args: [
+              '--floo_client_debug_string=$(HOSTNAME)',
+            ],
             env: [
               {
                 name: 'DNS_RESOLVERS',
                 value: '8.8.8.8,8.8.4.4',
+              },
+              {
+                name: 'HOSTNAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
               },
             ],
             image: 'gcr.io/google.com/floonet/flooefi-prod:latest',
