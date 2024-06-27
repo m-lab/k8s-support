@@ -735,8 +735,8 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
   // local allDatatypes =  ['tcpinfo', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
   local allDatatypes = [
     'tcpinfo',
-    'pcap': {
-      'percentage': 0.1,
+    {
+      'pcap': 0.1,
     },
   ],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
