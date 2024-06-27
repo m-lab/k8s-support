@@ -89,7 +89,7 @@ local dataDir = exp.VolumeMount('utilization').mountPath;
               },
             ],
           }] + std.flattenArrays([
-            exp.Pusher('utilization', 9995, ['switch'], [],false, 'pusher-' + std.extVar('PROJECT_ID')),
+            exp.Pusher('utilization', 9995, ['switch'], false, 'pusher-' + std.extVar('PROJECT_ID')),
           ]),
         nodeSelector: {
           'mlab/type': 'physical',
