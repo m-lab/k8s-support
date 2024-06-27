@@ -733,9 +733,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
     annotation2: {},
     scamper1: {},
     hopannotation2: {},
-  ] + [da: {}, for da in datatypesArchived ]
-
-    ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  ] + [da: {}, for da in datatypesArchived ],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
