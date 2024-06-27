@@ -372,7 +372,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
     local version='v1.20.3',
     name: 'pusher',
-    image: 'measurementlab/pusher:'+version,
+    image: 'cristinaleonr/pusher:v0.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -387,7 +387,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-metadata=MLAB.experiment.name=' + expName,
       '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
-    ] + ['-datatype=' + d for d in datatypes],
+    ] + ['-datatype=' + d + '=' + std.get(d, percentage, 1) for d in datatypes],
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -725,7 +725,17 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  local allDatatypes = [
+    tcpinfo: {},
+    pcap: {
+      'percentage': 0.1
+    },
+    annotation2: {},
+    scamper1: {},
+    hopannotation2: {},
+  ] + [da" {}, for da in datatypesArchived ]
+
+    ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
