@@ -389,7 +389,6 @@ local Pusher(expName, tcpPort, datatypes, reducedProb, hostNetwork, bucket) = [
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
     ] + ['-datatype=' + d for d in datatypes
     ] + ['-datatype=' + d for d in reducedProb],
-
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -732,7 +731,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
     {
       'pcap': {
         'percentage': 0.1,
-      }
+      },
     },
   ],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
