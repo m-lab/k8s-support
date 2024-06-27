@@ -391,7 +391,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
 ;
 
 
-local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
+local Pusher(expName, tcpPort, datatypes, reducedProb, hostNetwork, bucket) = [
   {
     local version='v1.20.3',
     name: 'pusher',
@@ -410,7 +410,9 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-metadata=MLAB.experiment.name=' + expName,
       '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
-    ] + ['-datatype=' + d for d in datatypes],
+    ] + ['-datatype=' + d for d in datatypes
+    ] + ['-datatype=' + d for d in reducedProb],
+
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
@@ -732,15 +734,14 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes = {
-    'tcpinfo': {},
-    'pcap': {
-      'percentage': 0.1,
+  local allDatatypes =  ['tcpinfo', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  local reducedProb = [
+    {
+      'pcap': {
+        'percentage': 0.1,
+      }
     },
-    'annotation2': {},
-    'scamper1': {},
-    'hopannotation2': {},
-  },
+  ],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -773,7 +774,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
             Traceroute(name, 9992, hostNetwork, anonMode),
             Pcap(name, 9993, hostNetwork, siteType, anonMode),
             UUIDAnnotator(name, 9994, hostNetwork),
-            Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
+            Pusher(name, 9995, allDatatypes, reducedProb, hostNetwork, bucket),
           ] + if datatypesAutoloaded != [] then [Jostler(name, 9997, datatypesAutoloaded, hostNetwork, bucket)] else []),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
