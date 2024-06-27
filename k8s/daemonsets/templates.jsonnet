@@ -387,7 +387,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-metadata=MLAB.experiment.name=' + expName,
       '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
-    ] + ['-datatype=' + if std.isObject(d) then std.get(o, 'name') else d for d in datatypes],
+    ] + ['-datatype=' + if std.isObject(d) then std.get(d, 'name') else d for d in datatypes],
     env: [
       {
         name: 'GOOGLE_APPLICATION_CREDENTIALS',
