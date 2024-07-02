@@ -395,7 +395,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
   {
     local version='v1.20.3',
     name: 'pusher',
-    image: 'cristinaleonr/pusher:v0.0',
+    image: 'cristinaleonr/pusher:v0.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
