@@ -729,14 +729,12 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  // local allDatatypes =  ['tcpinfo', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
   local allDatatypes = [
     {
       'name': 'pcap',
       'percentage': 0.1,
     },
-    'tcpinfo',
-  ],
+    'tcpinfo', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
