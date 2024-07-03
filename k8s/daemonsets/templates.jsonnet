@@ -410,8 +410,10 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
       '-metadata=MLAB.experiment.name=' + expName,
       '-metadata=MLAB.pusher.image=measurementlab/pusher:' + version,
       '-metadata=MLAB.pusher.src.url=https://github.com/m-lab/pusher/tree/' + version,
-    ] + ['-datatype=' +
-            if std.isObject(d) then d.name + '=' + d.percentage
+    ] + [
+          // Unless specified, use 1 as the default datatype push ratio (100% of data).
+          '-datatype=' +
+            if std.isObject(d) then d.name + '=' + d.ratio
             else d + '=' + 1
           for d in datatypes
     ],
@@ -737,10 +739,10 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes = ['tcpinfo', 'annotation2', 'scamper1', 'hopannotation2',
-    // Only push 10% of PCAP data.
+    // Set PCAP push ratio to 0.1 (10% of data).
     {
       'name': 'pcap',
-      'percentage': 0.1,
+      'ratio': 0.1,
     },] + datatypesArchived,
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
