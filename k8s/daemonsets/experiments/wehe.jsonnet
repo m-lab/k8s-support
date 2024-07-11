@@ -143,12 +143,14 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 containerPort: 9091,
               },
             ],
+            # As of 2024-07-11, at 5Gi, Wehe will be terminated by k8s for exceeding RAM limits.
+            # TODO(https://github.com/m-lab/k8s-support/issues/885): reduce the RAM limit for wehe 
             resources+: {
               limits: {
-                memory: "5Gi",
+                memory: "6Gi",
               },
               requests: {
-                memory: "1Gi",
+                memory: "2Gi",
               },
             },
             // Wehe runs packet captures, which requires being root. Run as
