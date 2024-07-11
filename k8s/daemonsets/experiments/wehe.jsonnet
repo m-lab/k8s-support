@@ -147,7 +147,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             # TODO(https://github.com/m-lab/k8s-support/issues/885): reduce the RAM limit for wehe 
             resources+: {
               limits: {
-                memory: "6Gi",
+                memory: "7Gi",
               },
               requests: {
                 memory: "2Gi",
