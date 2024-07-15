@@ -332,7 +332,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.7.4',
+    image: 'cristinaleonr/packet-headers:v0.4',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
