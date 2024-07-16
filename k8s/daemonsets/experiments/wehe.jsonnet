@@ -147,10 +147,10 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
             # TODO(https://github.com/m-lab/k8s-support/issues/885): reduce the RAM request & limit for wehe
             resources+: {
               limits: {
-                memory: "5Gi",
+                memory: "6Gi",
               },
               requests: {
-                memory: "1Gi",
+                memory: "3Gi",
               },
             },
             // Wehe runs packet captures, which requires being root. Run as
