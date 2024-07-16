@@ -119,7 +119,7 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 value: '/var/local/uuid/prefix',
               },
             ],
-            image: 'measurementlab/wehe-py3:v0.3.8',
+            image: 'measurementlab/wehe-py3:v0.3.10',
             livenessProbe+: {
               httpGet: {
                 path: '/metrics',
@@ -143,6 +143,8 @@ exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['r
                 containerPort: 9091,
               },
             ],
+            # As of 2024-07-11, at 5Gi, Wehe will be terminated by k8s for exceeding RAM limits.
+            # TODO(https://github.com/m-lab/k8s-support/issues/885): reduce the RAM request & limit for wehe
             resources+: {
               limits: {
                 memory: "5Gi",
