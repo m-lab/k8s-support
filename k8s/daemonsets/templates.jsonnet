@@ -132,7 +132,7 @@ local RBACProxy(name, port) = {
 // (hopannotation2 and scamper1) so that pusher can start before any traceroute
 // has run successfully, preventing a race condition.
 // TODO: Remove this once traceroute-caller creates its own output folders
-// on startup.
+// on startup. See https://github.com/m-lab/traceroute-caller/issues/166
 local setDataDirOwnership(name) = {
   local dataDir = data.mount(name).mountPath,
   initContainer: {
