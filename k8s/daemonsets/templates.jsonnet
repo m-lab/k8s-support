@@ -131,6 +131,8 @@ local RBACProxy(name, port) = {
 // Additionally, this creates the traceroute-caller output folders
 // (hopannotation2 and scamper1) so that pusher can start before any traceroute
 // has run successfully, preventing a race condition.
+// TODO: Remove this once traceroute-caller creates its own output folders
+// on startup.
 local setDataDirOwnership(name) = {
   local dataDir = data.mount(name).mountPath,
   initContainer: {
