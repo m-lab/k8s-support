@@ -302,6 +302,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
     },
     volumeMounts: [
       data.mount(expName),
+      Metadata.volumemount,
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       uuid.volumemount,
