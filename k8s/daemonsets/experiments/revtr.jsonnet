@@ -38,6 +38,9 @@ exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], [])
             },
           }
         ],
+        volumes+: [
+          exp.Metadata.volume,
+        ],
       }
     }
   }

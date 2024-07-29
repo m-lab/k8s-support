@@ -200,6 +200,22 @@ local uuidannotatorServiceVolume = {
   socketFilename: '/var/local/uuidannotatorsocket/annotator.sock',
 };
 
+local Metadata = {
+  path: '/metadata',
+  volumemount: {
+    mountPath: Metadata.path,
+    name: 'metadata',
+    readOnly: true,
+  },
+  volume: {
+    hostPath: {
+      path: '/var/local/metadata',
+      type: 'Directory',
+    },
+    name: 'metadata',
+  },
+};
+
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
@@ -302,6 +318,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
     },
     volumeMounts: [
       data.mount(expName),
+      Metadata.volumemount,
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       uuid.volumemount,
@@ -622,22 +639,6 @@ local Revtr(expName, tcpPort) = [
   }
 ]
 ;
-
-local Metadata = {
-  path: '/metadata',
-  volumemount: {
-    mountPath: Metadata.path,
-    name: 'metadata',
-    readOnly: true,
-  },
-  volume: {
-    hostPath: {
-      path: '/var/local/metadata',
-      type: 'Directory',
-    },
-    name: 'metadata',
-  },
-};
 
 local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   {
