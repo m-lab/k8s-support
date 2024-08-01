@@ -270,7 +270,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.11.2',
+    image: 'measurementlab/traceroute-caller:v0.11.3',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
