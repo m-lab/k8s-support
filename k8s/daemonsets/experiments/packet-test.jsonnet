@@ -35,6 +35,9 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
             args: [
               '-datadir=/var/spool/' + expName,
               '-hostname=$(NODE_NAME)',
+              '-token.machine=$(NODE_NAME)',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+              '-token.verify=true',
             ],
             env: [
               {
