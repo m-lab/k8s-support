@@ -13,12 +13,11 @@ local PROJECT_ID = std.extVar('PROJECT_ID');
 //
 //  * k8s sends SIGTERM to container
 //  * container enables lame duck status
-//  * monitoring reads lame duck status (60s max)
-//  * mlab-ns updates server status (60s max)
+//  * heartbeat notices lame duck status and notifies Locate (10s max)
 //  * all currently running tests complete. (30s max)
-//  * give everything an additional 30s to be safe
-//  * 60s + 60s + 30s + 30s = 180s grace period
-local terminationGracePeriodSeconds = 180;
+//  * give Pusher an additional 60s to upload all data
+//  * 10s + 30s + 60s = 100s grace period
+local terminationGracePeriodSeconds = 100;
 
 local uuid = {
   initContainer: {
@@ -845,7 +844,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
         dnsConfig: {
           nameservers: ['8.8.8.8', '8.8.4.4'],
         },
-        // Only enable extended grace period where production traffic is possible.
+        // Apply extended grace period, except for mlab-sandbox
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
       },
     },
