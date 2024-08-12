@@ -1,6 +1,7 @@
 local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
+local expVersion = 'v0.1.0'
 local services = [
   'pt/ndt7=ws:///v0/ndt7/download',
 ];
@@ -19,7 +20,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
           {
             // Copy the JSON schema where jostler expects it to be.
             name: 'copy-schema',
-            image: 'measurementlab/packet-test:latest',
+            image: 'measurementlab/packet-test:' + expVersion,
             command: [
               '/bin/sh',
               '-c',
@@ -60,7 +61,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
                 },
               },
             ],
-            image: 'measurementlab/packet-test:latest',
+            image: 'measurementlab/packet-test:' + expVersion,
             name: 'packet-test',
             command: [
               '/packet-test/server',
