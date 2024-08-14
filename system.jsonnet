@@ -21,7 +21,6 @@
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
-    import 'k8s/daemonsets/experiments/packet-test.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       // responsiveness commented out by Kinkade. It's stuck in sandbox and not
@@ -29,7 +28,10 @@
       // hostNetwork=true. If we want to resume the experiment we can just
       // uncomment the following line.
       //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
+      import 'k8s/daemonsets/experiments/packet-test.jsonnet',
       import 'k8s/daemonsets/experiments/packet-test-virtual.jsonnet',
+    ] else if std.extVar('PROJECT_ID') == 'mlab-staging' then [
+      import 'k8s/daemonsets/experiments/packet-test.jsonnet',
     ] else []
   ) + [
     import 'k8s/daemonsets/experiments/msak.jsonnet',
