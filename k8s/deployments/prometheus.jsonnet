@@ -41,7 +41,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
               '--storage.tsdb.retention.time=120d',
               '--enable-feature=memory-snapshot-on-shutdown',
             ],
-            image: 'prom/prometheus:v2.32.1',
+            image: 'prom/prometheus:v2.54.0',
             name: 'prometheus',
             ports: [
               {
