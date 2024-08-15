@@ -46,6 +46,7 @@ exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatyp
               '-label=type=physical',
               '-label=deployment=stable',
               '-label=managed=@' + exp.Metadata.path + '/managed',
+              '-label=loadbalanced=@' + exp.Metadata.path + '/loadbalanced',
             ],
             env: [
               {
