@@ -38,7 +38,6 @@ local exp = import '../templates.jsonnet';
               '--collector.loadavg',
               '--collector.meminfo',
               '--collector.netdev',
-              '--collector.processes',
               '--collector.stat',
               '--collector.textfile',
               '--collector.textfile.directory=/var/spool/node-exporter',
