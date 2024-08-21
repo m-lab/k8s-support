@@ -1,9 +1,9 @@
 local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
 local expName = 'pt';
-local expVersion = 'v0.1.1';
+local expVersion = 'v0.1.2';
 local services = [
-  'pt/ndt7=ws:///v0/ndt7/download',
+  'pt/ndt7=ws:///v0/ndt7/download,wss:///v0/ndt7/download',
 ];
 
 exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
@@ -39,6 +39,9 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               '-datadir=/var/spool/' + expName,
               '-hostname=$(NODE_NAME)',
               '-address=:80',
+              '-address-secure=:443',
+              '-key=/certs/tls.key',
+              '-cert=/certs/tls.crt',
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-token.verify=true',
