@@ -1,6 +1,6 @@
 local datatypes = ['pair1','train1','ndt7'];
 local exp = import '../templates.jsonnet';
-local expName = 'pt';
+local expName = 'v0.1.2';
 local expVersion = 'test-wss';
 local services = [
   'pt/ndt7=ws:///v0/ndt7/download,wss:///v0/ndt7/download',
