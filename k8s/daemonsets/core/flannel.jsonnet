@@ -40,7 +40,7 @@
               ],
             },
           },
-        }
+        },
         containers: [
           {
             args: [
