@@ -103,19 +103,8 @@
           },
           {
             name: 'multi-networkpolicy-custom-rules',
-            projected: {
-              sources: [
-                {
-                  configMap: {
-                    name: 'multi-networkpolicy-custom-v4-rules',
-                  },
-                },
-                {
-                  configMap: {
-                    name: 'multi-networkpolicy-custom-v6-rules',
-                  },
-                },
-              ],
+            configMap: {
+              name: 'multi-networkpolicy-custom-rules',
             },
           },
         ],
