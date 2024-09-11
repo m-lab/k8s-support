@@ -12,8 +12,7 @@
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
     import 'k8s/daemonsets/core/disco.jsonnet',
-    import 'k8s/daemonsets/core/flannel-virtual.jsonnet',
-    import 'k8s/daemonsets/core/flannel-physical.jsonnet',
+    import 'k8s/daemonsets/core/flannel.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
