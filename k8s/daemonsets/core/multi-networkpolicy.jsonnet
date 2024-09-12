@@ -2,7 +2,7 @@
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
   metadata: {
-    name: 'multi-networkpolicy-ds-amd64',
+    name: 'multi-networkpolicy',
     namespace: 'kube-system',
     labels: {
       tier: 'node',
@@ -49,7 +49,8 @@
             ],
             args: [
               '--host-prefix=/host',
-              '--container-runtime-endpoint=/run/crio/crio.sock',
+              '--container-runtime-endpoint=/run/containerd/containerd.sock',
+              '--network-plugins=ipvlan',
               '--pod-iptables=/var/lib/multi-networkpolicy/iptables',
             ],
             resources: {
