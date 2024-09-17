@@ -55,7 +55,7 @@
     },
     spec: {
       local cniConfig = {
-        cniVersion: '0.2.0',
+        cniVersion: '0.3.1',
         name: 'ipvlan-index-' + index,
         plugins: [
           {
