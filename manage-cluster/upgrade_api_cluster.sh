@@ -116,11 +116,11 @@ for zone in $GCE_ZONES; do
     curl -L "https://github.com/containernetworking/plugins/releases/download/${K8S_CNI_VERSION}/cni-plugins-linux-amd64-${K8S_CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
     # Upgrade crictl.
-    curl -L "https://github.com/kubernetes-incubator/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
+    curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/${K8S_CRICTL_VERSION}/crictl-${K8S_CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /opt/bin -xz
 
     # Upgrade kubeadm.
     pushd /opt/bin
-    curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubeadm
+    curl -L --remote-name-all https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubeadm
     chmod +x kubeadm
     popd
 
@@ -140,7 +140,7 @@ for zone in $GCE_ZONES; do
 
     # Upgrade kubelet and kubectl.
     pushd /opt/bin
-    curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/{kubelet,kubectl}
+    curl -L --remote-name-all https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/{kubelet,kubectl}
     chmod +x {kubelet,kubectl}
     popd
 
