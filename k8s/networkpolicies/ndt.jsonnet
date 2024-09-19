@@ -9,7 +9,6 @@
     },
   },
   spec: {
-    namespaceSelector: {},
     podSelector: {},
     policyTypes: [
       'Ingress',
