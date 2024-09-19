@@ -48,9 +48,11 @@
               '/usr/bin/multi-networkpolicy-iptables',
             ],
             args: [
-              '--host-prefix=/host',
+              '--allow-icmp',
+              '--allow-icmpv6',
               '--container-runtime-endpoint=/run/containerd/containerd.sock',
-              '--network-plugins=ipvlan',
+              '--host-prefix=/host',
+              '--network-plugins=netctl,ipvlan',
               '--pod-iptables=/var/lib/multi-networkpolicy/iptables',
             ],
             resources: {

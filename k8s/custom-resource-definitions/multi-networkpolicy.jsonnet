@@ -19,7 +19,7 @@
       {
         name: 'v1beta1',
         served: true,
-        storage: true,
+        storage: false,
         schema: {
           openAPIV3Schema: {
             description: 'MultiNetworkPolicy is a CRD schema to provide NetworkPolicy mechanism for net-attach-def which is specified by the Network Plumbing Working Group. MultiNetworkPolicy is identical to Kubernetes NetworkPolicy, See: https://kubernetes.io/docs/concepts/services-networking/network-policies/ .',
@@ -390,8 +390,8 @@
       },
       {
         name: 'v1beta2',
-        served: false,
-        storage: false,
+        served: true,
+        storage: true,
         schema: {
           openAPIV3Schema: {
             description: 'MultiNetworkPolicy is a CRD schema to provide NetworkPolicy mechanism for net-attach-def which is specified by the Network Plumbing Working Group. MultiNetworkPolicy is identical to Kubernetes NetworkPolicy, See: https://kubernetes.io/docs/concepts/services-networking/network-policies/ .',
