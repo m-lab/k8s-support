@@ -386,16 +386,14 @@ groups:
           gmx_machine_maintenance == 1 or
           up{job="kubernetes-nodes"} == 0
         )
-    for: 1h
+    for: 4h
     labels:
       repo: ops-tracker
       severity: ticket
       cluster: platform
     annotations:
       summary: A {{ $labels.deployment }} pod is down or broken.
-      description: A {{ $labels.deployment }} pod is down or broken. Verify that the
-        DaemonSet or Deployment is healthy. Check the status of the node that the
-        pod is scheduled on. Check the status of the pod itself, if it exists.
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_poddown
       dashboard: https://grafana.mlab-staging.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
 
 # Etcd alerts.
