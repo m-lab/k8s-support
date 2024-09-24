@@ -613,12 +613,20 @@ local Revtr(expName, tcpPort) = [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-revtr.hostname=revtr.ccs.neu.edu',
       '-revtr.grpcPort=9999',
-      '-prometheus.port='+tcpPort,
+      '-prometheus.port=$(PRIVATE_IP):'+tcpPort,
       '-revtr.sampling=4', // 100/x == 25%
       '-revtr.APIKey=$(REVTR_APIKEY)',
       '-loglevel=debug',
     ],
     env: [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
       {
         name: 'REVTR_APIKEY',
         valueFrom: {
