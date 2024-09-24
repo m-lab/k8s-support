@@ -42,14 +42,14 @@
         containers: [
           {
             name: 'multi-networkpolicy',
-            image: 'ghcr.io/k8snetworkplumbingwg/multi-networkpolicy-iptables:snapshot',
+            image: 'measurementlab/multi-networkpolicy-iptables:latest',
             imagePullPolicy: 'Always',
             command: [
               '/usr/bin/multi-networkpolicy-iptables',
             ],
             args: [
-              '--allow-icmp',
-              '--allow-icmpv6',
+              '--accept-icmp',
+              '--accept-icmpv6',
               '--container-runtime-endpoint=/run/containerd/containerd.sock',
               '--host-prefix=/host',
               '--network-plugins=netctl,ipvlan',
