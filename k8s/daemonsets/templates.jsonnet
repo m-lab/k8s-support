@@ -613,7 +613,7 @@ local Revtr(expName, tcpPort) = [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-revtr.hostname=revtr.ccs.neu.edu',
       '-revtr.grpcPort=9999',
-      '-prometheus.port=$(PRIVATE_IP):'+tcpPort,
+      '-prometheus.port='+tcpPort,
       '-revtr.sampling=4', // 100/x == 25%
       '-revtr.APIKey=$(REVTR_APIKEY)',
       '-loglevel=debug',
