@@ -608,17 +608,25 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
 local Revtr(expName, tcpPort) = [
   {
     name: 'revtr-sidecar',
-    image: 'measurementlab/revtr-sidecar:v1.4.1',
+    image: 'measurementlab/revtr-sidecar:v1.4.2',
     args: [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-revtr.hostname=revtr.ccs.neu.edu',
       '-revtr.grpcPort=9999',
-      '-prometheus.port='+tcpPort,
+      '-prometheus.addr=$(PRIVATE_IP):'+tcpPort,
       '-revtr.sampling=4', // 100/x == 25%
       '-revtr.APIKey=$(REVTR_APIKEY)',
       '-loglevel=debug',
     ],
     env: [
+      {
+        name: 'PRIVATE_IP',
+        valueFrom: {
+          fieldRef: {
+            fieldPath: 'status.podIP',
+          },
+        },
+      },
       {
         name: 'REVTR_APIKEY',
         valueFrom: {
