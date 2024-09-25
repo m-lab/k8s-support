@@ -9,9 +9,11 @@
     },
   },
   spec: {
-    podSelector:
-      matchLabels:
-        workload: neubot
+    podSelector: {
+      matchLabels: {
+        workload: 'neubot',
+      },
+    },
     policyTypes: [
       'Ingress',
     ],

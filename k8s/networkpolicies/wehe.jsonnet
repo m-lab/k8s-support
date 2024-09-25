@@ -9,9 +9,11 @@
     },
   },
   spec: {
-    podSelector:
-      matchLabels:
-        workload: wehe
+    podSelector: {
+      matchLabels: {
+        workload: 'wehe',
+      },
+    },
     policyTypes: [
       'Ingress',
     ],

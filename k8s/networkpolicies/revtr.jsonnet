@@ -9,9 +9,11 @@
     },
   },
   spec: {
-    podSelector:
-      matchLabels:
-        workload: revtr
+    podSelector: {
+      matchLabels: {
+        workload: 'revtr',
+      },
+    },
     policyTypes: [
       'Ingress',
     ],
