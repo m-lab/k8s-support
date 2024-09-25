@@ -17,15 +17,7 @@
       {
         ports: [
           {
-            port: 55000,
-            protocol: 'TCP',
-          },
-          {
             port: 55557,
-            protocol: 'TCP',
-          },
-          {
-            port: 65000,
             protocol: 'TCP',
           },
         ],
