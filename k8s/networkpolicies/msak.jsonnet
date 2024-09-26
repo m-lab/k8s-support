@@ -9,11 +9,7 @@
     },
   },
   spec: {
-    podSelector: {
-      matchLabels: {
-        workload: 'msak',
-      },
-    },
+    podSelector: {},
     policyTypes: [
       'Ingress',
     ],

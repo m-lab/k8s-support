@@ -9,11 +9,7 @@
     },
   },
   spec: {
-    podSelector: {
-      matchLabels: {
-        workload: 'ndt',
-      },
-    },
+    podSelector: {},
     policyTypes: [
       'Ingress',
     ],
