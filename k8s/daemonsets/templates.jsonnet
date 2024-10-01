@@ -591,6 +591,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
     },
     volumeMounts: [
       data.mount(expName),
+      datatypes.mount(expName),
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       {
