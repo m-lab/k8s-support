@@ -739,7 +739,8 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if 'annotation2' !in datatypesAutoloaded then + ["annotation2"],
+  local autoAnnotations = [x for x in datatypesAutoloaded == 'annotation2']
+  local allDatatypes =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if std.length(autoAnnotations) == 0 then ["annotation2"] else [],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
