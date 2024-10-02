@@ -757,7 +757,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local autoAnnotations = contains(datatypesAutoloaded, "annotation2"),
+  local autoAnnotations = contains("annotation2", datatypesAutoloaded),
   local datatypesPushed =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if autoAnnotations then ["annotation2"] else [],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
