@@ -65,7 +65,7 @@ local uuidAnnotatorSchema = {
     name: 'uuid-annotator-schema',
     image: 'measurementlab/uuid-annotator:v0.5.5',
     command: [
-      "generate-schemas"
+      "/generate-schemas"
     ],
   },
 };
