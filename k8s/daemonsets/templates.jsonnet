@@ -60,19 +60,6 @@ local uuid = {
   },
 };
 
-local uuidAnnotatorSchema = {
-  initContainer: {
-    name: 'uuid-annotator-schema',
-    image: 'measurementlab/uuid-annotator:v0.5.5',
-    command: [
-      "/generate-schemas"
-    ],
-    volumeMounts: [
-      datatypes.mount('annotation2'),
-    ],
-  },
-};
-
 local data = {
   volume(name):: {
     hostPath: {
@@ -98,6 +85,19 @@ local datatypes = {
   mount(name):: {
     mountPath: '/var/spool/datatypes',
     name: std.asciiLower(std.strReplace(name, '/', '-')) + '-datatypes',
+  },
+};
+
+local uuidAnnotatorSchema = {
+  initContainer: {
+    name: 'uuid-annotator-schema',
+    image: 'measurementlab/uuid-annotator:v0.5.5',
+    command: [
+      "/generate-schemas"
+    ],
+    volumeMounts: [
+      datatypes.mount('annotation2'),
+    ],
   },
 };
 
