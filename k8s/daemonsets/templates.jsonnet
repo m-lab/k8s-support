@@ -68,7 +68,7 @@ local uuidAnnotatorSchema = {
       "/generate-schemas"
     ],
     volumeMounts: [
-      exp.VolumeMountDatatypes('annotation2'),
+      datatypes.mount('annotation2'),
     ],
   },
 };
