@@ -68,7 +68,7 @@ local uuidAnnotatorSchema = {
       "generate-schemas"
     ],
   },
-}
+};
 
 local data = {
   volume(name):: {
