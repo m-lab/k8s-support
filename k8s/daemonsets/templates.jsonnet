@@ -60,6 +60,16 @@ local uuid = {
   },
 };
 
+local uuidAnnotatorSchema = {
+  initContainer: {
+    name: 'uuid-annotator-schema',
+    image: 'measurementlab/uuid-annotator:v0.5.5',
+    command: [
+      "generate-schemas"
+    ],
+  },
+}
+
 local data = {
   volume(name):: {
     hostPath: {
@@ -591,7 +601,6 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
     },
     volumeMounts: [
       data.mount(expName),
-      datatypes.mount('annotation2'),
       tcpinfoServiceVolume.volumemount,
       uuidannotatorServiceVolume.volumemount,
       {
@@ -779,6 +788,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
+          uuidAnnotatorSchema.initContainer,
           setDataDirOwnership(name).initContainer,
           setDatatypesDirOwnership(name).initContainer,
         ],
