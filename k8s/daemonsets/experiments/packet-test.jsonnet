@@ -45,6 +45,7 @@ exp.Experiment(expName, 6, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], dat
               '-token.machine=$(NODE_NAME)',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
               '-token.verify=true',
+              '-uuid-prefix-file=' + exp.uuid.prefixfile,
             ],
             env: [
               {
