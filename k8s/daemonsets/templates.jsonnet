@@ -3,6 +3,9 @@ local ndtVersion = 'v0.20.20';
 // the current stable version.
 local ndtCanaryVersion = 'v0.20.20';
 local PROJECT_ID = std.extVar('PROJECT_ID');
+// The uuid-annotator container image version.
+local uuidAnnVersion = 'v0.5.5';
+
 
 // The default grace period after k8s sends SIGTERM is 30s. We
 // extend the grace period to give time for the following
@@ -18,6 +21,8 @@ local PROJECT_ID = std.extVar('PROJECT_ID');
 //  * give Pusher an additional 60s to upload all data
 //  * 10s + 30s + 60s = 100s grace period
 local terminationGracePeriodSeconds = 100;
+
+local contains(v, arr) = std.length(std.find(v, arr)) > 0;
 
 local uuid = {
   initContainer: {
@@ -85,6 +90,19 @@ local datatypes = {
   mount(name):: {
     mountPath: '/var/spool/datatypes',
     name: std.asciiLower(std.strReplace(name, '/', '-')) + '-datatypes',
+  },
+};
+
+local uuidAnnotatorSchema(name) = {
+  initContainer: {
+    name: 'uuid-annotator-schema',
+    image: 'measurementlab/uuid-annotator:' + uuidAnnVersion,
+    command: [
+      "/generate-schemas"
+    ],
+    volumeMounts: [
+      datatypes.mount(name),
+    ],
   },
 };
 
@@ -539,7 +557,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
 local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
   {
     name: 'uuid-annotator',
-    image: 'measurementlab/uuid-annotator:v0.5.5',
+    image: 'measurementlab/uuid-annotator:' + uuidAnnVersion,
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -739,7 +757,8 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
 ;
 
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
-  local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
+  local autoAnnotations = contains("annotation2", datatypesAutoloaded),
+  local datatypesPushed =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if autoAnnotations then ["annotation2"] else [],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
   apiVersion: 'apps/v1',
   kind: 'DaemonSet',
@@ -772,11 +791,12 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
             Traceroute(name, 9992, hostNetwork, anonMode),
             Pcap(name, 9993, hostNetwork, siteType, anonMode),
             UUIDAnnotator(name, 9994, hostNetwork),
-            Pusher(name, 9995, allDatatypes, hostNetwork, bucket),
+            Pusher(name, 9995, datatypesPushed, hostNetwork, bucket),
           ] + if datatypesAutoloaded != [] then [Jostler(name, 9997, datatypesAutoloaded, hostNetwork, bucket)] else []),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
         initContainers: [
           uuid.initContainer,
+          uuidAnnotatorSchema(name).initContainer,
           setDataDirOwnership(name).initContainer,
           setDatatypesDirOwnership(name).initContainer,
         ],
