@@ -9,9 +9,29 @@
       app: 'multi-networkpolicy',
     },
   },
+  // Add custom iptables rules below. The rules will not be applied unless you
+  // pass at least one of the following flags to multi-networkpolicy:
+  //
+  //   --custom-v4-igress-rule-file
+  //   --custom-v4-egress-rule-file
+  //   --custom-v6-igress-rule-file
+  //   --custom-v4-egress-rule-file
+  //
+  // Add iptables rules one per line in the appropriate sections below, minus
+  // "iptables -A <chain>" as that is added for you by multi-networkpolicy.
   data: {
-    'custom-v4-rules.txt': '# accept redirect\n-p icmp --icmp-type redirect -j ACCEPT\n# accept fragmentation-needed (for MTU discovery)\n-p icmp --icmp-type fragmentation-needed -j ACCEPT\n',
-    'custom-v6-rules.txt': '# accept NDP\n-p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT\n-p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT\n# accept RA/RS\n-p icmpv6 --icmpv6-type router-solicitation -j ACCEPT\n-p icmpv6 --icmpv6-type router-advertisement -j ACCEPT\n# accept redirect\n-p icmpv6 --icmpv6-type redirect -j ACCEPT\n# accept packet-too-big (for MTU discovery)\n-p icmpv6 --icmpv6-type packet-too-big -j ACCEPT\n',
+    'custom-v4-ingress-rules.txt': |||
+      # No custom rules, yet.
+    |||,
+    'custom-v4-egress-rules.txt': |||
+      # No custom rules, yet.
+    |||,
+    'custom-v6-ingress-rules.txt': |||
+      # No custom rules, yet.
+    |||,
+    'custom-v6-egress-rules.txt': |||
+      # No custom rules, yet.
+    |||,
   },
 }
 
