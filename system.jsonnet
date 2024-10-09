@@ -28,12 +28,6 @@
     import 'k8s/daemonsets/experiments/ndt-virtual.jsonnet',
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/packet-test.jsonnet',
-    // NetworkPolicies
-    import 'k8s/networkpolicies/msak.jsonnet',
-    import 'k8s/networkpolicies/ndt.jsonnet',
-    import 'k8s/networkpolicies/revtr.jsonnet',
-    import 'k8s/networkpolicies/wehe.jsonnet',
-    import 'k8s/networkpolicies/neubot.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       // responsiveness commented out by Kinkade. It's stuck in sandbox and not
