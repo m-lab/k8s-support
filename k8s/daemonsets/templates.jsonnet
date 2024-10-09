@@ -738,6 +738,36 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
   else []
 ;
 
+local MultiNetworkPolicy(expName, index, ports) = {
+  apiVersion: 'k8s.cni.cncf.io/v1beta2',
+  kind: 'MultiNetworkPolicy',
+  metadata: {
+    name: expName,
+    namespace: 'default',
+    annotations: {
+      'k8s.v1.cni.cncf.io/policy-for': 'index2ip-index-' + index + '-conf',
+    },
+  },
+  spec: {
+    podSelector: {},
+    policyTypes: [
+      'Ingress',
+    ],
+    ingress: [
+      {
+        ports: [
+          {
+            port: std.split(std.split(p, '/')[0], ':')[0],
+            [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.split(std.split(p, '/')[0], ':')[1],
+            protocol: std.split(p, '/')[1],
+          },
+          for p in ports
+        ],
+      },
+    ],
+  },
+};
+
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
   local allDatatypes =  ['tcpinfo', 'pcap', 'annotation2', 'scamper1', 'hopannotation2'] + datatypesArchived,
   local allVolumes = datatypesArchived + datatypesAutoloaded,
@@ -893,6 +923,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
+
+  // Returns a manifest for a MultiNetworkPolicy CRD object.
+  MultiNetworkPolicy(expName, index, ports):: MultiNetworkPolicy(expName, index, ports),
 
   // Volumes, volumemounts and other data and configs for experiment metadata.
   Metadata:: Metadata,
