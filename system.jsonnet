@@ -18,11 +18,15 @@
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
+  ] + std.flattenArrays([
+    import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
+    import 'k8s/daemonsets/experiments/revtr.jsonnet',
+    import 'k8s/daemonsets/experiments/wehe.jsonnet',
+    import 'k8s/daemonsets/experiments/neubot.jsonnet',
+  ]) + [
     import 'k8s/daemonsets/experiments/ndt-virtual.jsonnet',
     import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
-    import 'k8s/daemonsets/experiments/neubot.jsonnet',
-    import 'k8s/daemonsets/experiments/revtr.jsonnet',
     import 'k8s/daemonsets/experiments/packet-test.jsonnet',
     // NetworkPolicies
     import 'k8s/networkpolicies/msak.jsonnet',
@@ -38,10 +42,7 @@
       // uncomment the following line.
       //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
     ] else []
-  ) + [
-    import 'k8s/daemonsets/experiments/msak.jsonnet',
-    import 'k8s/daemonsets/experiments/wehe.jsonnet',
-  ] + (
+  ) + (
     if std.extVar('PROJECT_ID') != 'mlab-oti' then [
       // A internal Google service we are experimenting with only in sandbox
       // and staging.
