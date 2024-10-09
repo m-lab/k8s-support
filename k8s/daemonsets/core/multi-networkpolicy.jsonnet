@@ -54,6 +54,14 @@
               '--host-prefix=/host',
               '--network-plugins=netctl,ipvlan',
               '--pod-iptables=/var/lib/multi-networkpolicy/iptables',
+              // If any custom iptables rules are needed that cannot be
+              // provisioned by MultiNetworkPolicy definitions, then you can
+              // add them to the file configs/multi-networkpolicy.jsonnet in
+              // this repo, and uncomment the following flags as necessary:
+              // '--custom-v4-ingress-rule-file=/etc/multi-networkpolicy/rules/custom-v4-ingress-rules.txt',
+              // '--custom-v6-ingress-rule-file=/etc/multi-networkpolicy/rules/custom-v6-ingress-rules.txt',
+              // '--custom-v4-egress-rule-file=/etc/multi-networkpolicy/rules/custom-v4-egress-rules.txt',
+              // '--custom-v6-egress-rule-file=/etc/multi-networkpolicy/rules/custom-v6-egress-rules.txt',
             ],
             resources: {
               requests: {
