@@ -5,81 +5,88 @@ local services = [
   'neubot/dash=https:///negotiate/dash',
 ];
 
-exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
-  spec+: {
-    template+: {
-      metadata+: {
-        annotations+: {
-          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+// List of ports that need to be opened in the pod network namespace.
+local ports = ['80/TCP', '443/TCP'];
+
+[
+  exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+    spec+: {
+      template+: {
+        metadata+: {
+          annotations+: {
+            "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
+          },
         },
-      },
-      spec+: {
-        serviceAccountName: 'heartbeat-experiment',
-        containers+: [
-            {
-              name: 'dash',
-              image: 'measurementlab/dash:v0.4.3',
-            args: [
-              '-datadir=/var/spool/' + expName,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-http-listen-address=:80',
-              '-https-listen-address=:443',
-              '-tls-cert=/certs/tls.crt',
-              '-tls-key=/certs/tls.key',
-            ],
-            env: [
+        spec+: {
+          serviceAccountName: 'heartbeat-experiment',
+          containers+: [
               {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
+                name: 'dash',
+                image: 'measurementlab/dash:v0.4.3',
+              args: [
+                '-datadir=/var/spool/' + expName,
+                '-prometheusx.listen-address=$(PRIVATE_IP):9990',
+                '-http-listen-address=:80',
+                '-https-listen-address=:443',
+                '-tls-cert=/certs/tls.crt',
+                '-tls-key=/certs/tls.key',
+              ],
+              env: [
+                {
+                  name: 'PRIVATE_IP',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'status.podIP',
+                    },
                   },
                 },
+              ],
+              securityContext: {
+                capabilities: {
+                  drop: [
+                    'all',
+                  ],
+                },
               },
-            ],
-            securityContext: {
-              capabilities: {
-                drop: [
-                  'all',
-                ],
+              volumeMounts: [
+                {
+                  mountPath: '/certs',
+                  name: 'measurement-lab-org-tls',
+                  readOnly: true,
+                },
+              ] + [
+                exp.VolumeMount(expName + '/' + d) for d in datatypes
+              ],
+              ports: [
+                {
+                  containerPort: 9990,
+                },
+              ],
+              livenessProbe+: {
+                httpGet: {
+                  path: '/metrics',
+                  port: 9990,
+                },
+                initialDelaySeconds: 5,
+                periodSeconds: 30,
               },
             },
-            volumeMounts: [
-              {
-                mountPath: '/certs',
-                name: 'measurement-lab-org-tls',
-                readOnly: true,
+          ] + std.flattenArrays([
+            exp.Heartbeat(expName, false, services),
+          ]),
+          volumes+: [
+            {
+              name: 'measurement-lab-org-tls',
+              secret: {
+                secretName: 'measurement-lab-org-tls',
               },
-            ] + [
-              exp.VolumeMount(expName + '/' + d) for d in datatypes
-            ],
-            ports: [
-              {
-                containerPort: 9990,
-              },
-            ],
-            livenessProbe+: {
-              httpGet: {
-                path: '/metrics',
-                port: 9990,
-              },
-              initialDelaySeconds: 5,
-              periodSeconds: 30,
             },
-          },
-        ] + std.flattenArrays([
-          exp.Heartbeat(expName, false, services),
-        ]),
-        volumes+: [
-          {
-            name: 'measurement-lab-org-tls',
-            secret: {
-              secretName: 'measurement-lab-org-tls',
-            },
-          },
-          exp.Metadata.volume,
-        ],
+            exp.Metadata.volume,
+          ],
+        },
       },
     },
   },
-}
+  exp.MultiNetworkPolicy(expName, 10, ports),
+]
+
