@@ -758,7 +758,7 @@ local MultiNetworkPolicy(expName, index, ports) = {
         ports: [
           {
             port: std.split(std.split(p, '/')[0], ':')[0],
-            [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.split(std.split(p, '/')[0], ':')[1],
+            [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.parseInt(std.split(std.split(p, '/')[0], ':')[1]),
             protocol: std.split(p, '/')[1],
           },
           for p in ports
