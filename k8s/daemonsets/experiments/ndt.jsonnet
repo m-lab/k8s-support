@@ -7,124 +7,131 @@ local services = [
 ];
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
-exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
-  spec+: {
-    template+: {
-      metadata+: {
-        annotations+: {
-          "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
-        },
-      },
-      spec+: {
-        nodeSelector+: {
-          'mlab/ndt-version': 'production',
-        },
-        serviceAccountName: 'heartbeat-experiment',
-        containers+: [
-          {
-            name: 'ndt-server',
-            image: 'measurementlab/ndt-server:' + exp.ndtVersion,
-            // The max-rate flag value is stored in a file on the host
-            // filesystem, created by the systemd max-rate.service.
-            command: [
-              '/bin/sh',
-              '-c',
-              '/ndt-server -txcontroller.max-rate=$(cat /metadata/iface-max-rate) $@',
-              '--',
-            ],
-            args: [
-              '-uuid-prefix-file=' + exp.uuid.prefixfile,
-              '-prometheusx.listen-address=$(PRIVATE_IP):9990',
-              '-datadir=/var/spool/' + expName,
-              '-txcontroller.device=net1',
-              '-htmldir=html/mlab',
-              '-key=/certs/tls.key',
-              '-cert=/certs/tls.crt',
-              '-token.machine=$(NODE_NAME)',
-              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-ndt7.token.required=true',
-              '-label=type=physical',
-              '-label=deployment=stable',
-              '-label=managed=@' + exp.Metadata.path + '/managed',
-              '-label=loadbalanced=@' + exp.Metadata.path + '/loadbalanced',
-            ],
-            env: [
-              {
-                name: 'PRIVATE_IP',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'status.podIP',
-                  },
-                },
-              },
-              {
-                name: 'NODE_NAME',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'spec.nodeName',
-                  },
-                },
-              },
-            ],
-            securityContext: {
-              capabilities: {
-                drop: [
-                  'all',
-                ],
-              },
-            },
-            volumeMounts: [
-              {
-                mountPath: '/certs',
-                name: 'measurement-lab-org-tls',
-                readOnly: true,
-              },
-              {
-                mountPath: '/verify',
-                name: 'locate-verify-keys',
-                readOnly: true,
-              },
-              exp.uuid.volumemount,
-              exp.Metadata.volumemount,
-            ] + [
-              exp.VolumeMount(expName + '/' + d) for d in datatypes
-            ],
-            ports: [
-              {
-                containerPort: 9990,
-              },
-            ],
+// List of ports that need to be opened in the pod network namespace.
+local ports = ['80/TCP', '443/TCP', '3001/TCP', '3010/TCP', '32768:60999/TCP'];
 
-          }
-        ] + std.flattenArrays([
-          exp.Heartbeat(expName, false, services),
-        ]) + std.flattenArrays([
-          // NOTE: exclude from production until design doc is approved, service
-          // is monitored and scales to millions of requests/day.
-          exp.Revtr(expName)
-        ]),
-        volumes+: [
-          {
-            name: 'measurement-lab-org-tls',
-            secret: {
-              secretName: 'measurement-lab-org-tls',
-            },
+[
+  exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+    spec+: {
+      template+: {
+        metadata+: {
+          annotations+: {
+            "secret.reloader.stakater.com/reload": "measurement-lab-org-tls",
           },
-          {
-            name: 'locate-verify-keys',
-            secret: {
-              secretName: 'locate-verify-keys',
-            },
+        },
+        spec+: {
+          nodeSelector+: {
+            'mlab/ndt-version': 'production',
           },
-          exp.Metadata.volume,
-          {
-            name: 'revtr-apikey',
-            secret: {
-              secretName: 'revtr-apikey',
+          serviceAccountName: 'heartbeat-experiment',
+          containers+: [
+            {
+              name: 'ndt-server',
+              image: 'measurementlab/ndt-server:' + exp.ndtVersion,
+              // The max-rate flag value is stored in a file on the host
+              // filesystem, created by the systemd max-rate.service.
+              command: [
+                '/bin/sh',
+                '-c',
+                '/ndt-server -txcontroller.max-rate=$(cat /metadata/iface-max-rate) $@',
+                '--',
+              ],
+              args: [
+                '-uuid-prefix-file=' + exp.uuid.prefixfile,
+                '-prometheusx.listen-address=$(PRIVATE_IP):9990',
+                '-datadir=/var/spool/' + expName,
+                '-txcontroller.device=net1',
+                '-htmldir=html/mlab',
+                '-key=/certs/tls.key',
+                '-cert=/certs/tls.crt',
+                '-token.machine=$(NODE_NAME)',
+                '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+                '-ndt7.token.required=true',
+                '-label=type=physical',
+                '-label=deployment=stable',
+                '-label=managed=@' + exp.Metadata.path + '/managed',
+                '-label=loadbalanced=@' + exp.Metadata.path + '/loadbalanced',
+              ],
+              env: [
+                {
+                  name: 'PRIVATE_IP',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'status.podIP',
+                    },
+                  },
+                },
+                {
+                  name: 'NODE_NAME',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'spec.nodeName',
+                    },
+                  },
+                },
+              ],
+              securityContext: {
+                capabilities: {
+                  drop: [
+                    'all',
+                  ],
+                },
+              },
+              volumeMounts: [
+                {
+                  mountPath: '/certs',
+                  name: 'measurement-lab-org-tls',
+                  readOnly: true,
+                },
+                {
+                  mountPath: '/verify',
+                  name: 'locate-verify-keys',
+                  readOnly: true,
+                },
+                exp.uuid.volumemount,
+                exp.Metadata.volumemount,
+              ] + [
+                exp.VolumeMount(expName + '/' + d) for d in datatypes
+              ],
+              ports: [
+                {
+                  containerPort: 9990,
+                },
+              ],
+
+            }
+          ] + std.flattenArrays([
+            exp.Heartbeat(expName, false, services),
+          ]) + std.flattenArrays([
+            // NOTE: exclude from production until design doc is approved, service
+            // is monitored and scales to millions of requests/day.
+            exp.Revtr(expName)
+          ]),
+          volumes+: [
+            {
+              name: 'measurement-lab-org-tls',
+              secret: {
+                secretName: 'measurement-lab-org-tls',
+              },
             },
-          },
-        ],
+            {
+              name: 'locate-verify-keys',
+              secret: {
+                secretName: 'locate-verify-keys',
+              },
+            },
+            exp.Metadata.volume,
+            {
+              name: 'revtr-apikey',
+              secret: {
+                secretName: 'revtr-apikey',
+              },
+            },
+          ],
+        },
       },
     },
   },
-}
+  exp.MultiNetworkPolicy(expName, 2, ports),
+]
+
