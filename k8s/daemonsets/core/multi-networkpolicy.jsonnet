@@ -6,14 +6,13 @@
     namespace: 'kube-system',
     labels: {
       tier: 'node',
-      app: 'multi-networkpolicy',
       name: 'multi-networkpolicy',
     },
   },
   spec: {
     selector: {
       matchLabels: {
-        name: 'multi-networkpolicy',
+        workload: 'multi-networkpolicy',
       },
     },
     updateStrategy: {
@@ -23,8 +22,7 @@
       metadata: {
         labels: {
           tier: 'node',
-          app: 'multi-networkpolicy',
-          name: 'multi-networkpolicy',
+          workload: 'multi-networkpolicy'
         },
       },
       spec: {
@@ -66,11 +64,11 @@
             resources: {
               requests: {
                 cpu: '100m',
-                memory: '80Mi',
+                memory: '150Mi',
               },
               limits: {
                 cpu: '100m',
-                memory: '150Mi',
+                memory: '250Mi',
               },
             },
             securityContext: {
