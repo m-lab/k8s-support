@@ -17,6 +17,7 @@
     import 'k8s/daemonsets/core/flannel.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
+    import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
   ] + std.flattenArrays([
     import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
@@ -40,9 +41,6 @@
       // A internal Google service we are experimenting with only in sandbox
       // and staging.
       import 'k8s/daemonsets/core/flooefi.jsonnet',
-      // Keep this back from production until we can do more extensive testing
-      // in staging.
-      import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
     ] else []
   ) + [
     // Deployments
