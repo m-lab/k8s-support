@@ -29,6 +29,7 @@
         hostNetwork: true,
         nodeSelector: {
           'kubernetes.io/arch': 'amd64',
+          [if std.extVar('PROJECT_ID') == 'mlab-oti' then 'mlab/run']: 'multi-networkpolicy-canary',
         },
         tolerations: [
           {
@@ -68,7 +69,7 @@
               },
               limits: {
                 cpu: '100m',
-                memory: '250Mi',
+                memory: '500Mi',
               },
             },
             securityContext: {
