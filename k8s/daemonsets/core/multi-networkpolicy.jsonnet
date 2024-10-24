@@ -41,7 +41,7 @@
         containers: [
           {
             name: 'multi-networkpolicy',
-            image: 'measurementlab/multi-networkpolicy-iptables:latest',
+            image: 'measurementlab/multi-networkpolicy-iptables:v1.0.0',
             imagePullPolicy: 'Always',
             command: [
               '/usr/bin/multi-networkpolicy-iptables',
