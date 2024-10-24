@@ -6,14 +6,13 @@
     namespace: 'kube-system',
     labels: {
       tier: 'node',
-      app: 'multi-networkpolicy',
       name: 'multi-networkpolicy',
     },
   },
   spec: {
     selector: {
       matchLabels: {
-        name: 'multi-networkpolicy',
+        workload: 'multi-networkpolicy',
       },
     },
     updateStrategy: {
@@ -23,14 +22,14 @@
       metadata: {
         labels: {
           tier: 'node',
-          app: 'multi-networkpolicy',
-          name: 'multi-networkpolicy',
+          workload: 'multi-networkpolicy'
         },
       },
       spec: {
         hostNetwork: true,
         nodeSelector: {
           'kubernetes.io/arch': 'amd64',
+          [if std.extVar('PROJECT_ID') == 'mlab-oti' then 'mlab/run']: 'multi-networkpolicy-canary',
         },
         tolerations: [
           {
@@ -42,7 +41,7 @@
         containers: [
           {
             name: 'multi-networkpolicy',
-            image: 'measurementlab/multi-networkpolicy-iptables:latest',
+            image: 'measurementlab/multi-networkpolicy-iptables:v1.0.0',
             imagePullPolicy: 'Always',
             command: [
               '/usr/bin/multi-networkpolicy-iptables',
@@ -66,11 +65,11 @@
             resources: {
               requests: {
                 cpu: '100m',
-                memory: '80Mi',
+                memory: '150Mi',
               },
               limits: {
                 cpu: '100m',
-                memory: '150Mi',
+                memory: '500Mi',
               },
             },
             securityContext: {
