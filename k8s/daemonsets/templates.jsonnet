@@ -361,6 +361,7 @@ local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
       '-anonymize.ip=' + anonMode,
       '-maxidleram=1500MB',
       '-maxheap=2GB',
+      '-flowtimeout=5s',
     ] + if expName == 'host' then [
       // The "host" experiment is currently the only experiment where
       // packet-headers needs to listen explictly on interface eth0.
