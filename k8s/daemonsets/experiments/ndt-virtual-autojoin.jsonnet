@@ -75,8 +75,8 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             ],
             volumeMounts: [
               {
-                mountPath: '/autojoin',
-                name: 'autojoin',
+                mountPath: '/autonode',
+                name: 'autonode',
               },
               exp.Metadata.volumemount,
             ],
