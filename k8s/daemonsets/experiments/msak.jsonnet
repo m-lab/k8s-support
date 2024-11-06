@@ -103,7 +103,7 @@ local ports = ['80/TCP', '443/TCP', '1053/UDP'];
               ],
             },
           ] + std.flattenArrays([
-            exp.Heartbeat(expName, false, services),
+            exp.Heartbeat(expName, false, services, false),
           ]),
           volumes+: [
             {
@@ -126,4 +126,3 @@ local ports = ['80/TCP', '443/TCP', '1053/UDP'];
   },
   exp.MultiNetworkPolicy(expName, 1, ports),
 ]
-
