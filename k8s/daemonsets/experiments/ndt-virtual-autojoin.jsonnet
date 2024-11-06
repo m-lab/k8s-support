@@ -38,7 +38,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
           {
             name: 'register-node',
             image: 'measurementlab/autojoin-register:v0.2.6',
-            imagePullPolicy: 'always',
+            imagePullPolicy: 'Always',
             command: [
               '/bin/sh',
               '-c',
@@ -59,7 +59,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 name: 'PROJECT',
                 valueFrom: {
                   fieldRef: {
-                    fieldPath: 'metadata.labels["mlab/project"]',
+                    fieldPath: 'metadata.labels[mlab/project]',
                   },
                 },
               },
@@ -174,10 +174,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
             secret: {
               secretName: 'locate-verify-keys',
             },
-          },
-          {
-            emptyDir: {},
-            name: 'autonode',
           },
           exp.Metadata.volume,
         ],

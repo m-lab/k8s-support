@@ -889,6 +889,10 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
               secretName: 'locate-heartbeat-key',
             },
           },
+          {
+            emptyDir: {},
+            name: 'autonode',
+          },
           datatypes.volume(name),
           uuid.volume,
           data.volume(name),
