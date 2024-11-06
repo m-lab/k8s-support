@@ -59,7 +59,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 name: 'PROJECT',
                 valueFrom: {
                   fieldRef: {
-                    fieldPath: 'metadata.labels[mlab/project]',
+                    fieldPath: 'metadata.labels[\'mlab/project\']',
                   },
                 },
               },

@@ -623,8 +623,8 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork, autojoin) = [
       },
     ] + if autojoin then [
       {
-        mountPath: '/autojoin',
-        name: 'autojoin',
+        mountPath: '/autonode',
+        name: 'autonode',
         readOnly: true,
       },
     ] else []
@@ -768,8 +768,8 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
       Metadata.volumemount,
     ] + if autojoin then [
       {
-        mountPath: '/autojoin',
-        name: 'autojoin',
+        mountPath: '/autonode',
+        name: 'autonode',
         readOnly: true,
       },
     ] else [],
