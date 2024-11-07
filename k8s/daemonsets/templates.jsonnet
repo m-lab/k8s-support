@@ -690,13 +690,14 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
       else
         '-heartbeat-url=wss://locate.' + PROJECT_ID +
         '.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
-    ] + if autojoin then [
-      '-registration-url=file:///autonode/registration.json',
-      '-hostname=@/autonode/hostname',
+    ] + (
+      if autojoin then [
+        '-registration-url=file:///autonode/registration.json',
+        '-hostname=@/autonode/hostname',
     ] else [
-      '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
-      '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
-    ] + [
+        '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
+        '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
+    ]) + [
       '-experiment=' + expName,
       '-node=$(MLAB_NODE_NAME)',
       '-pod=$(MLAB_POD_NAME)',
