@@ -46,7 +46,7 @@
               '*.measurement-lab.org',
             ] else []) + [
               '*.' + std.extVar('PROJECT_ID') + '.measurement-lab.org',
-              '*.mlab.' + std.split('PROJECT_ID')[1] + '.measurement-lab.org',
+              '*.mlab.' + std.split(std.extVar('PROJECT_ID'), '-')[1] + '.measurement-lab.org',
             ],
           },
         },
