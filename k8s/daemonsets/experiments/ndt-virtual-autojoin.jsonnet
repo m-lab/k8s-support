@@ -96,7 +96,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-key=/certs/tls.key',
               '-cert=/certs/tls.crt',
               '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
-              '-token.machine=@/autonode/hostname',
+              '-token.machine=@/autolol/hostname',
               '-txcontroller.device=ens4',
               // GCE VMs have an egress rate limit of 7Gbps to Internet
               // addresses. Setting max-rate to 4Gbps should leave headroom for
