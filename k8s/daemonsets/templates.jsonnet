@@ -555,7 +555,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   else []
 ;
 
-local UUIDAnnotator(expName, tcpPort, hostNetwork, autojoin) = [
+local UUIDAnnotator(expName, tcpPort, hostNetwork, autojoin=false) = [
   {
     name: 'uuid-annotator',
     image: 'measurementlab/uuid-annotator:' + uuidAnnVersion,
