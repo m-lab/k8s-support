@@ -67,7 +67,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
                 name: 'AUTOJOIN_API_KEY',
                 valueFrom: {
                   secretKeyRef: {
-                    key: 'key',
+                    key: 'autojoin-api-key',
                     name: 'autojoin-api-key',
                   },
                 },
