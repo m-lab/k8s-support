@@ -45,6 +45,7 @@ gsutil cp gs://${!GCS_BUCKET_K8S}/cert-manager-credentials.json secrets/cert-man
 gsutil cp gs://${!GCS_BUCKET_K8S}/vector-credentials.json secrets/vector.json
 gsutil cp gs://${!GCS_BUCKET_K8S}/snmp-community/snmp.community secrets/snmp.community
 gsutil cp gs://${!GCS_BUCKET_K8S}/prometheus-htpasswd secrets/auth
+gsutil cp gs://${!GCS_BUCKET_K8S}/autojoin-api-key secrets/autojoin-api-key
 # The alertmanager-basicauth.yaml file is already a valid k8s YAML Secret
 # specification, so copy it directly to the secret-configs/ directory.
 gsutil cp gs://${!GCS_BUCKET_K8S}/alertmanager-basicauth.yaml secret-configs/.
@@ -77,4 +78,6 @@ kubectl create secret generic locate-heartbeat-key --from-file secrets/locate-he
     --dry-run=client -o json > secret-configs/locate-heartbeat-key.json
 kubectl create secret generic revtr-apikey --from-file secrets/revtr-apikey/ \
     --dry-run=client -o json > secret-configs/revtr-apikey.json
+kubectl create secret generic autojoin-api-key --from-file secrets/autojoin-api-key \
+    --dry-run=client -o json > secret-configs/autojoin-api-key.json
 
