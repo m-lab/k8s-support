@@ -37,7 +37,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         containers+: [
           {
             name: 'register-node',
-            image: 'measurementlab/autojoin-register:v0.2.6',
+            image: 'measurementlab/autojoin-register:v0.2.8',
             imagePullPolicy: 'Always',
             command: [
               '/bin/sh',
