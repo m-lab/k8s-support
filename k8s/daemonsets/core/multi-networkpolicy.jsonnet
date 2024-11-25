@@ -29,6 +29,7 @@
         hostNetwork: true,
         nodeSelector: {
           'kubernetes.io/arch': 'amd64',
+          [if std.extVar('PROJECT_ID') == 'mlab-oti' then 'mlab/run']: 'multi-networkpolicy-canary',
         },
         tolerations: [
           {
