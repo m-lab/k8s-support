@@ -37,17 +37,14 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         containers+: [
           {
             name: 'register-node',
-            image: 'measurementlab/autojoin-register:v0.2.8',
+            image: 'measurementlab/autojoin-register:v0.2.9',
             imagePullPolicy: 'Always',
-            command: [
-              '/bin/sh',
-              '-c',
-              '/register -ipv4=$(cat /metadata/external-ip) -ipv6=$(cat /metadata/external-ipv6) -iata=$(cat /metadata/iata-code) $@',
-              '--',
-            ],
             args: [
               '-endpoint=https://autojoin-dot-$(PROJECT).appspot.com/autojoin/v0/node/register',
               '-key=$(AUTOJOIN_API_KEY)',
+              '-ipv4=@/metadata/external-ip',
+              '-ipv6=@/metadata/external-ipv6',
+              '-iata=@/metadata/iata',
               '-service=ndt',
               '-organization=mlab',
               '-output=/autonode',
