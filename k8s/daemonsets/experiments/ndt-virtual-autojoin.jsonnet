@@ -37,7 +37,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
         containers+: [
           {
             name: 'register-node',
-            image: 'measurementlab/autojoin-register:v0.2.9',
+            image: 'measurementlab/autojoin-register:v0.2.11',
             imagePullPolicy: 'Always',
             args: [
               '-endpoint=https://autojoin-dot-$(PROJECT).appspot.com/autojoin/v0/node/register',
@@ -49,7 +49,9 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-organization=mlab',
               '-output=/autonode',
               '-ports=9990,9991,9992,9993',
-              '-probability=1.0',
+              '-probability=@/metadata/probability',
+              '-type=virtual',
+              '-uplink=1g',
             ],
             env: [
               {
