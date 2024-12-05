@@ -51,7 +51,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-ports=9990,9991,9992,9993',
               '-probability=@/metadata/probability',
               '-type=virtual',
-              '-uplink=1g',
+              '-uplink=7g',
             ],
             env: [
               {
