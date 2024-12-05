@@ -44,7 +44,7 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-key=$(AUTOJOIN_API_KEY)',
               '-ipv4=@/metadata/external-ip',
               '-ipv6=@/metadata/external-ipv6',
-              '-iata=@/metadata/iata',
+              '-iata=@/metadata/iata-code',
               '-service=ndt',
               '-organization=mlab',
               '-output=/autonode',
