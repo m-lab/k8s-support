@@ -1,10 +1,10 @@
-local ndtVersion = 'v0.20.20';
+local ndtVersion = 'v0.23.0';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
 local ndtCanaryVersion = 'v0.20.20';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 // The uuid-annotator container image version.
-local uuidAnnVersion = 'v0.5.5';
+local uuidAnnVersion = 'v0.5.10';
 
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -556,7 +556,7 @@ local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   else []
 ;
 
-local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
+local UUIDAnnotator(expName, tcpPort, hostNetwork, autojoin=false) = [
   {
     name: 'uuid-annotator',
     image: 'measurementlab/uuid-annotator:' + uuidAnnVersion,
@@ -571,6 +571,10 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
       '-maxmind.url=gs://downloader-' + PROJECT_ID + '/Maxmind/current/GeoLite2-City.tar.gz',
       '-routeview-v4.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv4/current/routeview.pfx2as.gz',
       '-routeview-v6.url=gs://downloader-' + PROJECT_ID + '/RouteViewIPv6/current/routeview.pfx2as.gz',
+    ] + if autojoin then [
+      '-siteinfo.url=file:///autonode/annotation.json',
+      '-hostname=@/autonode/hostname',
+    ] else [
       '-siteinfo.url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/annotations.json',
       '-hostname=$(MLAB_NODE_NAME)',
     ],
@@ -618,7 +622,13 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork) = [
         name: 'uuid-annotator-credentials',
         readOnly: true,
       },
-    ],
+    ] + if autojoin then [
+      {
+        mountPath: '/autonode',
+        name: 'autonode',
+        readOnly: true,
+      },
+    ] else []
   }] +
   if hostNetwork then
     [RBACProxy('uuid-annotator', tcpPort)]
@@ -667,10 +677,10 @@ local Revtr(expName, tcpPort) = [
 ]
 ;
 
-local Heartbeat(expName, tcpPort, hostNetwork, services) = [
+local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.14.50',
+    image: 'measurementlab/heartbeat:v0.15.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -679,10 +689,17 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
       if PROJECT_ID == 'mlab-oti' then
         '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
       else
-        '-heartbeat-url=wss://locate.' + PROJECT_ID + '.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
-      '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
+        '-heartbeat-url=wss://locate.' + PROJECT_ID +
+        '.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
+    ] + (
+      if autojoin then [
+        '-registration-url=file:///autonode/registration.json',
+        '-hostname=@/autonode/hostname',
+    ] else [
+        '-registration-url=https://siteinfo.' + PROJECT_ID + '.measurementlab.net/v2/sites/registration.json',
+        '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
+    ]) + [
       '-experiment=' + expName,
-      '-hostname=' + expName + '-$(MLAB_NODE_NAME)',
       '-node=$(MLAB_NODE_NAME)',
       '-pod=$(MLAB_POD_NAME)',
       '-namespace=$(MLAB_NAMESPACE)',
@@ -751,7 +768,13 @@ local Heartbeat(expName, tcpPort, hostNetwork, services) = [
         readOnly: true,
       },
       Metadata.volumemount,
-    ],
+    ] + if autojoin then [
+      {
+        mountPath: '/autonode',
+        name: 'autonode',
+        readOnly: true,
+      },
+    ] else [],
   }] +
   if hostNetwork then
     [RBACProxy('heartbeat', tcpPort)]
@@ -788,7 +811,7 @@ local MultiNetworkPolicy(expName, index, ports) = {
   },
 };
 
-local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical') = {
+local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical', autojoin=false) = {
   local autoAnnotations = contains("annotation2", datatypesAutoloaded),
   local datatypesPushed =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if autoAnnotations then [] else ["annotation2"],
   local allVolumes = datatypesArchived + datatypesAutoloaded,
@@ -822,7 +845,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
             Tcpinfo(name, 9991, hostNetwork, anonMode),
             Traceroute(name, 9992, hostNetwork, anonMode),
             Pcap(name, 9993, hostNetwork, siteType, anonMode),
-            UUIDAnnotator(name, 9994, hostNetwork),
+            UUIDAnnotator(name, 9994, hostNetwork, autojoin),
             Pusher(name, 9995, datatypesPushed, hostNetwork, bucket),
           ] + if datatypesAutoloaded != [] then [Jostler(name, 9997, datatypesAutoloaded, hostNetwork, bucket)] else []),
         [if hostNetwork then 'serviceAccountName']: 'kube-rbac-proxy',
@@ -867,6 +890,10 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
             secret: {
               secretName: 'locate-heartbeat-key',
             },
+          },
+          {
+            emptyDir: {},
+            name: 'autonode',
           },
           datatypes.volume(name),
           uuid.volume,
@@ -915,7 +942,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
   // Returns a minimal experiment, suitable for adding a unique network config
   // before deployment. It is expected that most users of this library will use
   // Experiment().
-  ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical'):: ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType),
+  ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType='physical', autojoin=false):: ExperimentNoIndex(name, bucket, anonMode, datatypes, datatypesAutoloaded, hostNetwork, siteType, autojoin),
 
   // RBACProxy creates a https proxy for an http port. This allows us to serve
   // metrics securely over https, andto https-authenticate to only serve them to
@@ -944,7 +971,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
   Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket):: Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket),
 
   // Returns a "container" configuration for the heartbeat service.
-  Heartbeat(expName, hostNetwork, services):: Heartbeat(expName, 9996, hostNetwork, services),
+  Heartbeat(expName, hostNetwork, services, autojoin=false):: Heartbeat(expName, 9996, hostNetwork, services, autojoin),
 
   // Returns a manifest for a MultiNetworkPolicy CRD object.
   MultiNetworkPolicy(expName, index, ports):: MultiNetworkPolicy(expName, index, ports),
