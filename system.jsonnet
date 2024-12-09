@@ -31,6 +31,9 @@
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       import 'k8s/daemonsets/experiments/ndt-virtual-autojoin.jsonnet',
+      // We are experimenting with the idea of hosting CAIDA Ark instances on
+      // the platform.
+      import 'k8s/daemonsets/core/ark.jsonnet',
       // responsiveness commented out by Kinkade. It's stuck in sandbox and not
       // really being used, and must be run as root because is has
       // hostNetwork=true. If we want to resume the experiment we can just
