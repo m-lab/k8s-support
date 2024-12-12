@@ -45,7 +45,7 @@ local expName = 'ark';
                 value: '1'
               },
               {
-                name: 'DISABLE_ARK_ACTIVITY_v6',
+                name: 'DISABLE_ARK_ACTIVITY_V6',
                 value: '1'
               },
               {
