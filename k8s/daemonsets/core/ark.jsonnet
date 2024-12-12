@@ -5,7 +5,6 @@ local expName = 'ark';
   kind: 'DaemonSet',
   metadata: {
     name: expName,
-    namespace: expName,
   },
   spec: {
     selector: {
