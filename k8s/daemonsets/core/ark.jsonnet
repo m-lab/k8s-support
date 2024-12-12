@@ -16,8 +16,13 @@ local expName = 'ark';
     template: {
       metadata: {
         annotations: {
+          'k8s.v1.cni.cncf.io/networks': [
+            {
+              name: 'index2ip-index-4-conf',
+            },
+          ],
           'prometheus.io/scrape': 'true',
-          'prometheus.io/scheme': 'http'
+          'prometheus.io/scheme': 'http',
         },
         labels: {
           workload: expName,
