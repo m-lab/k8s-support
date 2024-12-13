@@ -67,6 +67,10 @@ local expName = 'ark';
             ],
           },
         ],
+        dnsPolicy: 'None',
+        dnsConfig: {
+          nameservers: ['8.8.8.8', '8.8.4.4'],
+        },
         nodeSelector: {
           'mlab/type': 'physical',
         },
