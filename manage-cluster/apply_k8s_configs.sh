@@ -60,6 +60,7 @@ tar -zxvf helm-${K8S_HELM_VERSION}-linux-amd64.tar.gz
 ./linux-amd64/helm repo add jetstack https://charts.jetstack.io
 ./linux-amd64/helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ./linux-amd64/helm repo add vector https://helm.vector.dev
+./linux-amd64/helm repo add cilium https://helm.cilium.io
 
 # Helm 3 does not automatically create namespaces anymore.
 kubectl create namespace cert-manager --dry-run=client -o json | kubectl apply -f -
@@ -94,6 +95,11 @@ sed -e "s|{{PROJECT}}|${PROJECT}|g" \
   --set image.tag="${K8S_VECTOR_VERSION}" \
   --values ../helm/vector-values-overrides.yaml \
   --version "${K8S_VECTOR_CHART}"
+
+./linux-amd64/helm upgrade --install cilium cilium/cilium \
+  --namespace kube-system \
+  --values ../helm/cilium-values-overrides.yaml \
+  --version "${K8S_CILIUM_CHART}"
 
 # Apply the configuration
 
