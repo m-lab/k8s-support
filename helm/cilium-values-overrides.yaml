@@ -3,7 +3,11 @@ cni:
   customConf: true
   configMap: cilium-cni-configuration
   exclusive: false
+debug:
+  enabled: true
 enableIPv4Masquerade: false
 enableIdentityMark: false
+envoy:
+  enabled: false
 routingMode: native
 
