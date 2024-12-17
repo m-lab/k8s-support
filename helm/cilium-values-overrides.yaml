@@ -1,0 +1,8 @@
+cni.chainingMode = generic-veth
+cni.customConf=true
+cni.configMap=cilium-cni-configuration
+cni.exclusive=false
+routingMode=native
+enableIPv4Masquerade=false
+enableIdentityMark=false
+
