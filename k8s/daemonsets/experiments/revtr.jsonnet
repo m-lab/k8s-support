@@ -1,10 +1,11 @@
 local exp = import '../templates.jsonnet';
+local expName = 'revtr';
 
 // List of ports that need to be opened in the pod network namespace.
 local ports = ['55557/TCP'];
 
 [
-  exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], []) + {
+  exp.Experiment(expName, 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], []) + {
     spec+: {
       template+: {
         spec+: {
@@ -49,5 +50,5 @@ local ports = ['55557/TCP'];
       }
     }
   },
-  exp.NetworkPolicy('revtr', ports),
+  exp.NetworkPolicy(expName, ports),
 ]
