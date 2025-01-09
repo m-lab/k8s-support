@@ -6,11 +6,9 @@
     import 'config/cilium.jsonnet',
     import 'config/disco.jsonnet',
     import 'config/flannel.jsonnet',
-    import 'config/multi-networkpolicy.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
     // Custom resource definitions
-    import 'k8s/custom-resource-definitions/multi-networkpolicy.jsonnet',
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',

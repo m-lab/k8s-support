@@ -801,7 +801,7 @@ local NetworkPolicy(expName, ports) = {
       {
         ports: [
           {
-            port: std.split(std.split(p, '/')[0], ':')[0],
+            port: std.parseInt(std.split(std.split(p, '/')[0], ':')[0]),
             [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.parseInt(std.split(std.split(p, '/')[0], ':')[1]),
             protocol: std.split(p, '/')[1],
           },
