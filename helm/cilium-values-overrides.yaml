@@ -12,5 +12,7 @@ enableIPv4Masquerade: false
 enableIdentityMark: false
 envoy:
   enabled: false
+hubble:
+  enabled: false
 routingMode: native
 
