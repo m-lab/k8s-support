@@ -227,6 +227,5 @@ local ports = [
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 5, ports),
+  exp.NetworkPolicy(expName, ports),
 ]
-

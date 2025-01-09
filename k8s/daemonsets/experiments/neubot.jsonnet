@@ -87,6 +87,5 @@ local ports = ['80/TCP', '443/TCP'];
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 10, ports),
+  exp.NetworkPolicy(expName, ports),
 ]
-

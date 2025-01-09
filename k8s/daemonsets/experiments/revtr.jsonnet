@@ -49,6 +49,5 @@ local ports = ['55557/TCP'];
       }
     }
   },
-  exp.MultiNetworkPolicy('revtr', 3, ports),
+  exp.NetworkPolicy('revtr', ports),
 ]
-
