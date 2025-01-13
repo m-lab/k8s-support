@@ -73,6 +73,10 @@
             type: 'ipvlan',
             master: 'eth0',
           },
+          {
+            type: 'cilium-cni',
+            name: 'cilium',
+          },
         ],
       },
       config: std.toString(cniConfig),
