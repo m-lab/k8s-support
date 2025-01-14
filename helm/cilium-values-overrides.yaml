@@ -5,7 +5,7 @@ cni:
   chainingMode: generic-veth
   customConf: true
   configMap: cilium-cni-configuration
-  exclusive: false
+  exclusive: true
 debug:
   enabled: true
 enableIPv4Masquerade: false
