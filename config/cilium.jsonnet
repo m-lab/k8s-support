@@ -3,20 +3,14 @@ local data = {
   cniVersion: '0.3.1',
   plugins: [
     {
-      type: 'netctl',
-      log_level: 'info',
-      datastore_type: 'kubernetes',
-      mtu: '1440,q',
-      ipam: {
-        type: 'index2ip',
-      },
-    },
-    {
-      type: 'ipvlan',
-      master: 'eth0',
-    },
-    {
       type: 'cilium-cni',
+    },
+    {
+      "cniVersion": "0.3.1",
+      "kubeconfig": "/etc/kubernetes/kubelet.conf",
+      "multusNamespace": "default",
+      "name": "multus-network",
+      "type": "multus"
     },
   ],
 };
