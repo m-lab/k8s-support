@@ -20,6 +20,22 @@
       config: std.toString(cniConfig),
     },
   },
+  {
+    apiVersion: 'k8s.cni.cncf.io/v1',
+    kind: 'NetworkAttachmentDefinition',
+    metadata: {
+      name: 'cilium-experiment-conf',
+    },
+    spec: {
+      local cniConfig = {
+        cniVersion: '0.3.1',
+        name: 'cilium',
+        type: 'cilium-cni',
+        ipam: 'kubernetes',
+      },
+      config: std.toString(cniConfig),
+    },
+  },
   // The flannel configuration that gets applied to experiment pods. Only pods
   // with the following annotation will use this configuration:
   // `v1.multus-cni.io/default-network: flannel-experiment-conf`
@@ -72,10 +88,6 @@
           {
             type: 'ipvlan',
             master: 'eth0',
-          },
-          {
-            type: 'cilium-cni',
-            name: 'cilium',
           },
         ],
       },
