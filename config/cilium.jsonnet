@@ -10,12 +10,6 @@ local data = {
       ipam: {
         type: 'index2ip',
       },
-      policy: {
-        type: 'k8s',
-      },
-      kubernetes: {
-        kubeconfig: '/etc/cni/net.d/00-multus.conf',
-      },
     },
     {
       type: 'ipvlan',
