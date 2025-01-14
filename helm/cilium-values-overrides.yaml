@@ -14,5 +14,7 @@ envoy:
   enabled: false
 hubble:
   enabled: false
+ipam:
+  mode: kubernetes
 routingMode: native
 
