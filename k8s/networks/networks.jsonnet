@@ -24,14 +24,13 @@
     apiVersion: 'k8s.cni.cncf.io/v1',
     kind: 'NetworkAttachmentDefinition',
     metadata: {
-      name: 'cilium-experiment-conf',
+      name: 'cilium-conf',
     },
     spec: {
       local cniConfig = {
         cniVersion: '0.3.1',
         name: 'cilium',
         type: 'cilium-cni',
-        ipam: 'kubernetes',
       },
       config: std.toString(cniConfig),
     },
