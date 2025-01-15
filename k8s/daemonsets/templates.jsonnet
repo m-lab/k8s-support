@@ -921,7 +921,7 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
       metadata+: {
         annotations+: {
           'k8s.v1.cni.cncf.io/networks': '[{ "name": "index2ip-index-' + index + '-conf" }]',
-          'v1.multus-cni.io/default-network': 'cilium-experiment-conf',
+          //'v1.multus-cni.io/default-network': 'cilium-experiment-conf',
         },
       },
       spec+: {
