@@ -2,19 +2,13 @@ bpf:
   autoMount:
     enabled: false
 cni:
-  chainingMode: generic-veth
-  customConf: true
-  configMap: cilium-cni-configuration
   exclusive: false
 debug:
   enabled: true
-enableIPv4Masquerade: false
-enableIdentityMark: false
 envoy:
   enabled: false
 hubble:
   enabled: false
 ipam:
   mode: kubernetes
-routingMode: native
 
