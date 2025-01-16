@@ -3,7 +3,6 @@
   apiVersion: 'v1',
   items: [
     // Configmaps
-    import 'config/cilium.jsonnet',
     import 'config/disco.jsonnet',
     import 'config/flannel.jsonnet',
     import 'config/nodeinfo.jsonnet',
