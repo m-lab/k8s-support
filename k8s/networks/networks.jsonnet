@@ -1,25 +1,4 @@
 [
-  // The default flannel configuration that gets applied to non-experiment pods.
-  // The important difference here is that isDefaultGateway=true.
-  {
-    apiVersion: 'k8s.cni.cncf.io/v1',
-    kind: 'NetworkAttachmentDefinition',
-    metadata: {
-      name: 'flannel-conf',
-    },
-    spec: {
-      local cniConfig = {
-        cniVersion: '0.3.0',
-        name: 'flannel',
-        type: 'flannel',
-        delegate: {
-          hairpinMode: true,
-          isDefaultGateway: true,
-        },
-      },
-      config: std.toString(cniConfig),
-    },
-  },
   {
     apiVersion: 'k8s.cni.cncf.io/v1',
     kind: 'NetworkAttachmentDefinition',
@@ -31,28 +10,6 @@
         cniVersion: '0.3.1',
         name: 'cilium',
         type: 'cilium-cni',
-      },
-      config: std.toString(cniConfig),
-    },
-  },
-  // The flannel configuration that gets applied to experiment pods. Only pods
-  // with the following annotation will use this configuration:
-  // `v1.multus-cni.io/default-network: flannel-experiment-conf`
-  {
-    apiVersion: 'k8s.cni.cncf.io/v1',
-    kind: 'NetworkAttachmentDefinition',
-    metadata: {
-      name: 'flannel-experiment-conf',
-    },
-    spec: {
-      local cniConfig = {
-        cniVersion: '0.3.0',
-        name: 'flannel',
-        type: 'flannel',
-        delegate: {
-          hairpinMode: true,
-          isDefaultGateway: false,
-        },
       },
       config: std.toString(cniConfig),
     },

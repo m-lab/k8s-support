@@ -4,7 +4,6 @@
   items: [
     // Configmaps
     import 'config/disco.jsonnet',
-    import 'config/flannel.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
     // Custom resource definitions
@@ -12,7 +11,6 @@
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
     import 'k8s/daemonsets/core/disco.jsonnet',
-    import 'k8s/daemonsets/core/flannel.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
     import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
