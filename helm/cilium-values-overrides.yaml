@@ -8,7 +8,7 @@ debug:
 envoy:
   enabled: false
 hubble:
-  enabled: false
+  enabled: true
 ipam:
   mode: kubernetes
 
