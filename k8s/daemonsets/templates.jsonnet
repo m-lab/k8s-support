@@ -806,6 +806,12 @@ local NetworkPolicy(expName, ports) = {
             protocol: std.split(p, '/')[1],
           },
           for p in ports
+          // Unconditionally allow Prometheus monitoring to all experiment pods
+          {
+            port: 9990,
+            endPort: 9999,
+            protocol: 'TCP',
+          },
         ],
       },
     ],
