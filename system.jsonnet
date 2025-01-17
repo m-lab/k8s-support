@@ -13,7 +13,6 @@
     import 'k8s/daemonsets/core/disco.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
-    import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
   ] + std.flattenArrays([
     import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
@@ -65,7 +64,6 @@
     import 'k8s/roles/heartbeat-experiment.jsonnet',
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
-    import 'k8s/roles/multi-networkpolicy.jsonnet',
     import 'k8s/roles/rbac-prometheus.jsonnet',
     import 'k8s/roles/reloader.jsonnet',
   ]),
