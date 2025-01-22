@@ -9,4 +9,7 @@ envoy:
   enabled: false
 ipam:
   mode: kubernetes
+k8sServiceHost: 172.25.0.1
+k8sServicePort: 6443
+kubeProxyReplacement: true
 
