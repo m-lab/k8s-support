@@ -62,7 +62,7 @@
               {
                 mountPath: '/var/run',
                 name: 'var-run',
-                readOnly: true,
+                //readOnly: true,
               },
               {
                 mountPath: '/sys',
