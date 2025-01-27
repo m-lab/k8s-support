@@ -50,5 +50,5 @@ local ports = ['55557/TCP'];
       }
     }
   },
-  exp.NetworkPolicy(expName, ports),
+  //exp.NetworkPolicy(expName, ports),
 ]

@@ -132,5 +132,5 @@ local ports = ['80/TCP', '443/TCP', '3001/TCP', '3010/TCP', '32768:60999/TCP'];
       },
     },
   },
-  exp.NetworkPolicy(expName, ports),
+  //exp.NetworkPolicy(expName, ports),
 ]

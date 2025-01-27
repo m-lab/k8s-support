@@ -227,5 +227,5 @@ local ports = [
       },
     },
   },
-  exp.NetworkPolicy(expName, ports),
+  //exp.NetworkPolicy(expName, ports),
 ]
