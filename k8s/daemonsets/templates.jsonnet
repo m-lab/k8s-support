@@ -813,6 +813,11 @@ local NetworkPolicy(expName, ports) = {
             endPort: 9999,
             protocol: 'TCP',
           },
+          // Kured health and readiness checks
+          {
+            port: 8080,
+            protocol: 'TCP',
+          },
         ],
       },
     ],
