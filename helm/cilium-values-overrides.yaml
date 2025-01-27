@@ -3,6 +3,11 @@ bpf:
     enabled: false
 cni:
   exclusive: false
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
 ipam:
   mode: kubernetes
 k8sServiceHost: api-platform-cluster.mlab-sandbox.measurementlab.net
