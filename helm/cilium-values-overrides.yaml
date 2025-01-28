@@ -1,8 +1,6 @@
 bpf:
   autoMount:
     enabled: false
-  hostLegacyRouting: true
-  masquerade: true
 cni:
   exclusive: false
 externalIPs:
