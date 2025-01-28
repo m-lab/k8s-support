@@ -3,7 +3,7 @@ bpf:
     enabled: false
 cni:
   exclusive: false
-externalIPs:
+endpointRoutes:
   enabled: true
 hubble:
   relay:
@@ -16,4 +16,5 @@ k8sServiceHost: api-platform-cluster.mlab-sandbox.measurementlab.net
 k8sServicePort: 6443
 kubeProxyReplacement: true
 MTU: 1460
+routingMode: native
 
