@@ -64,7 +64,7 @@ local prometheusConfig = import '../../config/prometheus.jsonnet';
             ],
           },
         ],
-        dnsPolicy: 'ClusterFirst',
+        dnsPolicy: 'ClusterFirstWithHostNet',
         // TODO: use native k8s service entry points, if possible.
         hostNetwork: true,
         nodeSelector: {
