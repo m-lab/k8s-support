@@ -6,8 +6,8 @@ cni:
 hubble:
   relay:
     enabled: true
-  ui:
-    enabled: true
+    nodeSelector:
+      run: prometheus-server
 ipam:
   mode: kubernetes
 k8sServiceHost: api-platform-cluster.mlab-sandbox.measurementlab.net
