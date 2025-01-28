@@ -5,6 +5,8 @@ bpf:
   masquerade: true
 cni:
   exclusive: false
+externalIPs:
+  enabled: true
 hubble:
   relay:
     enabled: true
