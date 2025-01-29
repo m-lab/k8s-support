@@ -1,6 +1,7 @@
 bpf:
   autoMount:
     enabled: false
+  hostLegacyRouting: true
 cni:
   exclusive: false
 hubble:
