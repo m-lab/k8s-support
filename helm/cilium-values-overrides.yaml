@@ -1,6 +1,8 @@
+annotateK8sNode: true
 bpf:
   autoMount:
     enabled: false
+  masquerade: true
 cni:
   exclusive: false
 hubble:
