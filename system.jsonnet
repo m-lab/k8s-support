@@ -5,11 +5,9 @@
     // Configmaps
     import 'config/disco.jsonnet',
     import 'config/flannel.jsonnet',
-    import 'config/multi-networkpolicy.jsonnet',
     import 'config/nodeinfo.jsonnet',
     import 'config/prometheus.jsonnet',
     // Custom resource definitions
-    import 'k8s/custom-resource-definitions/multi-networkpolicy.jsonnet',
     import 'k8s/custom-resource-definitions/network-attachment-definition.jsonnet',
     // Daemonsets
     import 'k8s/daemonsets/core/cadvisor.jsonnet',
@@ -17,7 +15,6 @@
     import 'k8s/daemonsets/core/flannel.jsonnet',
     import 'k8s/daemonsets/core/host.jsonnet',
     import 'k8s/daemonsets/core/node-exporter.jsonnet',
-    import 'k8s/daemonsets/core/multi-networkpolicy.jsonnet',
   ] + std.flattenArrays([
     import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
@@ -69,7 +66,6 @@
     import 'k8s/roles/heartbeat-experiment.jsonnet',
     import 'k8s/roles/kube-rbac-proxy.jsonnet',
     import 'k8s/roles/kube-state-metrics.jsonnet',
-    import 'k8s/roles/multi-networkpolicy.jsonnet',
     import 'k8s/roles/rbac-prometheus.jsonnet',
     import 'k8s/roles/reloader.jsonnet',
   ]),
