@@ -93,6 +93,36 @@ local datatypes = {
   },
 };
 
+local nftables = {
+  initContainer: {
+    name: 'set-nftables-rules',
+    image: 'alpine:3.21',
+    command: [
+      '/bin/sh',
+      '-c',
+      'apk update && apk add nftables && nft --file /etc/nftables.conf',
+    ],
+    volumeMounts: [
+      {
+        mountPath: '/etc',
+        name: 'nftables-rules',
+      },
+    ],
+  },
+  volume(name):: {
+    configMap: {
+      name: 'nftables-rules',
+      items: [
+        {
+          key: name + '.conf',
+          path: 'nftables.conf',
+        }
+      ],
+    },
+    name: 'nftables-rules',
+  },
+};
+
 local uuidAnnotatorSchema(name) = {
   initContainer: {
     name: 'uuid-annotator-schema',
@@ -781,36 +811,6 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
   else []
 ;
 
-local MultiNetworkPolicy(expName, index, ports) = {
-  apiVersion: 'k8s.cni.cncf.io/v1beta2',
-  kind: 'MultiNetworkPolicy',
-  metadata: {
-    name: expName,
-    namespace: 'default',
-    annotations: {
-      'k8s.v1.cni.cncf.io/policy-for': 'index2ip-index-' + index + '-conf',
-    },
-  },
-  spec: {
-    podSelector: {},
-    policyTypes: [
-      'Ingress',
-    ],
-    ingress: [
-      {
-        ports: [
-          {
-            port: std.split(std.split(p, '/')[0], ':')[0],
-            [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.parseInt(std.split(std.split(p, '/')[0], ':')[1]),
-            protocol: std.split(p, '/')[1],
-          },
-          for p in ports
-        ],
-      },
-    ],
-  },
-};
-
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical', autojoin=false) = {
   local autoAnnotations = contains("annotation2", datatypesAutoloaded),
   local datatypesPushed =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if autoAnnotations then [] else ["annotation2"],
@@ -854,6 +854,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
           uuidAnnotatorSchema(name).initContainer,
           setDataDirOwnership(name).initContainer,
           setDatatypesDirOwnership(name).initContainer,
+          nftables.initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
@@ -900,6 +901,7 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
           data.volume(name),
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
+          nftables.volume(name),
         ] + [
           data.volume(name + '/' + v) for v in allVolumes
         ],
@@ -972,9 +974,6 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services, autojoin=false):: Heartbeat(expName, 9996, hostNetwork, services, autojoin),
-
-  // Returns a manifest for a MultiNetworkPolicy CRD object.
-  MultiNetworkPolicy(expName, index, ports):: MultiNetworkPolicy(expName, index, ports),
 
   // Volumes, volumemounts and other data and configs for experiment metadata.
   Metadata:: Metadata,

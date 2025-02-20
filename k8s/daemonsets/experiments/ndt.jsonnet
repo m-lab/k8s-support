@@ -7,9 +7,6 @@ local services = [
 ];
 local PROJECT_ID = std.extVar('PROJECT_ID');
 
-// List of ports that need to be opened in the pod network namespace.
-local ports = ['80/TCP', '443/TCP', '3001/TCP', '3010/TCP', '32768:60999/TCP'];
-
 [
   exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
     spec+: {
@@ -132,6 +129,5 @@ local ports = ['80/TCP', '443/TCP', '3001/TCP', '3010/TCP', '32768:60999/TCP'];
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 2, ports),
 ]
 

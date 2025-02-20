@@ -5,9 +5,6 @@ local services = [
   'neubot/dash=https:///negotiate/dash',
 ];
 
-// List of ports that need to be opened in the pod network namespace.
-local ports = ['80/TCP', '443/TCP'];
-
 [
   exp.Experiment(expName, 10, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
     spec+: {
@@ -87,6 +84,5 @@ local ports = ['80/TCP', '443/TCP'];
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 10, ports),
 ]
 
