@@ -110,7 +110,7 @@ local nftables = {
         drop: [
           'all',
         ],
-      }
+      },
       privileged: true,
       runAsUser: 0,
     },
