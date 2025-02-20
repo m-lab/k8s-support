@@ -102,6 +102,9 @@ local nftables = {
       '-c',
       'apk update && apk add nftables && nft flush ruleset && nft --file /etc/nftables.d/mlab.conf',
     ],
+    securityContext: {
+      runAsUser: 0,
+    },
     volumeMounts: [
       {
         mountPath: '/etc/nftables.d',
