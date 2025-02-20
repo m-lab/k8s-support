@@ -866,7 +866,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
           uuidAnnotatorSchema(name).initContainer,
           setDataDirOwnership(name).initContainer,
           setDatatypesDirOwnership(name).initContainer,
-          nftables.initContainer,
         ],
         nodeSelector: {
           'mlab/type': 'physical',
@@ -913,7 +912,6 @@ local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAuto
           data.volume(name),
           tcpinfoServiceVolume.volume,
           uuidannotatorServiceVolume.volume,
-          nftables.volume(name),
         ] + [
           data.volume(name + '/' + v) for v in allVolumes
         ],
@@ -938,6 +936,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
         },
       },
       spec+: {
+        initContainers+: [
+          nftables.initContainer,
+        ],
         // NOTE(github.com/m-lab/k8s-support/issues/542): this overrides the
         // default kube-dns configuration because M-Lab pod networks bypass
         // kubernetes Services iptables rules.
@@ -947,6 +948,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
         },
         // Apply extended grace period, except for mlab-sandbox
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
+        volumes+: [
+          nftables.volume(name),
+        ],
       },
     },
   },
