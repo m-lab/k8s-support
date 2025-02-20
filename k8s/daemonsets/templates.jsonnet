@@ -100,11 +100,11 @@ local nftables = {
     command: [
       '/bin/sh',
       '-c',
-      'apk update && apk add nftables && nft --file /etc/nftables.conf',
+      'apk update && apk add nftables && nft flush ruleset && nft --file /etc/nftables.d/mlab.conf',
     ],
     volumeMounts: [
       {
-        mountPath: '/etc',
+        mountPath: '/etc/nftables.d',
         name: 'nftables-rules',
       },
     ],
@@ -115,7 +115,7 @@ local nftables = {
       items: [
         {
           key: name + '.conf',
-          path: 'nftables.conf',
+          path: 'mlab.conf',
         }
       ],
     },
