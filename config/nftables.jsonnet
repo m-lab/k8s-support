@@ -1,7 +1,7 @@
 local data = {
   'ndt.conf': importstr 'nftables/ndt.conf',
   'msak.conf': importstr 'nftables/msak.conf',
-  'revt.conf': importstr 'nftables/revtr.conf',
+  'revtr.conf': importstr 'nftables/revtr.conf',
   'wehe.conf': importstr 'nftables/wehe.conf',
   'neubot.conf': importstr 'nftables/neubot.conf',
 };
