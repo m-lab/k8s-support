@@ -7,9 +7,6 @@ local services = [
   'msak/latency1=http:///latency/v1/authorize,https:///latency/v1/authorize,http:///latency/v1/result,https:///latency/v1/result',
 ];
 
-// List of ports that need to be opened in the pod network namespace.
-local ports = ['80/TCP', '443/TCP', '1053/UDP'];
-
 [
   exp.Experiment(expName, 1, 'pusher-' + std.extVar('PROJECT_ID'), "none", [], datatypes) + {
     spec+: {
@@ -124,5 +121,5 @@ local ports = ['80/TCP', '443/TCP', '1053/UDP'];
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 1, ports),
 ]
+

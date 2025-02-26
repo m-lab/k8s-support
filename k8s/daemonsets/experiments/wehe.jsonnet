@@ -5,16 +5,6 @@ local services = [
   'wehe/replay=wss://:4443/v0/envelope/access',
 ];
 
-// List of ports that need to be opened in the pod network namespace.
-local ports = [
-  '80/TCP', '81/TCP', '443/TCP', '443/UDP', '465/TCP', '853/TCP', '993/TCP',
-  '995/TCP', '1194/TCP', '1701/TCP', '3478/UDP', '3480/UDP', '4443/TCP',
-  '5004/UDP', '5061/TCP', '6881/TCP', '8080/TCP', '8443/TCP', '8801/UDP',
-  '9000/UDP', '9989/TCP', '19305/UDP', '35253/TCP', '49882/UDP', '50002/UDP',
-  '55555/TCP', '55556/TCP', '55557/TCP', '56565/TCP', '56566/TCP', '62065/UDP',
-  '63308/UDP'
-];
-
 [
   exp.Experiment(expName, 5, 'pusher-' + std.extVar('PROJECT_ID'), 'netblock', ['replay'], autoloadedDatatypes) + {
     spec+: {
@@ -227,6 +217,5 @@ local ports = [
       },
     },
   },
-  exp.MultiNetworkPolicy(expName, 5, ports),
 ]
 

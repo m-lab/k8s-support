@@ -93,6 +93,48 @@ local datatypes = {
   },
 };
 
+local nftables = {
+  initContainer: {
+    name: 'set-nftables-rules',
+    image: 'alpine:3.21',
+    command: [
+      '/bin/sh',
+      '-c',
+      'apk update && apk add nftables && nft flush ruleset && nft --file /etc/nftables.d/mlab.conf',
+    ],
+    securityContext: {
+      capabilities: {
+        add: [
+          'NET_ADMIN',
+        ],
+        drop: [
+          'all',
+        ],
+      },
+      privileged: true,
+      runAsUser: 0,
+    },
+    volumeMounts: [
+      {
+        mountPath: '/etc/nftables.d',
+        name: 'nftables-rules',
+      },
+    ],
+  },
+  volume(name):: {
+    configMap: {
+      name: 'nftables-rules',
+      items: [
+        {
+          key: name + '.conf',
+          path: 'mlab.conf',
+        }
+      ],
+    },
+    name: 'nftables-rules',
+  },
+};
+
 local uuidAnnotatorSchema(name) = {
   initContainer: {
     name: 'uuid-annotator-schema',
@@ -781,36 +823,6 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
   else []
 ;
 
-local MultiNetworkPolicy(expName, index, ports) = {
-  apiVersion: 'k8s.cni.cncf.io/v1beta2',
-  kind: 'MultiNetworkPolicy',
-  metadata: {
-    name: expName,
-    namespace: 'default',
-    annotations: {
-      'k8s.v1.cni.cncf.io/policy-for': 'index2ip-index-' + index + '-conf',
-    },
-  },
-  spec: {
-    podSelector: {},
-    policyTypes: [
-      'Ingress',
-    ],
-    ingress: [
-      {
-        ports: [
-          {
-            port: std.split(std.split(p, '/')[0], ':')[0],
-            [if std.length(std.split(p, ':')) == 2 then 'endPort']: std.parseInt(std.split(std.split(p, '/')[0], ':')[1]),
-            protocol: std.split(p, '/')[1],
-          },
-          for p in ports
-        ],
-      },
-    ],
-  },
-};
-
 local ExperimentNoIndex(name, bucket, anonMode, datatypesArchived, datatypesAutoloaded, hostNetwork, siteType='physical', autojoin=false) = {
   local autoAnnotations = contains("annotation2", datatypesAutoloaded),
   local datatypesPushed =  ['tcpinfo', 'pcap', 'scamper1', 'hopannotation2'] + datatypesArchived + if autoAnnotations then [] else ["annotation2"],
@@ -924,6 +936,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
         },
       },
       spec+: {
+        initContainers+: [
+          nftables.initContainer,
+        ],
         // NOTE(github.com/m-lab/k8s-support/issues/542): this overrides the
         // default kube-dns configuration because M-Lab pod networks bypass
         // kubernetes Services iptables rules.
@@ -933,6 +948,9 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
         },
         // Apply extended grace period, except for mlab-sandbox
         [if std.extVar('PROJECT_ID') != 'mlab-sandbox' then 'terminationGracePeriodSeconds']: terminationGracePeriodSeconds,
+        volumes+: [
+          nftables.volume(name),
+        ],
       },
     },
   },
@@ -972,9 +990,6 @@ local Experiment(name, index, bucket, anonMode, datatypes=[], datatypesAutoloade
 
   // Returns a "container" configuration for the heartbeat service.
   Heartbeat(expName, hostNetwork, services, autojoin=false):: Heartbeat(expName, 9996, hostNetwork, services, autojoin),
-
-  // Returns a manifest for a MultiNetworkPolicy CRD object.
-  MultiNetworkPolicy(expName, index, ports):: MultiNetworkPolicy(expName, index, ports),
 
   // Volumes, volumemounts and other data and configs for experiment metadata.
   Metadata:: Metadata,
