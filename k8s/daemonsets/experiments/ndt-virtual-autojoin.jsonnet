@@ -48,7 +48,6 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), 'none', dat
               '-service=ndt',
               '-organization=mlab',
               '-output=/autonode',
-              '-ports=9990,9991,9992,9993',
               '-probability=@/metadata/probability',
               '-type=virtual',
               '-uplink=7g',
