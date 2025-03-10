@@ -1,3 +1,5 @@
+configAnnotations:
+  annotations-risk-level: Critical
 controller:
   admissionWebhooks:
     enabled: false
