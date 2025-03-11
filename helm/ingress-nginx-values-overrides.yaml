@@ -1,8 +1,8 @@
-configAnnotations:
-  annotations-risk-level: Critical
 controller:
   admissionWebhooks:
     enabled: false
+  configAnnotations:
+    annotations-risk-level: Critical
   hostNetwork: true
   nodeSelector:
     run: prometheus-server
