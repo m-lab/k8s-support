@@ -1,6 +1,9 @@
 controller:
   admissionWebhooks:
     enabled: false
+  config:
+    allow-snippet-annotations: "true"
+    annotations-risk-level: Critical
   hostNetwork: true
   nodeSelector:
     run: prometheus-server
