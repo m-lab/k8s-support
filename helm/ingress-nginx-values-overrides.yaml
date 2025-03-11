@@ -1,7 +1,8 @@
 controller:
   admissionWebhooks:
     enabled: false
-  configAnnotations:
+  config:
+    allow-snippet-annotations: "true"
     annotations-risk-level: Critical
   hostNetwork: true
   nodeSelector:
