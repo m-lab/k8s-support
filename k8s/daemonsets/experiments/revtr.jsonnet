@@ -8,7 +8,7 @@ local exp = import '../templates.jsonnet';
           containers+: [
             {
               name: 'revtrvp',
-              image: 'measurementlab/revtrvp:v0.3.2',
+              image: 'measurementlab/revtrvp:latest',
               args: [
                 '/server.crt',
                 '/plvp.config',
