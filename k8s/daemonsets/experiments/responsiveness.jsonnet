@@ -16,13 +16,13 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
         containers: [
           {
             args: [
-              '-config-port=443',
+              '-config-port=4043',
               '-config-name=$(MLAB_NODE_NAME)',
               '-public-port=443',
               '-public-name=$(MLAB_NODE_NAME)',
               '-cert-file=/certs/tls.crt',
               '-key-file=/certs/tls.key',
-              '-listen-addr=0.0.0.0',
+              '-listen-addr=localhost',
             ],
             env: [
               {
@@ -30,6 +30,14 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
                 valueFrom: {
                   fieldRef: {
                     fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+              {
+                name: 'PRIVATE_IP',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'status.podIP',
                   },
                 },
               },
@@ -62,6 +70,42 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
               },
             ],
           },
+          {
+            image: "soltesz/access-proxy:v0.0.3",
+            name: "access-proxy",
+            args: [
+              '-forward=https://0.0.0.0:443@https://localhost:4043',
+              '-token.required=false',
+              '-txcontroller.device=net1',
+              '-txcontroller.max-rate=1000000000',
+              '-token.machine=$(NODE_NAME)',
+              '-token.verify-key=/verify/jwk_sig_EdDSA_locate_20200409.pub',
+              '-cert=/certs/tls.crt',
+              '-key=/certs/tls.key',
+            ],
+            env: [
+              {
+                name: 'MLAB_NODE_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'spec.nodeName',
+                  },
+                },
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/certs',
+                name: 'measurement-lab-org-tls',
+                readOnly: true,
+              },
+              {
+                mountPath: '/verify',
+                name: 'locate-verify-keys',
+                readOnly: true,
+              },
+            ],
+          },
         ],
         // Use host network to listen on the machine IP address without
         // registering an experiment index yet.
@@ -71,6 +115,12 @@ exp.ExperimentNoIndex(expName, 'pusher-' + std.extVar('PROJECT_ID'), "none", [],
             name: 'measurement-lab-org-tls',
             secret: {
               secretName: 'measurement-lab-org-tls',
+            },
+          },
+          {
+            name: 'locate-verify-keys',
+            secret: {
+              secretName: 'locate-verify-keys',
             },
           },
         ],
