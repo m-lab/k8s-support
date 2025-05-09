@@ -12,7 +12,7 @@ local plvp_config = if std.extVar('PROJECT_ID') == 'mlab-oti' then
           containers+: [
             {
               name: 'revtrvp',
-              image: 'measurementlab/revtrvp:v0.3.2',
+              image: 'measurementlab/revtrvp:v0.4.0',
               args: [
                 '/server.crt',
                 plvp_config
