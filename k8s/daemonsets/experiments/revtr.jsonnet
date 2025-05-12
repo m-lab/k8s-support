@@ -1,4 +1,8 @@
 local exp = import '../templates.jsonnet';
+local plvp_config = if std.extVar('PROJECT_ID') == 'mlab-oti' then
+    '/plvp_mlab.config.production'
+  else
+    '/plvp_mlab.config.sandbox';
 
 [
   exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], []) + {
@@ -8,10 +12,10 @@ local exp = import '../templates.jsonnet';
           containers+: [
             {
               name: 'revtrvp',
-              image: 'measurementlab/revtrvp:v0.3.2',
+              image: 'measurementlab/revtrvp:v0.4.0',
               args: [
                 '/server.crt',
-                '/plvp.config',
+                plvp_config
               ],
               securityContext: {
                 capabilities: {
@@ -47,4 +51,3 @@ local exp = import '../templates.jsonnet';
     }
   },
 ]
-
