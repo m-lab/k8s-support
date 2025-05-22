@@ -1,8 +1,8 @@
 local exp = import '../templates.jsonnet';
-local plvp_config = if std.extVar('PROJECT_ID') == 'mlab-oti' then
-    '/plvp_mlab.config.production'
+local plvp_config = if std.extVar('PROJECT_ID') == 'mlab-sandbox' then
+    '/plvp_mlab.config.sandbox'
   else
-    '/plvp_mlab.config.sandbox';
+    '/plvp_mlab.config.production';
 
 [
   exp.Experiment('revtr', 3, 'pusher-' + std.extVar('PROJECT_ID'), 'none', [], []) + {
