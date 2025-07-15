@@ -722,17 +722,17 @@ local Revtr(expName, tcpPort) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:v0.15.1',
+    image: 'measurementlab/heartbeat:sandbox-roberto-heartbeat-jwt',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
       else
         '-prometheusx.listen-address=$(PRIVATE_IP):' + tcpPort,
       if PROJECT_ID == 'mlab-oti' then
-        '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)'
+        '-heartbeat-url=wss://locate.measurementlab.net/v2/platform/heartbeat-jwt'
       else
         '-heartbeat-url=wss://locate.' + PROJECT_ID +
-        '.measurementlab.net/v2/platform/heartbeat?key=$(API_KEY)',
+        '.measurementlab.net/v2/platform/heartbeat-jwt',
     ] + (
       if autojoin then [
         '-registration-url=file:///autonode/registration.json',
@@ -746,6 +746,11 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
       '-pod=$(MLAB_POD_NAME)',
       '-namespace=$(MLAB_NAMESPACE)',
       '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
+      '-api-key=$(API_KEY)',
+      if PROJECT_ID == 'mlab-oti' then
+        '-token-exchange-url=https://auth.measurementlab.net/v0/token/autojoin'
+      else
+        '-token-exchange-url=https://auth.' + PROJECT_ID + '.measurementlab.net/v0/token/autojoin',
     ] + ['-services=' + s for s in services],
     env: [
       {
