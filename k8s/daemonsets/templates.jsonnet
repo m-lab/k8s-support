@@ -722,7 +722,7 @@ local Revtr(expName, tcpPort) = [
 local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
   {
     name: 'heartbeat',
-    image: 'measurementlab/heartbeat:sandbox-roberto-heartbeat-jwt',
+    image: 'measurementlab/heartbeat:v0.18.0',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
