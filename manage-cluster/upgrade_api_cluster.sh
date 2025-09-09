@@ -97,12 +97,19 @@ for zone in $GCE_ZONES; do
         /opt/mlab/conf/kubeadm-config.yml.template > \
         ./kubeadm-config.yml
 
+    # Generate a throw-away hex encoded AES key. Since k8s v.1.29.x, kubeadm no
+    # longer accepts a 'NOT_USED' value for the certificateKey field in the
+    # kubeadm InitConfiguration, even though the value is not used in the
+    # upgrade path (only install path).
+    # https://github.com/kubernetes/kubernetes/pull/120064
+    cert_key=\$(openssl rand -hex 32)
+
     # The template variables {{TOKEN}}, {{CA_CERT_HASH}} and {{CERT_KEY}} are
     # not used when upgrading k8s on a node.  Here we simply replace the
     # variables with some meaningless text so that the YAML can be parsed.
-    sed -i -e 's|{{TOKEN}}|NOT_USED|' \
-           -e 's|{{CA_CERT_HASH}}|NOT_USED|' \
-           -e 's|{{CERT_KEY}}|NOT_USED|' \
+    sed -i -e "s|{{TOKEN}}|NOT_USED|" \
+           -e "s|{{CA_CERT_HASH}}|NOT_USED|" \
+           -e "s|{{CERT_KEY}}|\$cert_key|" \
            kubeadm-config.yml
 
     # Drain the node of most workloads, except DaemonSets, since some of those
