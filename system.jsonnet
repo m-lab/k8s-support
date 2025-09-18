@@ -38,6 +38,12 @@
       // uncomment the following line.
       //import 'k8s/daemonsets/experiments/responsiveness.jsonnet',
     ] else []
+  ) + (
+    if std.extVar('PROJECT_ID') != 'mlab-oti' then [
+      // A internal Google service we are experimenting with only in sandbox
+      // and staging.
+      import 'k8s/daemonsets/core/flooefi.jsonnet',
+    ] else []
   ) + [
     // Deployments
     import 'k8s/deployments/kube-state-metrics.jsonnet',
