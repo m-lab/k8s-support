@@ -40,8 +40,7 @@
     ] else []
   ) + (
     if std.extVar('PROJECT_ID') != 'mlab-oti' then [
-      // A internal Google service we are experimenting with only in sandbox
-      // and staging.
+      // A internal Google service used only on equipment and circuits donated by Google.
       import 'k8s/daemonsets/core/flooefi.jsonnet',
     ] else []
   ) + [

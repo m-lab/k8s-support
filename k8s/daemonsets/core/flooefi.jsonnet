@@ -16,6 +16,7 @@ local expName = 'flooefi';
     template: {
       metadata: {
         annotations: {
+          'k8s.v1.cni.cncf.io/networks': '[{ "name": "index2ip-index-7-conf" }]',
           'prometheus.io/scrape': 'true',
           'prometheus.io/scheme': 'http'
         },
@@ -74,4 +75,3 @@ local expName = 'flooefi';
     },
   },
 }
-
