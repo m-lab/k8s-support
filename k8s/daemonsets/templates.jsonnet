@@ -1,7 +1,7 @@
-local ndtVersion = 'v0.24.0';
+local ndtVersion = 'v0.24.1';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
-local ndtCanaryVersion = 'v0.20.20';
+local ndtCanaryVersion = 'v0.24.1';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 // The uuid-annotator container image version.
 local uuidAnnVersion = 'v0.5.10';
