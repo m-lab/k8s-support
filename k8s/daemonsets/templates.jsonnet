@@ -747,10 +747,7 @@ local Heartbeat(expName, tcpPort, hostNetwork, services, autojoin=false) = [
       '-namespace=$(MLAB_NAMESPACE)',
       '-kubernetes-url=https://api-platform-cluster.' + PROJECT_ID + '.measurementlab.net:6443',
       '-api-key=$(API_KEY)',
-      if PROJECT_ID == 'mlab-oti' then
-        '-token-exchange-url=https://auth.measurementlab.net/v0/token/autojoin'
-      else
-        '-token-exchange-url=https://auth.' + PROJECT_ID + '.measurementlab.net/v0/token/autojoin',
+      '-token-exchange-url=https://auth.' + PROJECT_ID + '.measurementlab.net/v0/token/autojoin',
     ] + ['-services=' + s for s in services],
     env: [
       {
