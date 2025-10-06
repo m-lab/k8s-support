@@ -57,7 +57,7 @@ for zone in $GCE_ZONES; do
       "${GCE_ARGS[@]}" || true)
 
   if [[ "${UPGRADE_STATE}" == "new" ]]; then
-    UPGRADE_COMMAND="apply ${K8S_VERSION} --config ./kubeadm-config.yml --force --certificate-renewal=true"
+    UPGRADE_COMMAND="apply ${K8S_VERSION} --force --certificate-renewal=true"
   else
     UPGRADE_COMMAND="node"
   fi
