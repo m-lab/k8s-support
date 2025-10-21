@@ -716,3 +716,27 @@ groups:
         all pods is working. See which pod is using all the space with `df -sh
         /cache/data/*`.
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/rJ7z2Suik/k8s-site-overview
+
+#
+# FYIs
+#
+# FYIs are unactionable "alerts" that will go to a non-alert Slack channel, and
+# are just FYIs for operators/maintainers.
+
+# The ndt7 test rate more than doubled in the past 30 minutes. The 30 minute
+# average is offset 30m into the past to help prevent the current spike from
+# factoring into the average, which should make the expression trigger for longer.
+  - alert: FYI_NDTTestRateMoreThanDoubled
+    expr: |
+      (
+        (60 * sum(rate(ndt7_client_test_results_total{result!="error-without-rate"}[4m])))
+        /
+        (60 * sum(rate(ndt7_client_test_results_total{result!="error-without-rate"}[30m] offset 30m)))
+      ) > 2
+    for: 5m
+    labels:
+      severity: fyi
+      cluster: platform
+    annotations:
+      summary: The ndt7 test rate average doubled over the previous 30-60m average.
+      dashboard: https://grafana.mlab-oti.measurementlab.net/d/Cyq7WeNiz/ndt-global-test-rate?orgId=1
