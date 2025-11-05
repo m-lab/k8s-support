@@ -726,6 +726,7 @@ groups:
 # The ndt7 test rate more than doubled in the past 30 minutes. The 30 minute
 # average is offset 30m into the past to help prevent the current spike from
 # factoring into the average, which should make the expression trigger for longer.
+# The FYI alerts should only happen for project mlab-oti.
   - alert: FYI_NDTTestRateMoreThanDoubled
     expr: |
       (
@@ -737,6 +738,7 @@ groups:
     labels:
       severity: fyi
       cluster: platform
+      fyi_project: mlab-oti
     annotations:
       summary: The ndt7 test rate average doubled over the previous 30-60m average.
       dashboard: https://grafana.mlab-oti.measurementlab.net/d/Cyq7WeNiz/ndt-global-test-rate?orgId=1
