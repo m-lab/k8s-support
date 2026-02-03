@@ -19,12 +19,12 @@
   ] + std.flattenArrays([
     import 'k8s/daemonsets/experiments/msak.jsonnet',
     import 'k8s/daemonsets/experiments/ndt.jsonnet',
+    import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/revtr.jsonnet',
     import 'k8s/daemonsets/experiments/wehe.jsonnet',
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
   ]) + [
     import 'k8s/daemonsets/experiments/ndt-virtual.jsonnet',
-    import 'k8s/daemonsets/experiments/ndt-canary.jsonnet',
     import 'k8s/daemonsets/experiments/packet-test.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [

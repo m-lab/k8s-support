@@ -9,6 +9,9 @@ local PROJECT_ID = std.extVar('PROJECT_ID');
 
 [
   exp.Experiment(expName, 2, 'pusher-' + std.extVar('PROJECT_ID'), "none", datatypes, []) + {
+    metadata+: {
+      name: expName + '-canary',
+    },
     spec+: {
       selector+: {
         matchLabels+: {
@@ -138,4 +141,3 @@ local PROJECT_ID = std.extVar('PROJECT_ID');
     },
   },
 ]
-
