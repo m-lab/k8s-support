@@ -25,7 +25,6 @@
     import 'k8s/daemonsets/experiments/neubot.jsonnet',
   ]) + [
     import 'k8s/daemonsets/experiments/ndt-virtual.jsonnet',
-    import 'k8s/daemonsets/experiments/packet-test.jsonnet',
   ] + (
     if std.extVar('PROJECT_ID') == 'mlab-sandbox' then [
       import 'k8s/daemonsets/experiments/ndt-virtual-autojoin.jsonnet',
