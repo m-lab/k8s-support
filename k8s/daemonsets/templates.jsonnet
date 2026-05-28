@@ -686,7 +686,7 @@ local Revtr(expName, tcpPort) = [
       '-revtr.hostname=revtr.ccs.neu.edu',
       '-revtr.grpcPort=9999',
       '-prometheus.addr=$(PRIVATE_IP):'+tcpPort,
-      '-revtr.sampling=4', // 100/x == 25%
+      '-revtr.sampling=2', // 100/x == 50%
       '-revtr.APIKey=$(REVTR_APIKEY)',
       '-loglevel=debug',
     ],
