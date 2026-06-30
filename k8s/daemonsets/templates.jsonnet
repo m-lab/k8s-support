@@ -457,6 +457,17 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
     local version='v1.20.3',
     name: 'pusher',
     image: 'measurementlab/pusher:'+version,
+    // containerd 2.x defaults a container's soft RLIMIT_NOFILE to 1024 (hard
+    // limit 524288). Pusher exhausts a 1024 soft limit (inotify watches over
+    // the spool tree plus open file handles for tarring/uploading), which
+    // silently stalls uploads and loses data. Wrap the entrypoint in a shell
+    // that raises the soft limit to the hard limit before exec'ing pusher.
+    command: [
+      '/bin/sh',
+      '-c',
+      'ulimit -n "$(ulimit -Hn)"; exec /pusher "$@"',
+      '--',
+    ],
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
