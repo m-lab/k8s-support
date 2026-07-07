@@ -1,4 +1,4 @@
-local ndtVersion = 'v0.24.1';
+local ndtVersion = 'v0.25.3';
 // The canary version is expected to be greater than or equal to
 // the current stable version.
 local ndtCanaryVersion = 'v0.25.0';
