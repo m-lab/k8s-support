@@ -303,6 +303,31 @@ groups:
       summary: Configuration of the fq qdisc failed, or the metric is missing.
       description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_configureqdiscfailedormissing
 
+  # The CPU scaling governor is not set to "performance" on every CPU of a
+  # machine (https://github.com/m-lab/ops-tracker/issues/1781). Don't fire the
+  # alert if the node's status in k8s is "NotReady", or if the node is in
+  # maintenance mode.
+  #
+  # NOTE: this deliberately only matches metric value 0, not a missing metric,
+  # because machines do not export the metric at all until they boot an image
+  # containing set-cpu-governor.service (epoxy-images >= v2.5.0). Once the
+  # 26.04 rollout is complete fleet-wide, tighten this to the "unless on(node)
+  # ... == 1" form used by PlatformCluster_ConfigureQdiscFailedOrMissing so
+  # that a missing metric also fires.
+  - alert: PlatformCluster_CpuScalingGovernorNotPerformance
+    expr: |
+      node_cpu_scaling_governor_performance == 0
+        unless on (node) kube_node_status_condition{condition="Ready", status!="true"} == 1
+        unless on(node) gmx_machine_maintenance == 1
+    for: 1h
+    labels:
+      repo: ops-tracker
+      severity: ticket
+      cluster: platform
+    annotations:
+      summary: The CPU scaling governor is not "performance" on all CPUs.
+      description: https://github.com/m-lab/ops-tracker/wiki/Alerts-&-Troubleshooting#platformcluster_cpuscalinggovernornotperformance
+
   # The ndt-server is unable to enable BBR for ndt7 tests because the tcp_bbr
   # module is not loaded.
   - alert: PlatformCluster_BBRmoduleMissing
