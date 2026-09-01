@@ -201,12 +201,12 @@ gcloud compute ssh "${GCE_NAME}" "${GCE_ARGS[@]}" <<EOF
 
   # Install kubelet systemd service and enable it.
   curl --silent --show-error --location \
-    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" \
+    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/krel/templates/latest/kubelet/kubelet.service" \
 	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service
 
   mkdir -p /etc/systemd/system/kubelet.service.d
   curl --silent --show-error --location \
-    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" \
+    "https://raw.githubusercontent.com/kubernetes/release/${K8S_TOOLING_VERSION}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf" \
 	| sed "s:/usr/bin:/opt/bin:g" | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
   # Override the node name, which without this will be something like:
