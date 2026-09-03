@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ndt
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      workload: ndt
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+      labels:
+        site-type: physical
+        workload: ndt
+    spec:
+      initContainers:
+      - name: sysctl-set-bbr
+        image: busybox:1.35
+        securityContext:
+          privileged: true
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - echo 'ok'
+          # - sysctl -w net.core.default_qdisc=fq net.ipv4.tcp_congestion_control=bbr
+      containers:
+      - args:
+        - -datadir=/var/spool/ndt
+        - -htmldir=html/mlab
+        - -label=type=physical
+        - -label=deployment=stable
+        image: measurementlab/ndt-server:v0.20.10
+        imagePullPolicy: IfNotPresent
+        name: ndt-server
+        ports:
+        - containerPort: 80
+          #hostPort: 80
+          protocol: TCP
+      restartPolicy: Always
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 2
+    type: RollingUpdate
