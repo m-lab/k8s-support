@@ -120,12 +120,12 @@ local exp = import '../templates.jsonnet';
             ],
             resources: {
               limits: {
-                cpu: '20m',
-                memory: '40Mi',
+                cpu: '50m',
+                memory: '128Mi',
               },
               requests: {
                 cpu: '10m',
-                memory: '20Mi',
+                memory: '40Mi',
               },
             },
             securityContext: {
