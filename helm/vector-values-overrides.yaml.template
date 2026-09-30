@@ -38,6 +38,12 @@ customConfig:
 env:
 - name: VECTOR_LOG
   value: info
+# As of v0.57.0, Vector disables ${VAR} interpolation in configuration files
+# by default. The customConfig above depends on interpolation of
+# VECTOR_SELF_NODE_NAME, so restore the old behavior:
+# https://vector.dev/releases/0.57.0/
+- name: VECTOR_DANGEROUSLY_ALLOW_ENV_VAR_INTERPOLATION
+  value: "true"
 extraContainersPorts:
 - 9090
 extraVolumes:
