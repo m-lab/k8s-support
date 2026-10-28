@@ -336,6 +336,19 @@ scrape_configs:
         target_label: site
         replacement: ${1}
 
+    metric_relabel_configs:
+      # Since tcp-info v1.10.0, importing the eventsocket client package also
+      # registers all of tcp-info's own Prometheus metrics. Every sidecar that
+      # uses the client (uuid-annotator, traceroute-caller, packet-headers)
+      # therefore exposes ~180 permanently-zero tcpinfo_* series, which across
+      # the fleet would add well over a million idle series to this Prometheus.
+      # Drop them from the sidecars; the tcpinfo container's own metrics are
+      # unaffected. The container label is the kube-rbac-proxy that fronts the
+      # scraped port, hence the proxy names.
+      - source_labels: [__name__, container]
+        regex: 'tcpinfo_.*;kube-rbac-proxy-(uuid-annotator|traceroute|pcap)'
+        action: drop
+
   # Scrape the epoxy-extension-server. The address we are scraping is actually
   # a GCP internal load balancer. Scraping the load balancer address won't
   # guarantee that all epoxy-extension-server instances are up and running, but
