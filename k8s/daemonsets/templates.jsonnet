@@ -4,7 +4,7 @@ local ndtVersion = 'v0.25.3';
 local ndtCanaryVersion = 'v0.25.0';
 local PROJECT_ID = std.extVar('PROJECT_ID');
 // The uuid-annotator container image version.
-local uuidAnnVersion = 'v0.5.10';
+local uuidAnnVersion = 'v0.5.11';
 
 
 // The default grace period after k8s sends SIGTERM is 30s. We
@@ -278,7 +278,7 @@ local Metadata = {
 local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'tcp-info',
-    image: 'measurementlab/tcp-info:v1.9.0',
+    image: 'measurementlab/tcp-info:v1.10.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -329,7 +329,7 @@ local Tcpinfo(expName, tcpPort, hostNetwork, anonMode) = [
 local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
   {
     name: 'traceroute-caller',
-    image: 'measurementlab/traceroute-caller:v0.11.3',
+    image: 'measurementlab/traceroute-caller:v0.12.1',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -340,7 +340,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
       '-IPCacheTimeout=10m',
       '-IPCacheUpdatePeriod=1m',
       '-scamper.timeout=30m',
-      '-scamper.tracelb-W=15',
+      '-scamper.waitprobe=15',
       '-hopannotation-output=' + data.mount(expName).mountPath + '/hopannotation2',
       '-ipservice.sock=' + uuidannotatorServiceVolume.socketFilename,
       '-anonymize.ip=' + anonMode,
@@ -391,7 +391,7 @@ local Traceroute(expName, tcpPort, hostNetwork, anonMode) = [
 local Pcap(expName, tcpPort, hostNetwork, siteType, anonMode) = [
   {
     name: 'packet-headers',
-    image: 'measurementlab/packet-headers:v0.7.6',
+    image: 'measurementlab/packet-headers:v0.7.7',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -542,7 +542,7 @@ local Pusher(expName, tcpPort, datatypes, hostNetwork, bucket) = [
 local Jostler(expName, tcpPort, datatypesAutoloaded, hostNetwork, bucket) = [
   {
     name: 'jostler',
-    image: 'measurementlab/jostler:v1.1.2',
+    image: 'measurementlab/jostler:v1.1.5',
     args: [
       if hostNetwork then
         '-prometheusx.listen-address=127.0.0.1:' + tcpPort
@@ -691,7 +691,7 @@ local UUIDAnnotator(expName, tcpPort, hostNetwork, autojoin=false) = [
 local Revtr(expName, tcpPort) = [
   {
     name: 'revtr-sidecar',
-    image: 'measurementlab/revtr-sidecar:v1.4.3',
+    image: 'measurementlab/revtr-sidecar:v1.4.4',
     args: [
       '-tcpinfo.eventsocket=' + tcpinfoServiceVolume.socketFilename,
       '-revtr.hostname=revtr.ccs.neu.edu',
